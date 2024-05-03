@@ -1,8 +1,9 @@
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.shortcuts import render
 
-from .forms import RegistrationForm
+from .forms import RegistrationForm, EditUserForm
 
 
 @login_required(login_url='login')
@@ -41,7 +42,12 @@ def user_create(request):
 
 @login_required(login_url='login')
 def user_list(request):
-    if request.method == 'POST':
+    if request.method == 'POST' and 'editUser' in request.POST:
+        user = User.objects.get(pk=request.POST['userId'])
+        form = EditUserForm(instance=user)
+        return render(request, 'main/editarUsuario.html', {'form': form})
+    elif request.method == 'POST':
         return render(request, 'main/novoUsuario.html')
     if request.method == 'GET':
-        return render(request, 'main/usuarios.html')
+        usuarios = User.objects.all()
+        return render(request, 'main/usuarios.html', {'usuarios': usuarios})

@@ -1,8 +1,6 @@
 from django.db import models
 
 
-# Create your models here.
-
 class Comida(models.Model):
     id_comida = models.AutoField(primary_key=True)
     nome = models.CharField(max_length=100)
@@ -22,7 +20,7 @@ class Cliente(models.Model):
         return self.nome
 
 
-class Comida_Evento(models.Model):
+class ComidaEvento(models.Model):
     id_comida = models.AutoField(primary_key=True)
     nome = models.CharField(max_length=100)
     descricao = models.TextField()
@@ -38,7 +36,7 @@ class Evento(models.Model):
     nome = models.CharField(max_length=100)
     descricao = models.TextField()
     observacao = models.TextField()
-    comidas = models.ManyToManyField(Comida_Evento)
+    comidas = models.ManyToManyField(ComidaEvento)
     qtd_dias_evento = models.IntegerField
 
 
@@ -50,3 +48,9 @@ class Terceiro(models.Model):
 
     def __str__(self):
         return self.nome
+
+
+class Orcamento(models.Model):
+    id_orcamento = models.AutoField(primary_key=True)
+    evento_id = models.ForeignKey(Evento, on_delete=models.CASCADE)
+    valor_total = models.DecimalField(decimal_places=2, max_digits=6)

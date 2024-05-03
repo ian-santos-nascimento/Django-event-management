@@ -1,11 +1,44 @@
 {% extends 'main/base.html' %}
 {% block title %} Novo Usuario {% endblock %}
 {% block content %}
-    <h1>tabela de usuarios aqui</h1>
+    <h1 class="text-center">Controle de Usuarios</h1>
     <form method="post">
         {% csrf_token %}
-        <button type="submit" class="btn btn-dark" value="Novo Usuario"></button>
+        <button type="submit" class="btn btn-sm btn-outline-primary" title="Adicionar novo usuário"
+                value="Novo Usuario">Novo Usuario
+        </button>
     </form>
+    <hr>
+    <table class="table">
+        <thead>
+        <tr>
+            <th scope="col">ID</th>
+            <th scope="col">Username</th>
+            <th scope="col">Email</th>
+            <th scope="col">Ações</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for usuario in usuarios %}
+            <tr>
+                <td>{{ usuario.id }}</td>
+                <td>{{ usuario.username }}</td>
+                <td>{{ usuario.email }}</td>
+                <td>
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="userId" value="{{ usuario.id }}"/>
+                        <button class="btn" name="editUser">
+                            <i class="fa fa-edit" style="color: #74c0fc" title="Editar Usuário">
+                            </i></button>
+
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+
+        </tbody>
+    </table>
 
 
 {% endblock %}

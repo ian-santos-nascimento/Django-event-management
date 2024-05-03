@@ -1,0 +1,14 @@
+{% extends 'main/base.html' %}
+{% load bootstrap %}
+{% block title %} Novo Usuario {% endblock %}
+{% block content %}
+    <h1>FORM AQUI edit user</h1>
+    <div class="form-group">
+        <form method="POST" role="form" action="{% url 'user_list' %}">
+            {% csrf_token %}
+            {{ form|bootstrap }}
+        </form>
+    </div>
+
+
+{% endblock %}
