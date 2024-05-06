@@ -1,12 +1,14 @@
 {% extends 'main/base.html' %}
 {% load bootstrap %}
+{% load crispy_forms_tags %}
 {% block title %} Novo Usuario {% endblock %}
 {% block content %}
     <h1>FORM AQUI edit user</h1>
-    <div class="form-group">
+    <div class="container">
         <form method="POST" role="form" action="{% url 'user_list' %}">
             {% csrf_token %}
-            {{ form|bootstrap }}
+            {{ form|crispy }}
+            <button type="submit" class="btn btn-primary mt-3">Submit</button>
         </form>
     </div>
 
