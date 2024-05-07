@@ -1,6 +1,16 @@
 {% extends 'main/base.html' %}
+{% load bootstrap %}
+{% load crispy_forms_tags %}
 {% block title %} Novo Usuario {% endblock %}
 {% block content %}
-<h1>FORM AQUI</h1>
+    <h1>Criar Novo Usuario</h1>
+    <div class="container">
+        <form method="POST" role="form" action="{% url 'user_create' %}">
+            {% csrf_token %}
+            {{ form|crispy }}
+            <button type="submit" class="btn btn-primary mt-3">Submit</button>
+        </form>
+    </div>
+
 
 {% endblock %}
