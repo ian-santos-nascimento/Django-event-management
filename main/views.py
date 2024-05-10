@@ -5,7 +5,10 @@ from django.shortcuts import render
 from django.contrib import messages
 from django.shortcuts import redirect
 from .forms import RegistrationForm, EditUserForm
-
+from django.contrib.messages import get_messages
+from django.template import RequestContext
+from django.urls import reverse
+from django.http import HttpResponseRedirect
 
 @login_required(login_url='login')
 def home(request):
@@ -37,7 +40,8 @@ def user_create(request):
         form = RegistrationForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect(user_list)
+            messages.success(request, 'Usuário salvo com sucesso!')
+            return HttpResponseRedirect(reverse('user_list'))
         else:
             return render(request, 'main/novoUsuario.html', {'form': form})
     form = RegistrationForm()
@@ -58,5 +62,6 @@ def user_list(request):
     elif request.method == 'POST':
         return generate_registration_form(request)
     if request.method == 'GET':
+        messages = get_messages(request)
         usuarios = User.objects.all()
-        return render(request, 'main/usuarios.html', {'usuarios': usuarios})
+        return render(request, 'main/usuarios.html', {'usuarios': usuarios, 'messages':messages})

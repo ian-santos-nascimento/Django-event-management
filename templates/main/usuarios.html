@@ -2,19 +2,21 @@
 {% block title %} Novo Usuario {% endblock %}
 {% block content %}
     <h1 class="text-center">Controle de Usuarios</h1>
-    {% if messages_to_display %}
-    <div class="alert alert-success" role="alert">
-        {% for message in messages_to_display %}
-            {{ message }}
-        {% endfor %}
-    </div>
-    <script>
-        // Script para ocultar a mensagem de sucesso após 3 segundos
-        setTimeout(function(){
-            document.querySelector('.alert-success').style.display = 'none';
-        }, 3000);
-    </script>
-{% endif %}
+    {% if messages %}
+        <div class="alert alert-success" role="alert">
+            <ul class="messages">
+                {% for message in messages %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        <script>
+            // Script para ocultar a mensagem de sucesso após 3 segundos
+            setTimeout(function () {
+                document.querySelector('.alert-success').style.display = 'none';
+            }, 1000);
+        </script>
+    {% endif %}
     <form method="post">
         {% csrf_token %}
         <button type="submit" class="btn btn-sm btn-outline-primary" title="Adicionar novo usuário"
