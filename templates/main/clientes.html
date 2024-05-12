@@ -1,7 +1,7 @@
 {% extends 'main/base.html' %}
-{% block title %} Usuarios {% endblock %}
+{% block title %} Clientes {% endblock %}
 {% block content %}
-    <h1 class="text-center">Controle de Usuarios</h1>
+    <h1 class="text-center">Controle de Clientes</h1>
     {% if messages %}
         <div class="alert alert-success" role="alert">
             <ul class="messages">
@@ -14,13 +14,13 @@
             // Script para ocultar a mensagem de sucesso após 3 segundos
             setTimeout(function () {
                 document.querySelector('.alert-success').style.display = 'none';
-            }, 1000);
+            }, 2000);
         </script>
     {% endif %}
     <form method="post">
         {% csrf_token %}
         <button type="submit" class="btn btn-sm btn-outline-primary" title="Adicionar novo usuário"
-                value="Novo Usuario">Novo Usuario
+                value="Novo cliente">Novo Cliente
         </button>
     </form>
     <hr>
@@ -28,23 +28,30 @@
         <thead>
         <tr>
             <th scope="col">ID</th>
-            <th scope="col">Username</th>
-            <th scope="col">Email</th>
-            <th scope="col">Ações</th>
+            <th scope="col">Nome</th>
+            <th scope="col">Telefone</th>
+            <th scope="col">Possui Evento pendente?</th>
+            <th scope="col">Editar Cliente</th>
         </tr>
         </thead>
         <tbody>
-        {% for usuario in usuarios %}
+        {% for cliente in clientes %}
             <tr>
-                <td>{{ usuario.id }}</td>
-                <td>{{ usuario.username }}</td>
-                <td>{{ usuario.email }}</td>
+                <td>{{ cliente.id_cliente }}</td>
+                <td>{{ cliente.nome }}</td>
+                <td>{{ cliente.telefone_formatado }}</td>
+                <td>
+                    {% if  cliente.evento_pk %}
+                        Sim 
+                    {% else %}
+                        Não 
+                    {% endif %}</td>
                 <td>
                     <form method="post">
                         {% csrf_token %}
-                        <input type="hidden" name="userId" value="{{ usuario.id }}"/>
-                        <button class="btn" name="editUser">
-                            <i class="fa fa-edit" style="color: #74c0fc" title="Editar Usuário">
+                        <input type="hidden" name="clienteId" value="{{ cliente.id_cliente }}"/>
+                        <button class="btn" name="editClient">
+                            <i class="fa fa-edit" style="color: #74c0fc" title="Editar Cliente">
                             </i></button>
 
                     </form>

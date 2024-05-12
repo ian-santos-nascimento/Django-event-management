@@ -4,11 +4,14 @@ from django.contrib.auth.models import User
 from django.shortcuts import render
 from django.contrib import messages
 from django.shortcuts import redirect
-from .forms import RegistrationForm, EditUserForm
+from django.test import Client
+
+from .forms import *
 from django.contrib.messages import get_messages
 from django.template import RequestContext
 from django.urls import reverse
 from django.http import HttpResponseRedirect
+
 
 @login_required(login_url='login')
 def home(request):
@@ -48,11 +51,6 @@ def user_create(request):
     return render(request, 'main/novoUsuario.html', {'form': form})
 
 
-def generate_registration_form(request):
-    form = RegistrationForm()
-    return render(request, 'main/novoUsuario.html', {'form': form})
-
-
 @login_required(login_url='login')
 def user_list(request):
     if request.method == 'POST' and 'editUser' in request.POST:
@@ -64,4 +62,52 @@ def user_list(request):
     if request.method == 'GET':
         messages = get_messages(request)
         usuarios = User.objects.all()
-        return render(request, 'main/usuarios.html', {'usuarios': usuarios, 'messages':messages})
+        return render(request, 'main/usuarios.html', {'usuarios': usuarios, 'messages': messages})
+
+
+@login_required(redirect_field_name='login')
+def client_create(request):
+    if request.method == 'POST':
+        # Verifica se o formulário é para edição ou criação
+        if 'saveEditCliente' in request.POST:
+            # Se cliente_id estiver presente, é uma edição
+            cliente_id = request.POST['clienteId']
+            cliente = Cliente.objects.get(pk=cliente_id)
+            form = CreateClientForm(request.POST, instance=cliente)
+        else:
+            # Senão, é uma criação de novo cliente
+            form = CreateClientForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Cliente salvo com sucesso!')
+            return HttpResponseRedirect(reverse('client_list'))
+    else:
+        form = CreateClientForm()
+
+    return render(request, 'main/novoCliente.html', {'form': form})
+
+
+@login_required(login_url='login')
+def client_list(request):
+    if request.method == 'POST':
+        if 'editClient' in request.POST:
+            client_id = request.POST.get('clienteId')
+            client = Cliente.objects.get(pk=client_id)
+            form = CreateClientForm(instance=client)
+            return render(request, 'main/novoCliente.html', {'form': form, 'client_id': client_id})
+        else:
+            return generate_cliente_registration_form(request)
+    elif request.method == 'GET':
+        clientes = Cliente.objects.all()
+        return render(request, 'main/clientes.html', {'clientes': clientes})
+
+
+#
+def generate_registration_form(request):
+    form = RegistrationForm()
+    return render(request, 'main/novoUsuario.html', {'form': form})
+
+
+def generate_cliente_registration_form(request):
+    form = CreateClientForm()
+    return render(request, 'main/novoCliente.html', {'form': form})
