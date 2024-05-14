@@ -66,3 +66,6 @@ class Cliente(models.Model):
             return f'({self.telefone[:2]}) {self.telefone[2:7]}-{self.telefone[7:]}'
         else:
             return self.telefone
+
+class CardapioUpload(models.Model):
+    file = models.FileField(upload_to='uploads')

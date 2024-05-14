@@ -1,3 +1,13 @@
-from django import forms
+import csv
+import io
+from main import models
 
-#see https://docs.djangoproject.com/en/5.0/topics/http/file-uploads/
+
+def createComidaFromCsv(file):
+    print(file)
+    if file:
+        with open("name.txt", "wb+") as destination:
+            for chunk in file.chunks():
+                destination.write(chunk)
+    else:
+        print('Empty')

@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.contrib.auth.models import User
-from .models import Cliente
+from .models import *
 
 
 class RegistrationForm(UserCreationForm):
@@ -31,6 +31,7 @@ class CreateClientForm(forms.ModelForm):
         widgets = {'telefone': forms.TextInput(attrs={'placeholder': "(00)00000-0000", 'data-mask': "(00) 0000-0000"})}
 
 
-class UploadFileForm(forms.Form):
-    title = forms.CharField(max_length=50)
-    file = forms.FileField()
+class UploadFileForm(forms.ModelForm):
+    class Meta:
+        model = CardapioUpload
+        fields = ["file"]

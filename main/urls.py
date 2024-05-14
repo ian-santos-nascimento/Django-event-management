@@ -8,5 +8,7 @@ urlpatterns = [
     path('clientes', views.client_list, name='client_list'),
     path('novoUsuario', views.user_create, name='user_create'),
     path('novoCliente', views.client_create, name='client_create'),
+    path('novaComida', views.comida_create, name='comida_create'),
+    path('comidas', views.comida_list, name='comida_list'),
 ]
 

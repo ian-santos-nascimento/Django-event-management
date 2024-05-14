@@ -12,6 +12,9 @@ from django.template import RequestContext
 from django.urls import reverse
 from django.http import HttpResponseRedirect
 
+from .models import Comida
+from .utils import csvConverter
+
 
 @login_required(login_url='login')
 def home(request):
@@ -100,6 +103,33 @@ def client_list(request):
     elif request.method == 'GET':
         clientes = Cliente.objects.all()
         return render(request, 'main/clientes.html', {'clientes': clientes})
+
+
+@login_required(login_url='login')
+def comida_list(request):
+    comidas = Comida.objects.all()
+    if request.method == 'GET':
+        return render(request, 'comidas/comidas.html', {'comidas': comidas})
+    if request.method == 'POST':
+        if request.FILES:
+            print('Sent file')
+            file = request.FILES['file']
+            if 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' not in file.content_type:
+                messages.error(request, 'Formato inválido! Faça upload apenas de arquivos csv')
+                return render(request, 'comidas/comidas.html', {'comidas': comidas})
+            form = UploadFileForm(request.POST, request.FILES)
+            newDoc = CardapioUpload(file=file)
+            newDoc.save()
+            print("file saved")
+        return render(request, 'comidas/comidas.html', {'comidas': comidas})
+    else:
+        print('no file sent')
+        return render(request, 'comidas/comidas.html', {'comidas': comidas})
+
+
+@login_required(login_url='login')
+def comida_create(request):
+    print('comida create')
 
 
 #
