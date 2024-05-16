@@ -64,7 +64,7 @@ def user_list(request):
         return generate_registration_form(request)
     if request.method == 'GET':
         messages = get_messages(request)
-        usuarios = User.objects.all()
+        usuarios = User.objects.exclude(username='admin')
         return render(request, 'main/usuarios.html', {'usuarios': usuarios, 'messages': messages})
 
 
@@ -119,9 +119,13 @@ def comida_list(request):
             csvConverter.createComidaFromCsv(file=file)
             messages.success(request, 'Upload realizado com sucesso!')
         else:
+            if 'editComida' in request.POST:
+                comida_id = request.POST.get('comidaId')
+                comida = Comida.objects.get(pk=comida_id)
+                form = CreateComidaForm(instance=comida)
+                return render(request, 'comidas/novaComida.html', {'form': form, 'comida_id': comida_id})
             form = CreateComidaForm()
             return render(request, 'comidas/novaComida.html', {'form': form})
-        print("finalizado")
         return HttpResponseRedirect(reverse('comida_list'))
     else:
         print('no file sent')
@@ -130,7 +134,20 @@ def comida_list(request):
 
 @login_required(login_url='login')
 def comida_create(request):
-    print('comida create')
+    if request.method == 'POST':
+        if 'saveEditCliente' in request.POST:
+            comida_id = request.POST.get('comidaId')
+            comida = Comida.objects.get(pk=comida_id)
+            form = CreateComidaForm(request.POST,instance=comida)
+        else:
+            form = CreateComidaForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Comida salva com sucesso!')
+            return HttpResponseRedirect(reverse('comida_list'))
+        else:
+            return render(request, 'comidas/novaComida.html', {'form': form})
+
 
 
 #

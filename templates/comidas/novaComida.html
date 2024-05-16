@@ -5,13 +5,13 @@
 {% load crispy_forms_tags %}
 {% block title %} Nova Comida {% endblock %}
 {% block content %}
-    <h1>Criar  Nova Comida </h1>
+    <h1 class="text-center">Criar  Nova Comida </h1>
     <div class="container">
-        <form method="POST" role="form" action="{% url 'client_create' %}">
+        <form method="POST" role="form" action="{% url 'comida_create' %}">
             {% csrf_token %}
             {{ form|crispy }}
-            {% if client_id %}
-                <input type="hidden" name="clienteId" value="{{ client_id }}"/>
+            {% if comida_id %}
+                <input type="hidden" name="comidaId" value="{{ comida_id }}"/>
                 <button type="submit" name="saveEditCliente" class="btn btn-primary mt-3">Editar</button>
             {% else %}
                 <button type="submit" class="btn btn-primary mt-3">Salvar</button>

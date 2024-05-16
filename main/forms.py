@@ -33,9 +33,10 @@ class CreateClientForm(forms.ModelForm):
 class CreateComidaForm(forms.ModelForm):
     class Meta:
         model = Comida
-        fields = ['nome', 'descricao', 'valor']
+        fields = ['nome', 'descricao', 'valor', 'quantidade_minima']
         widgets = {
             'nome': forms.TextInput(attrs={'class': 'form-control'}),
             'descricao': forms.Textarea(attrs={'class': 'form-control'}),
             'valor': forms.NumberInput(attrs={'class': 'form-control'}),
+            'quantidade_minima': forms.NumberInput(attrs={'class': 'form-control'}),
         }
