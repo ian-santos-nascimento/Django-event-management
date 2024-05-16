@@ -6,6 +6,7 @@ class Comida(models.Model):
     nome = models.CharField(max_length=100)
     descricao = models.TextField()
     valor = models.DecimalField(decimal_places=2, max_digits=6)
+    quantidade_minima = models.IntegerField()
 
     def __str__(self):
         return self.nome
@@ -67,5 +68,3 @@ class Cliente(models.Model):
         else:
             return self.telefone
 
-class CardapioUpload(models.Model):
-    file = models.FileField(upload_to='uploads')

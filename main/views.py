@@ -112,16 +112,17 @@ def comida_list(request):
         return render(request, 'comidas/comidas.html', {'comidas': comidas})
     if request.method == 'POST':
         if request.FILES:
-            print('Sent file')
             file = request.FILES['file']
             if 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' not in file.content_type:
                 messages.error(request, 'Formato inválido! Faça upload apenas de arquivos csv')
                 return render(request, 'comidas/comidas.html', {'comidas': comidas})
-            form = UploadFileForm(request.POST, request.FILES)
-            newDoc = CardapioUpload(file=file)
-            newDoc.save()
-            print("file saved")
-        return render(request, 'comidas/comidas.html', {'comidas': comidas})
+            csvConverter.createComidaFromCsv(file=file)
+            messages.success(request, 'Upload realizado com sucesso!')
+        else:
+            form = CreateComidaForm()
+            return render(request, 'comidas/novaComida.html', {'form': form})
+        print("finalizado")
+        return HttpResponseRedirect(reverse('comida_list'))
     else:
         print('no file sent')
         return render(request, 'comidas/comidas.html', {'comidas': comidas})

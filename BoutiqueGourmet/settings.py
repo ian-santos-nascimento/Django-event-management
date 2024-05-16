@@ -128,3 +128,5 @@ LOGOUT_REDIRECT_URL = "login"
 MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
 
 MEDIA_ROOT = 'media'
+
+DJANGO_LOG_LEVEL = DEBUG

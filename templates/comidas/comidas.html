@@ -29,7 +29,8 @@
                 </form>
             </div>
             <div class="col-6 float-end">
-                <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
+                        data-bs-target="#exampleModal">
                     Upload CSV
                 </button>
             </div>
@@ -54,13 +55,8 @@
                 <td>{{ comida.nome }}</td>
                 <td>{{ comida.descricao }}</td>
                 <td>{{ comida.valor }}</td>
-                <td>{{ comida.quantidade }}</td>
-                <td>
-                    {% if  comida.evento_pk %}
-                        Sim
-                    {% else %}
-                        Não
-                    {% endif %}</td>
+                <td>{{ comida.quantidade_minima }}</td>
+                
                 <td>
                     <form method="post">
                         {% csrf_token %}
@@ -106,4 +102,33 @@
         </div>
     </div>
     </div>
+    <!-- Modal de carregamento -->
+    <div class="modal" id="loadingModal" tabindex="-1" aria-labelledby="loadingModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Processando...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            $('form').submit(function () {
+                $('#loadingModal').modal('show');
+            });
+        });
+    </script>
+    <script>
+        $(document).ready(function () {
+            $(document).ajaxStop(function () {
+                $('#loadingModal').modal('hide');
+            });
+        });
+    </script>
+
 {% endblock %}

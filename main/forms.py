@@ -30,8 +30,12 @@ class CreateClientForm(forms.ModelForm):
         fields = ["nome", "telefone", "cidade"]
         widgets = {'telefone': forms.TextInput(attrs={'placeholder': "(00)00000-0000", 'data-mask': "(00) 0000-0000"})}
 
-
-class UploadFileForm(forms.ModelForm):
+class CreateComidaForm(forms.ModelForm):
     class Meta:
-        model = CardapioUpload
-        fields = ["file"]
+        model = Comida
+        fields = ['nome', 'descricao', 'valor']
+        widgets = {
+            'nome': forms.TextInput(attrs={'class': 'form-control'}),
+            'descricao': forms.Textarea(attrs={'class': 'form-control'}),
+            'valor': forms.NumberInput(attrs={'class': 'form-control'}),
+        }
