@@ -1,17 +1,12 @@
+from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
+from django.contrib.messages import get_messages
+from django.http import HttpResponseRedirect
 from django.shortcuts import render
-from django.contrib import messages
-from django.shortcuts import redirect
-from django.test import Client
+from django.urls import reverse
 
 from .forms import *
-from django.contrib.messages import get_messages
-from django.template import RequestContext
-from django.urls import reverse
-from django.http import HttpResponseRedirect
-
 from .models import Comida
 from .utils import csvConverter
 
@@ -32,7 +27,7 @@ def user_login(request):
         user = authenticate(username=username, password=password)
         if user is not None:
             login(request, user)
-            return render(request, 'main/home.html')
+            return HttpResponseRedirect(reverse('home'))
         else:
             return render(request, 'registration/login.html',
                           {'error_message': 'Nome de usuário ou senha incorreto!'})
