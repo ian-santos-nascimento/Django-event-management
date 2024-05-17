@@ -54,25 +54,56 @@
                 <td>{{ comida.id_comida }}</td>
                 <td>{{ comida.nome }}</td>
                 <td>{{ comida.descricao }}</td>
-                <td>{{ comida.valor }}</td>
+                <td>{{ comida.valor_formatado }}</td>
                 <td>{{ comida.quantidade_minima }}</td>
-                
                 <td>
                     <form method="post">
                         {% csrf_token %}
                         <input type="hidden" name="comidaId" value="{{ comida.id_comida }}"/>
                         <button class="btn" name="editComida">
-                            <i class="fa fa-edit" style="color: #74c0fc" title="Editar comida">
-                            </i></button>
-
+                            <i class="fa fa-edit" style="color: #74c0fc" title="Editar comida"></i>
+                        </button>
                     </form>
                 </td>
             </tr>
         {% endfor %}
-
         </tbody>
     </table>
 
+    <div class="row">
+        <div class="pagination col-9">
+            <nav aria-label="Page navigation example">
+                <ul class="pagination">
+
+                    {% if comidas.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="?page=1">Primeira</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="?page={{ comidas.previous_page_number }}">Anterior</a>
+                        </li>
+                   
+                    {% endif %}
+                    {% if comidas.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ comidas.next_page_number }}">Próxima</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ comidas.paginator.num_pages }}">Última</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+
+        </div>
+        <div class="col-3">
+            <span class="current pull-rigth">
+                Página {{ comidas.number }} de {{ comidas.paginator.num_pages }}.
+            </span>
+        </div>
+    </div>
 
 
     <!-- Modal -->

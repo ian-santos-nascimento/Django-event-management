@@ -11,6 +11,12 @@ class Comida(models.Model):
     def __str__(self):
         return self.nome
 
+    @property
+    def valor_formatado(self):
+        valor_str = "R$" + str(self.valor)
+        return valor_str.replace('.', ',')
+
+
 
 class ComidaEvento(models.Model):
     id_comida = models.AutoField(primary_key=True)

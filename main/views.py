@@ -5,6 +5,7 @@ from django.contrib.messages import get_messages
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from .forms import *
 from .models import Comida
@@ -102,29 +103,13 @@ def client_list(request):
 
 @login_required(login_url='login')
 def comida_list(request):
-    comidas = Comida.objects.all()
-    if request.method == 'GET':
-        return render(request, 'comidas/comidas.html', {'comidas': comidas})
+    comidas = get_paginated_comidas(request)
     if request.method == 'POST':
-        if request.FILES:
-            file = request.FILES['file']
-            if 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' not in file.content_type:
-                messages.error(request, 'Formato inválido! Faça upload apenas de arquivos csv')
-                return render(request, 'comidas/comidas.html', {'comidas': comidas})
-            csvConverter.createComidaFromCsv(file=file)
-            messages.success(request, 'Upload realizado com sucesso!')
+        if is_file_upload(request):
+            return handle_file_upload(request)
         else:
-            if 'editComida' in request.POST:
-                comida_id = request.POST.get('comidaId')
-                comida = Comida.objects.get(pk=comida_id)
-                form = CreateComidaForm(instance=comida)
-                return render(request, 'comidas/novaComida.html', {'form': form, 'comida_id': comida_id})
-            form = CreateComidaForm()
-            return render(request, 'comidas/novaComida.html', {'form': form})
-        return HttpResponseRedirect(reverse('comida_list'))
-    else:
-        print('no file sent')
-        return render(request, 'comidas/comidas.html', {'comidas': comidas})
+            return handle_comida_edit(request)
+    return render(request, 'comidas/comidas.html', {'comidas': comidas})
 
 
 @login_required(login_url='login')
@@ -133,7 +118,7 @@ def comida_create(request):
         if 'saveEditCliente' in request.POST:
             comida_id = request.POST.get('comidaId')
             comida = Comida.objects.get(pk=comida_id)
-            form = CreateComidaForm(request.POST,instance=comida)
+            form = CreateComidaForm(request.POST, instance=comida)
         else:
             form = CreateComidaForm(request.POST)
         if form.is_valid():
@@ -142,7 +127,6 @@ def comida_create(request):
             return HttpResponseRedirect(reverse('comida_list'))
         else:
             return render(request, 'comidas/novaComida.html', {'form': form})
-
 
 
 #
@@ -154,3 +138,52 @@ def generate_registration_form(request):
 def generate_cliente_registration_form(request):
     form = CreateClientForm()
     return render(request, 'main/novoCliente.html', {'form': form})
+
+
+def get_paginated_comidas(request):
+    comidas_list = Comida.objects.all()
+    paginator = Paginator(comidas_list, 20)
+    page = request.GET.get('page')
+
+    try:
+        return paginator.page(page)
+    except PageNotAnInteger:
+        return paginator.page(1)
+    except EmptyPage:
+        return paginator.page(paginator.num_pages)
+
+
+def is_file_upload(request):
+    if 'file' in request.FILES:
+        return True
+    else:
+        return False
+
+
+def handle_file_upload(request):
+    file = request.FILES['file']
+    if 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' not in file.content_type:
+        messages.error(request, 'Formato inválido! Faça upload apenas de arquivos csv')
+        return HttpResponseRedirect(reverse('comida_list'))
+
+    csvConverter.createComidaFromCsv(file=file)
+    messages.success(request, 'Upload realizado com sucesso!')
+    return HttpResponseRedirect(reverse('comida_list'))
+
+
+def handle_comida_edit(request):
+    if 'editComida' in request.POST:
+        comida_id = request.POST.get('comidaId')
+        comida = Comida.objects.get(pk=comida_id)
+        form = CreateComidaForm(instance=comida)
+        return render(request, 'comidas/novaComida.html', {'form': form, 'comida_id': comida_id})
+
+    if 'comidaId' in request.POST:
+        form = CreateComidaForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Comida editada com sucesso!')
+
+        return HttpResponseRedirect(reverse('comida_list'))
+    form = CreateComidaForm()
+    return render(request, 'comidas/novaComida.html', {'form': form})
