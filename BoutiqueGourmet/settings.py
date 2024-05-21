@@ -22,9 +22,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-#9_owqwd8a0#os0qqav)+hnlh^rltb1i0cd&#t@=i6$5@+p)g6'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = True #TODO CHANGE TO FALSE IN PROD
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [] ##TODO CHANGE TO INSTANCE IP e DOMAIN.COM.BR
 
 # Application definition
 
@@ -76,7 +76,7 @@ WSGI_APPLICATION = 'BoutiqueGourmet.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-DATABASES = {
+DATABASES = { ##TODO change to RDS
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',

@@ -1,7 +1,7 @@
 asgiref==3.8.1
 beautifulsoup4==4.12.3
 crispy-bootstrap5==2024.2
-Django==5.0.4
+Django==4.2.13
 django-bootstrap-form==3.4
 django-bootstrap-v5==1.0.11
 django-crispy-forms==2.1
@@ -9,6 +9,7 @@ et-xmlfile==1.1.0
 numpy==1.26.4
 openpyxl==3.1.2
 pandas==2.2.2
+psycopg2-binary==2.9.9
 python-dateutil==2.9.0.post0
 pytz==2024.1
 six==1.16.0

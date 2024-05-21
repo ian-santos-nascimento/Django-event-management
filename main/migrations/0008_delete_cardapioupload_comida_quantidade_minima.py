@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('main', '0007_remove_cardapioupload_id_arquivo_cardapioupload_id'),
+        ('main', '0004_cardapioupload'),
     ]
 
     operations = [
