@@ -118,7 +118,7 @@ def comida_list(request):
 @login_required(login_url='login')
 def comida_create(request):
     if request.method == 'POST':
-        if 'saveEditCliente' in request.POST:
+        if 'saveEditComida' in request.POST:
             comida_id = request.POST.get('comidaId')
             comida = Comida.objects.get(pk=comida_id)
             form = CreateComidaForm(request.POST, instance=comida)
@@ -143,13 +143,19 @@ def local_list(request):
 
 @login_required(login_url='login')
 def local_create(request):
-    form_local = CreateLocalEventoForm(request.POST)
-    form_endereco = EnderecoForm(request.POST)
+    if 'saveEditLocal' in request.POST:
+        local_id = request.POST.get('localId')
+        local = LocalEvento.objects.get(pk=local_id)
+        endereco = Endereco.objects.get(pk=local.endereco.id_endereco)
+        form_local = CreateLocalEventoForm(request.POST, instance=local)
+        form_endereco = EnderecoForm(request.POST, instance=endereco)
+    else:
+        form_local = CreateLocalEventoForm(request.POST)
+        form_endereco = EnderecoForm(request.POST)
     if form_local.is_valid() and form_endereco.is_valid():
-        endereco = form_endereco.save()
-        local = form_local.save(commit=False)
-        local.endereco = endereco
-        local.save()
+        form_endereco.save()
+        form_local.save()
+        messages.success(request,'Local salvo com sucesso!')
     return HttpResponseRedirect(reverse('local_list'))
 
 
@@ -159,10 +165,11 @@ def handle_local_post(request):
         local = LocalEvento.objects.get(pk=local_id)
         form = CreateLocalEventoForm(instance=local)
         form_endereco = EnderecoForm(instance=local.endereco)
+        return render(request, 'locais/novoLocal.html', {'form': form, 'formEndereco': form_endereco, 'local_id':local_id})
     else:
         form = CreateLocalEventoForm()
         form_endereco = EnderecoForm()
-    return render(request, 'locais/novoLocal.html', {'form': form, 'formEndereco': form_endereco})
+        return render(request, 'locais/novoLocal.html', {'form': form, 'formEndereco': form_endereco})
 
 
 def evento_create_form(request):
@@ -182,10 +189,9 @@ def generate_cliente_registration_form(request):
 
 
 def get_paginated_comidas(request):
-    comidas_list = Comida.objects.all()
+    comidas_list = Comida.objects.all().order_by('id_comida')
     paginator = Paginator(comidas_list, 20)
     page = request.GET.get('page')
-
     try:
         return paginator.page(page)
     except PageNotAnInteger:
@@ -195,7 +201,7 @@ def get_paginated_comidas(request):
 
 
 def get_paginated_locais(request):
-    locais_list = LocalEvento.objects.all()
+    locais_list = LocalEvento.objects.all().order_by('id_local')
     paginator = Paginator(locais_list, 20)
     page = request.GET.get('page')
 

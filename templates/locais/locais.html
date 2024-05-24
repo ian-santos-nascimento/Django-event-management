@@ -52,6 +52,16 @@
                 <td>{{ local.email }}</td>
                 <td>{{ local.agravo_formatado }}</td>
                 <td>
+                    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
+                            data-bs-target="#visualizarModal" data-nome="{{ local.nome }}"
+                            data-endereco="{{ local.endereco }}"
+                            data-agravo="{{ local.agravo_formatado }}"
+                            data-telefone="{{ local.telefone_formatado }}"
+                            data-email="{{ local.email }}"
+                            data-observacoes="{{ local.observacoes }}">
+                        <i class="fa fa-search" style="color: #74c0fc" title="Visualizar local"></i></button>
+                </td>
+                <td>
                     <form method="post">
                         {% csrf_token %}
                         <input type="hidden" name="localId" value="{{ local.id_local }}"/>
@@ -101,33 +111,28 @@
     </div>
 
 
-    <!-- Modal -->
-    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <form method="post" enctype="multipart/form-data">
 
-                    <div class="modal-header">
-                        <h5 class="modal-title text-center" id="exampleModalLabel">Upload de arquivo</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <b class="text-center">Escolha um arquivo CSV válido</b>
-                        <input type="file" name="file" class="form-control">
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-primary" name="Upload arquivo" data-bs-dismiss="modal"
-                                title="Enviar CSV">
-                            Enviar arquivo
-                        </button>
-                    </div>
-                </form>
+    <!-- Modal de Visualização -->
+    <div class="modal fade" id="visualizarModal" tabindex="-1" aria-labelledby="visualizarModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="visualizarModalLabel">Detalhes do Local</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p><strong>Nome:</strong> <span id="localNome"></span></p>
+                    <p><strong>Endereço:</strong> <span id="localEndereco"></span></p>
+                    <p><strong>Agravo:</strong> <span id="localAgravo"></span></p>
+                    <p><strong>Telefone:</strong> <span id="localTelefone"></span></p>
+                    <p><strong>Email:</strong> <span id="localEmail"></span></p>
+                    <p><strong>Observações:</strong> <span id="localObservacoes"></span></p>
+                </div>
             </div>
         </div>
     </div>
-    </div>
+
     <!-- Modal de carregamento -->
     <div class="modal" id="loadingModal" tabindex="-1" aria-labelledby="loadingModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -141,6 +146,30 @@
             </div>
         </div>
     </div>
+    <!-- Script modal visualização -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var visualizarModal = document.getElementById('visualizarModal');
+        visualizarModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget; // Botão que acionou o modal
+            var nome = button.getAttribute('data-nome');
+            var endereco = button.getAttribute('data-endereco');
+            var agravo = button.getAttribute('data-agravo');
+            var telefone = button.getAttribute('data-telefone');
+            var email = button.getAttribute('data-email');
+            var observacoes = button.getAttribute('data-observacoes');
+
+            // Atualiza o conteúdo do modal
+            document.getElementById('localNome').textContent = nome;
+            document.getElementById('localEndereco').textContent = endereco;
+            document.getElementById('localAgravo').textContent = agravo;
+            document.getElementById('localTelefone').textContent = telefone;
+            document.getElementById('localEmail').textContent = email;
+            document.getElementById('localObservacoes').textContent = observacoes;
+        });
+    });
+</script>
+
 
     <script>
         $(document).ready(function () {

@@ -12,7 +12,7 @@
             {{ form|crispy }}
             {% if comida_id %}
                 <input type="hidden" name="comidaId" value="{{ comida_id }}"/>
-                <button type="submit" name="saveEditCliente" class="btn btn-primary mt-3">Editar</button>
+                <button type="submit" name="saveEditComida" class="btn btn-primary mt-3">Editar</button>
             {% else %}
                 <button type="submit" class="btn btn-primary mt-3">Salvar</button>
             {% endif %}

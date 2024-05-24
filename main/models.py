@@ -1,5 +1,7 @@
 from django.db import models
 from .service import incluiAgravoRegiao
+
+
 class Endereco(models.Model):
     id_endereco = models.AutoField(primary_key=True)
     cep = models.CharField(max_length=20, unique=False)
@@ -11,11 +13,12 @@ class Endereco(models.Model):
     complemento = models.CharField(max_length=200, unique=False)
 
     def __str__(self):
-        return self.cep + " - " + self.endereco + "nª" + self.numero
+        return "{} - nª{} - {} - {}".format(self.endereco, self.numero, self.bairro, self.cidade)
+
 
 class Comida(models.Model):
     id_comida = models.AutoField(primary_key=True)
-    nome = models.CharField(max_length=100)
+    nome = models.CharField(max_length=400)
     descricao = models.TextField()
     valor = models.DecimalField(decimal_places=2, max_digits=6)
     quantidade_minima = models.IntegerField()
@@ -32,7 +35,7 @@ class Comida(models.Model):
 class ComidaEvento(models.Model):
     id_comida = models.ForeignKey('Comida', on_delete=models.DO_NOTHING)
     id_evento = models.ForeignKey('Evento', on_delete=models.DO_NOTHING)
-    nome = models.CharField(max_length=100)
+    nome = models.CharField(max_length=400)
     descricao = models.TextField()
     valor = models.DecimalField(decimal_places=2, max_digits=6)
     quantidade = models.IntegerField()
@@ -50,6 +53,7 @@ class Terceiro(models.Model):
     def __str__(self):
         return self.nome
 
+
 class LocalEvento(models.Model):
     id_local = models.AutoField(primary_key=True)
     nome = models.CharField(max_length=200)
@@ -66,7 +70,7 @@ class LocalEvento(models.Model):
     def save(self):
         if self.agravo is None:
             incluiAgravoRegiao(self)
-            super(LocalEvento, self).save()
+        super(LocalEvento, self).save()
 
     @property
     def telefone_formatado(self):
@@ -81,6 +85,7 @@ class LocalEvento(models.Model):
     def __str__(self):
         return self.endereco
 
+
 class Evento(models.Model):
     id_evento = models.AutoField(primary_key=True)
     nome = models.CharField(max_length=100)
@@ -90,6 +95,7 @@ class Evento(models.Model):
     qtd_dias_evento = models.IntegerField
     terceiros = models.ManyToManyField(Terceiro, through='TerceiroEvento')
     local = models.ForeignKey(LocalEvento, on_delete=models.DO_NOTHING)
+
 
 class TerceiroEvento(models.Model):
     id_terceiro = models.ForeignKey('Terceiro', on_delete=models.DO_NOTHING)
@@ -124,4 +130,3 @@ class Cliente(models.Model):
             return f'({self.telefone[:2]}) {self.telefone[2:7]}-{self.telefone[7:]}'
         else:
             return self.telefone
-
