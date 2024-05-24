@@ -10,5 +10,7 @@ urlpatterns = [
     path('novoCliente', views.client_create, name='client_create'),
     path('novaComida', views.comida_create, name='comida_create'),
     path('comidas', views.comida_list, name='comida_list'),
+    path('locais', views.local_list, name='local_list'),
+    path('novoLocal', views.local_create, name='local_create'),
 ]
 

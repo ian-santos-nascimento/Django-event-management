@@ -21,6 +21,5 @@
 
 ## Fix
 - "/home" gives 404 and not redirect
-- Criação de usuário com label em inglês
 
 

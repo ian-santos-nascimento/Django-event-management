@@ -1,0 +1,59 @@
+{% extends 'main/base.html' %}
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.10/jquery.mask.js"></script>
+{% load bootstrap %}
+{% load crispy_forms_tags %}
+{% block title %} Novo Evento {% endblock %}
+{% block content %}
+    <h1 class="text-center">Criar Novo Evento </h1>
+    <div class="container">
+        <form method="POST" role="form" action="{% url 'comida_create' %}">
+            {% csrf_token %}
+            {{ form|crispy }}
+            <div>
+                <label for="nome_local">Nome do Local:</label>
+                <input type="text" id="nome_local" name="nome_local">
+                <ul id="resultados_local"></ul>
+            </div>
+            {% if evento_id %}
+                <input type="hidden" name="EventoId" value="{{ evento_id }}"/>
+                <button type="submit" name="saveEditEvento" class="btn btn-primary mt-3">Editar</button>
+            {% else %}
+                <button type="submit" class="btn btn-primary mt-3">Salvar</button>
+            {% endif %}
+        </form>
+        <script>
+            $(document).ready(function () {
+                var locais = {{ locais|safe }};
+                $('#nome_local').on('input', function () {
+                    var nome = $(this).val().toLowerCase();
+                    $('#resultados_local').empty().hide();
+                    if (nome.length > 2) {
+                        $.each(locais, function (index, local) {
+                            if (local.nome.toLowerCase().includes(nome)) {
+                                $('#resultados_local').append('<li data-id="' + local.id + '">' + local.nome + '</li>').show();
+                            }
+                        });
+                    }
+                });
+
+                // Quando o usuário clicar em um dos resultados
+                $('#resultados_local').on('click', 'li', function () {
+                    var localId = $(this).data('id');
+                    var localNome = $(this).text();
+                    $('#nome_local').val(localNome);
+                    $('#id_local').val(localId);
+                    $('#resultados_local').empty().hide();
+                });
+
+                $(document).click(function (event) {
+                    if (!$(event.target).closest('#resultados_local, #nome_local').length) {
+                        $('#resultados_local').hide();
+                    }
+                });
+            });
+        </script>
+    </div>
+
+
+{% endblock %}

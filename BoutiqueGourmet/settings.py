@@ -78,8 +78,12 @@ WSGI_APPLICATION = 'BoutiqueGourmet.wsgi.application'
 
 DATABASES = { ##TODO change to RDS
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'controle_buffet',
+        'USER': 'postgres',
+        'PASSWORD': '900505',
+        'HOST': 'localhost',  # Ou o endereço do servidor de banco de dados
+        'PORT': '5432',  # O padrão é 5432
     }
 }
 
@@ -104,7 +108,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'pt-br'
 
 TIME_ZONE = 'UTC'
 

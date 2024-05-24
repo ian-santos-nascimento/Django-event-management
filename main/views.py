@@ -2,10 +2,10 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.contrib.messages import get_messages
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from .forms import *
 from .models import Comida
@@ -15,7 +15,10 @@ from .utils import csvConverter
 @login_required(login_url='login')
 def home(request):
     if request.user.is_authenticated:
-        return render(request, 'main/home.html')
+        if request.method == 'POST':
+            return evento_create_form(request)
+        eventos = Evento.objects.all()
+        return render(request, 'main/home.html', {'eventos': eventos})
     else:
         return render(request, 'registration/login.html')
 
@@ -129,7 +132,45 @@ def comida_create(request):
             return render(request, 'comidas/novaComida.html', {'form': form})
 
 
-#
+@login_required(login_url='login')
+def local_list(request):
+    locais = get_paginated_locais(request)
+    if request.method == 'POST':
+        return handle_local_post(request)
+    else:
+        return render(request, 'locais/locais.html', {'locais': locais})
+
+
+@login_required(login_url='login')
+def local_create(request):
+    form_local = CreateLocalEventoForm(request.POST)
+    form_endereco = EnderecoForm(request.POST)
+    if form_local.is_valid() and form_endereco.is_valid():
+        endereco = form_endereco.save()
+        local = form_local.save(commit=False)
+        local.endereco = endereco
+        local.save()
+    return HttpResponseRedirect(reverse('local_list'))
+
+
+def handle_local_post(request):
+    if request.method == 'POST' and 'editlocal' in request.POST:
+        local_id = request.POST.get('localId')
+        local = LocalEvento.objects.get(pk=local_id)
+        form = CreateLocalEventoForm(instance=local)
+        form_endereco = EnderecoForm(instance=local.endereco)
+    else:
+        form = CreateLocalEventoForm()
+        form_endereco = EnderecoForm()
+    return render(request, 'locais/novoLocal.html', {'form': form, 'formEndereco': form_endereco})
+
+
+def evento_create_form(request):
+    form = CreateEventoForm()
+    locais = LocalEvento.objects.all()
+    return render(request, 'eventos/novoEvento.html', {'form': form, 'locais': locais})
+
+
 def generate_registration_form(request):
     form = RegistrationForm()
     return render(request, 'usuarios/novoUsuario.html', {'form': form})
@@ -143,6 +184,19 @@ def generate_cliente_registration_form(request):
 def get_paginated_comidas(request):
     comidas_list = Comida.objects.all()
     paginator = Paginator(comidas_list, 20)
+    page = request.GET.get('page')
+
+    try:
+        return paginator.page(page)
+    except PageNotAnInteger:
+        return paginator.page(1)
+    except EmptyPage:
+        return paginator.page(paginator.num_pages)
+
+
+def get_paginated_locais(request):
+    locais_list = LocalEvento.objects.all()
+    paginator = Paginator(locais_list, 20)
     page = request.GET.get('page')
 
     try:

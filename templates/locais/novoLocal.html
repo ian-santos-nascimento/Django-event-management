@@ -1,0 +1,29 @@
+{% extends 'main/base.html' %}
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.10/jquery.mask.js"></script>
+{% load bootstrap %}
+{% load crispy_forms_tags %}
+{% block title %} Novo Evento {% endblock %}
+{% block content %}
+    <h1 class="text-center">Criar Novo Local </h1>
+    <div class="container">
+        <form method="POST" role="form" action="{% url 'local_create' %}">
+            {% csrf_token %}
+            {{ form|crispy }}
+            <hr>
+            <h3 class="text">
+                Endereço
+            </h3>
+            {{ formEndereco|crispy }}
+
+            {% if evento_id %}
+                <input type="hidden" name="EventoId" value="{{ evento_id }}"/>
+                <button type="submit" name="saveEditEvento" class="btn btn-primary mt-3">Editar</button>
+            {% else %}
+                <button type="submit" class="btn btn-primary mt-3">Salvar</button>
+            {% endif %}
+        </form>
+    </div>
+
+
+{% endblock %}
