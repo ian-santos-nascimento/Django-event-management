@@ -11,7 +11,6 @@
 
 ## Implementation
 - Order by das listas e buscar na tabela
-- Criar e listar Espaço de Eventos
 - Criar Eventos e buscar Espaço de Eventos e Clientes
 - Listar Eventos(Passados e futuros)
 - Criar, detalhar, ler e remover Equipe

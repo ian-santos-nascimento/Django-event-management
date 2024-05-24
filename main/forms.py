@@ -28,6 +28,9 @@ class EnderecoForm(forms.ModelForm):
             'numero': forms.TextInput(attrs={'class': 'form-control'}),
             'complemento': forms.TextInput(attrs={'class': 'form-control'}),
         }
+        labels = {
+            'cidade': 'Cidade(Caso seja São Paulo capital, digite exatamente assim "São Paulo")',
+        }
 
 
 class CreateLocalEventoForm(forms.ModelForm):
