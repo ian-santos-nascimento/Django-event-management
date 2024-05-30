@@ -17,31 +17,20 @@ class Endereco(models.Model):
 
 
 class Comida(models.Model):
-    id_comida = models.AutoField(primary_key=True)
+    comida_id = models.AutoField(primary_key=True)
     nome = models.CharField(max_length=400)
     descricao = models.TextField()
     valor = models.DecimalField(decimal_places=2, max_digits=6)
     quantidade_minima = models.IntegerField()
 
     def __str__(self):
-        return self.nome
+        comida = str(self.comida_id) + "-" + self.nome + " - " + "R$" + str(self.valor)
+        return comida.replace('.', ',')
 
     @property
     def valor_formatado(self):
         valor_str = "R$" + str(self.valor)
         return valor_str.replace('.', ',')
-
-
-class ComidaEvento(models.Model):
-    id_comida = models.ForeignKey('Comida', on_delete=models.DO_NOTHING)
-    id_evento = models.ForeignKey('Evento', on_delete=models.DO_NOTHING)
-    nome = models.CharField(max_length=400)
-    descricao = models.TextField()
-    valor = models.DecimalField(decimal_places=2, max_digits=6)
-    quantidade = models.IntegerField()
-
-    def __str__(self):
-        return self.nome
 
 
 class Terceiro(models.Model):
@@ -83,7 +72,7 @@ class LocalEvento(models.Model):
             return self.telefone
 
     def __str__(self):
-        return self.endereco
+        return self.nome
 
 
 class Evento(models.Model):
@@ -92,9 +81,11 @@ class Evento(models.Model):
     descricao = models.TextField()
     observacao = models.TextField()
     comidas = models.ManyToManyField(Comida, through='ComidaEvento')
-    qtd_dias_evento = models.IntegerField
+    qtd_dias_evento = models.IntegerField(null=True, blank=True)
     terceiros = models.ManyToManyField(Terceiro, through='TerceiroEvento')
     local = models.ForeignKey(LocalEvento, on_delete=models.DO_NOTHING)
+    data_inicio = models.DateField(null=True, blank=True)
+    data_fim = models.DateField(null=True, blank=True)
 
 
 class TerceiroEvento(models.Model):
@@ -115,7 +106,7 @@ class Cliente(models.Model):
     inscricao_estadual = models.CharField(max_length=200)
     nome = models.CharField(max_length=200)
     telefone = models.CharField(max_length=100)
-    evento_pk = models.ForeignKey(Evento, on_delete=models.DO_NOTHING, blank=True, null=True)
+    evento_pk = models.ForeignKey(Evento, on_delete=models.DO_NOTHING, null=True)
     endereco = models.OneToOneField(Endereco, on_delete=models.CASCADE, blank=True, null=True)
 
     def __str__(self):
@@ -130,3 +121,13 @@ class Cliente(models.Model):
             return f'({self.telefone[:2]}) {self.telefone[2:7]}-{self.telefone[7:]}'
         else:
             return self.telefone
+
+
+class ComidaEvento(models.Model):
+    comida = models.ForeignKey(Comida, on_delete=models.DO_NOTHING,default=1)
+    evento = models.ForeignKey(Evento, on_delete=models.DO_NOTHING, default=1)
+    valor = models.DecimalField(decimal_places=2, max_digits=6)
+    quantidade = models.IntegerField()
+
+    def __str__(self):
+        return self.comida.nome

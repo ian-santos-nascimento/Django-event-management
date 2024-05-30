@@ -14,13 +14,28 @@ from .utils import csvConverter
 
 @login_required(login_url='login')
 def home(request):
-    if request.user.is_authenticated:
-        if request.method == 'POST':
-            return evento_create_form(request)
-        eventos = Evento.objects.all()
-        return render(request, 'main/home.html', {'eventos': eventos})
-    else:
-        return render(request, 'registration/login.html')
+    if request.method == 'POST':
+        return evento_create_form(request)
+    eventos = Evento.objects.only('nome', 'data_inicio', 'local', 'id_evento')
+    return render(request, 'main/home.html', {'eventos': eventos})
+
+@login_required(login_url='login')
+def evento_create(request):
+    if request.method == 'POST':
+        form = CreateEventoForm(request.POST)
+        if form.is_valid():
+            evento = form.save(commit=False)
+            comidas = form.cleaned_data['comidas']
+            for comida in comidas:
+                comida_evento = ComidaEvento(comida=comida,evento=evento, valor=comida.valor, quantidade=comida.quantidade_minima)
+                evento.save() #Salvar pra poder salvar a comida
+                comida_evento.save()
+                evento.comidas.add(comida, through_defaults={'valor': comida.valor, 'quantidade': comida.quantidade_minima})
+
+            messages.success(request, 'Evento salvo com sucesso!')
+            return HttpResponseRedirect(reverse('home'))
+        else:
+            return render(request, 'eventos/novoEvento.html', {'form': form})
 
 
 def user_login(request):
@@ -153,9 +168,11 @@ def local_create(request):
         form_local = CreateLocalEventoForm(request.POST)
         form_endereco = EnderecoForm(request.POST)
     if form_local.is_valid() and form_endereco.is_valid():
-        form_endereco.save()
-        form_local.save()
-        messages.success(request,'Local salvo com sucesso!')
+        endereco = form_endereco.save()
+        local_evento = form_local.save(commit=False)
+        local_evento.endereco = endereco
+        local_evento.save()
+        messages.success(request, 'Local salvo com sucesso!')
     return HttpResponseRedirect(reverse('local_list'))
 
 
@@ -165,7 +182,8 @@ def handle_local_post(request):
         local = LocalEvento.objects.get(pk=local_id)
         form = CreateLocalEventoForm(instance=local)
         form_endereco = EnderecoForm(instance=local.endereco)
-        return render(request, 'locais/novoLocal.html', {'form': form, 'formEndereco': form_endereco, 'local_id':local_id})
+        return render(request, 'locais/novoLocal.html',
+                      {'form': form, 'formEndereco': form_endereco, 'local_id': local_id})
     else:
         form = CreateLocalEventoForm()
         form_endereco = EnderecoForm()
@@ -174,8 +192,7 @@ def handle_local_post(request):
 
 def evento_create_form(request):
     form = CreateEventoForm()
-    locais = LocalEvento.objects.all()
-    return render(request, 'eventos/novoEvento.html', {'form': form, 'locais': locais})
+    return render(request, 'eventos/novoEvento.html', {'form': form})
 
 
 def generate_registration_form(request):
@@ -189,7 +206,7 @@ def generate_cliente_registration_form(request):
 
 
 def get_paginated_comidas(request):
-    comidas_list = Comida.objects.all().order_by('id_comida')
+    comidas_list = Comida.objects.all().order_by('nome')
     paginator = Paginator(comidas_list, 20)
     page = request.GET.get('page')
     try:

@@ -5,6 +5,7 @@
     <title> {% block title %} Boutique Gourmet {% endblock %}</title>
     {% load bootstrap5 %}
     {% load bootstrap %}
+    {% load static %}
     {% bootstrap_css %}
     {% bootstrap_javascript %}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -14,25 +15,25 @@
 <body>
 
 <div class="container">
-    <header class="d-flex flex-wrap justify-content-center py-3 mb-4 border-bottom">
+    <header class="d-flex flex-wrap justify-content-center py-2 mb-4 border-bottom">
         <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
-            <svg class="bi me-2" width="40" height="32"></svg>
+            <img src="../static/image/bg-logo-removebg-preview.png" style="height: 9vh" alt="">
             <span class="fs-4">Boutique Gourmet</span>
         </a>
 
         <ul class="nav nav-pills">
-            <li class="nav-item"><a href="/" class="nav-link" aria-current="page">Home</a></li>
-            <li class="nav-item"><a href="{% url 'client_list' %}" class="nav-link">Clientes</a></li>
-            <li class="nav-item"><a href="/" class="nav-link">Eventos</a></li>
-            <li class="nav-item"><a href="{% url 'comida_list' %}" class="nav-link">Cardápio</a></li>
-            <li class="nav-item"><a href="/" class="nav-link">Terceiros</a></li>
-            <li class="nav-item"><a href="{% url 'local_list' %}" class="nav-link">Locais</a></li>
-            <li class="nav-item"><a href=" {% url 'user_list' %}" class="nav-link">Usuarios</a></li>
+            <li class="nav-item"><a href="/" class="nav-link" style="color: #57ab85" aria-current="page">Home</a></li>
+            <li class="nav-item"><a href="{% url 'client_list' %}" class="nav-link" style="color: #57ab85">Clientes</a></li>
+            <li class="nav-item"><a href="/" class="nav-link" style="color: #57ab85">Eventos</a></li>
+            <li class="nav-item"><a href="{% url 'comida_list' %}" class="nav-link" style="color: #57ab85">Cardápio</a></li>
+            <li class="nav-item"><a href="/" class="nav-link"style="color: #57ab85">Terceiros</a></li>
+            <li class="nav-item"><a href="{% url 'local_list' %}" class="nav-link" style="color: #57ab85">Locais</a></li>
+            <li class="nav-item"><a href=" {% url 'user_list' %}" class="nav-link"style="color: #57ab85" >Usuarios</a></li>
             {% if user.is_authenticated %}
                 <form action="{% url 'logout' %}" method="post">
                     {% csrf_token %}
                     <li class="nav-item">
-                        <button class="nav-link" type="submit">Log Out</button>
+                        <button class="nav-link" style="color: #57ab85" type="submit">Log Out</button>
                     </li>
                 </form>
             {% endif %}
