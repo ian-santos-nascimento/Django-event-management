@@ -30,7 +30,7 @@
             <th scope="col">ID</th>
             <th scope="col">Nome</th>
             <th scope="col">Telefone</th>
-            <th scope="col">Possui Evento pendente?</th>
+            <th scope="col">CNPJ</th>
             <th scope="col">Editar Cliente</th>
         </tr>
         </thead>
@@ -40,13 +40,7 @@
                 <td>{{ cliente.id_cliente }}</td>
                 <td>{{ cliente.nome }}</td>
                 <td>{{ cliente.telefone_formatado }}</td>
-                <td>
-                    {% if  cliente.evento_pk %}
-                        Sim 
-                    {% else %}
-                        Não 
-                    {% endif %}</td>
-                <td>
+                <td>{{ cliente.cnpj }}</td>
                     <form method="post">
                         {% csrf_token %}
                         <input type="hidden" name="clienteId" value="{{ cliente.id_cliente }}"/>

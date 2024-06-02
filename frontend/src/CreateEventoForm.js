@@ -18,44 +18,80 @@ class CreateEventoForm extends Component {
             cliente: '',
             localEventos: [],
             comidasDisponiveis: [],
-            clientes: []
+            clientes: [],
         };
+        this.api = 'http://localhost:8000/'
 
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
     }
 
-     componentDidMount() {
-       axios.get('http://localhost:8000/locaislocais/')
-         .then(res => {
-           this.setState({ localEventos: res.data });
-         })
+    componentDidMount() {
+        axios.get(this.api + 'locais/?format=json')
+            .then(res => {
+                this.setState({localEventos: res.data});
+            })
 
-       axios.get('http://localhost:8000/comidascomidas/?format=json')
-         .then(res => {
-           this.setState({ comidasDisponiveis: res.data });
-         })
+        axios.get(this.api + 'comidas/?format=json')
+            .then(res => {
+                this.setState({comidasDisponiveis: res.data});
+            })
 
-       axios.get('http://localhost:8000/clientesclientes/')
-         .then(res => {
-           this.setState({ clientes: res.data });
-         })
-     }
+        axios.get(this.api + 'clientes/?format=json')
+            .then(res => {
+                this.setState({clientes: res.data});
+            })
+    }
 
     handleChange(event) {
         const target = event.target;
-        const value = target.type === 'checkbox' ? target.checked : target.value;
+        const value =  target.value;
         const name = target.name;
-
-        this.setState({
-            [name]: value
-        });
+        if( name === 'cliente'){
+            const clienteId = parseInt(target.value);
+            const cliente = this.state.clientes.find(c => c.id_cliente === clienteId);
+            this.setState({ cliente })
+        }
+        if (name === 'comidas') {
+            const comidaId = parseInt(target.value);
+            const comida = this.state.comidasDisponiveis.find(c => c.comida_id === comidaId);
+            let comidas = [...this.state.comidas];
+            if (value) {
+              comidas.push(comida);
+            } else {
+              comidas = comidas.filter(c => c.comida_id !== comidaId);
+            }
+            this.setState({ comidas });
+          } else {
+            this.setState({ [name]: value });
+          }
+        
+          
     }
 
     handleSubmit(event) {
         event.preventDefault();
-        // Perform the necessary action with the form data
-    }
+        const data = {
+            nome: this.state.nome,
+            descricao: this.state.descricao,
+            observacao: this.state.observacao,
+            cliente: this.state.cliente === '' ? this.state.clientes[0] : this.state.cliente,
+            qtd_dias_evento: this.state.qtd_dias_evento,
+            local: this.state.local === '' ? this.state.localEventos[0] : this.state.local,
+            data_inicio: this.state.data_inicio,
+            data_fim: this.state.data_fim,
+            comidas: Array.isArray(this.state.comidas) ? this.state.comidas : []          };
+        console.log("POST ")
+        axios.post(this.api + 'eventos/', data)
+            .then(response => {
+                this.state.clear()
+            })
+            .catch(error => {
+                console.log(error)
+            });
+        
+    };
+
 
     render() {
         return (
@@ -85,22 +121,24 @@ class CreateEventoForm extends Component {
 
                 <div className="form-group">
                     <label htmlFor="local">Local</label>
-                    <select name="local" onChange={this.handleChange} className="form-control" id="local">
-                        {this.state.localEventos.map(local => <option key={local.id}
-                                                                      value={local.id}>{local.nome}</option>)}
+                    <select name="local" onChange={this.handleChange} defaultValue='------'  className="form-control" id="local">
+                        {this.state.localEventos.map(local => <option key={local.id_local}
+                                                                      value={local.id_local}>{local.nome}</option>)}
                     </select>
                 </div>
 
-                <div className="form-group">
-                    <label>Comidas</label>
+                <label>Comidas</label>
+                <div className="form-group" style={{
+                    height: '30vh',
+                    overflowY: 'scroll',
+                    border: '1px solid #ced4da',
+                    padding: '1vh'
+                }}>
                     {this.state.comidasDisponiveis.map(comida => (
-                        <div key={comida.id} className="form-check" style={{
-                            height: '30vh',
-                            overflowY: 'scroll',
-                            border: '1px solid #ced4da'}}>
-                            <input type="checkbox" name="comidas" value={comida.id} onChange={this.handleChange}
-                                   className="form-check-input" id={`comida-${comida.id}`}/>
-                            <label className="form-check-label" htmlFor={`comida-${comida.id}`}>{comida.nome}</label>
+                        <div key={comida.id} className="form-check">
+                            <input type="checkbox" name="comidas" value={comida.comida_id} onChange={this.handleChange}
+                                   className="form-check-input" key={comida.comida_id} id={`comida-${comida.comida_id}`}/>
+                            <label className="form-check-label" htmlFor={`comida-${comida.comida_id}`}>{comida.nome} -- R${comida.valor}</label>
                         </div>
                     ))}
                 </div>
@@ -119,10 +157,11 @@ class CreateEventoForm extends Component {
 
                 <div className="form-group">
                     <label htmlFor="cliente">Cliente</label>
-                    <select name="cliente" onChange={this.handleChange} className="form-control" id="cliente">
-                        {this.state.clientes.map(cliente => <option key={cliente.id}
-                                                                    value={cliente.id}>{cliente.nome}</option>)}
+                    <select name="cliente" defaultValue={'-------'} onChange={this.handleChange} className="form-control" id="cliente">
+                        {this.state.clientes.map(cliente => <option key={cliente.id_cliente}
+                                                                    value={cliente.id_cliente}>{cliente.nome}</option>)}
                     </select>
+
                 </div>
 
                 <input type="submit" value="Submit" className="btn btn-primary"/>
