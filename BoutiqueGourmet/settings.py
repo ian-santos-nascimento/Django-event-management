@@ -7,7 +7,7 @@ SECRET_KEY = 'django-insecure-#9_owqwd8a0#os0qqav)+hnlh^rltb1i0cd&#t@=i6$5@+p)g6
 
 DEBUG = True #TODO CHANGE TO FALSE IN PROD
 
-ALLOWED_HOSTS = [] ##TODO CHANGE TO INSTANCE IP e DOMAIN.COM.BR
+ALLOWED_HOSTS = ['*'] ##TODO CHANGE TO INSTANCE IP e DOMAIN.COM.BR
 
 
 INSTALLED_APPS = [
@@ -21,7 +21,9 @@ INSTALLED_APPS = [
     'crispy_bootstrap5',
     'bootstrap5',
     'bootstrapform',
-    'main.apps.MainConfig'
+    'main.apps.MainConfig',
+    'rest_framework',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -32,8 +34,14 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
+CORS_ORIGIN_WHITELIST = [
+    'http://localhost:3000',  # replace with the URL of your ReactJS application
+]
+
+CORS_ALLOW_CREDENTIALS = True
 ROOT_URLCONF = 'BoutiqueGourmet.urls'
 
 TEMPLATES = [

@@ -23,11 +23,9 @@
 
         <ul class="nav nav-pills">
             <li class="nav-item"><a href="/" class="nav-link" style="color: #57ab85" aria-current="page">Home</a></li>
-            <li class="nav-item"><a href="{% url 'client_list' %}" class="nav-link" style="color: #57ab85">Clientes</a></li>
             <li class="nav-item"><a href="/" class="nav-link" style="color: #57ab85">Eventos</a></li>
             <li class="nav-item"><a href="{% url 'comida_list' %}" class="nav-link" style="color: #57ab85">Cardápio</a></li>
             <li class="nav-item"><a href="/" class="nav-link"style="color: #57ab85">Terceiros</a></li>
-            <li class="nav-item"><a href="{% url 'local_list' %}" class="nav-link" style="color: #57ab85">Locais</a></li>
             <li class="nav-item"><a href=" {% url 'user_list' %}" class="nav-link"style="color: #57ab85" >Usuarios</a></li>
             {% if user.is_authenticated %}
                 <form action="{% url 'logout' %}" method="post">

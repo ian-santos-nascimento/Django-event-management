@@ -6,9 +6,8 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
-
 from .forms import *
-from .models import Comida
+from .models import Comida, ComidaEvento
 from .utils import csvConverter
 
 
@@ -117,7 +116,6 @@ def client_list(request):
     elif request.method == 'GET':
         clientes = Cliente.objects.all()
         return render(request, 'clientes/clientes.html', {'clientes': clientes})
-
 
 @login_required(login_url='login')
 def comida_list(request):

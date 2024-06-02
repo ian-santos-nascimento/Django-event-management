@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.contrib.auth.models import User
-from .models import *
+from .models import Endereco,LocalEvento,Evento,Comida, Cliente, Terceiro
 from .utils.listSelect import ESTADOS_BRASILEIROS
 
 
@@ -46,6 +46,11 @@ class CreateLocalEventoForm(forms.ModelForm):
         }
 
 
+class ComidaQuantidadeForm(forms.Form):
+    comida = forms.ModelMultipleChoiceField(queryset=Comida.objects.all().order_by('nome'))
+    quantidade = forms.IntegerField(widget=forms.NumberInput(attrs={'min': 1}), min_value=1)
+
+
 class CreateEventoForm(forms.ModelForm):
     local = forms.ModelChoiceField(queryset=LocalEvento.objects.all().only('nome').order_by('nome'),
                                    widget=forms.Select(attrs={'class': 'form-control mt-3'}))
@@ -68,6 +73,13 @@ class CreateEventoForm(forms.ModelForm):
             'observacao': forms.Textarea(attrs={'class': 'form-control', 'style': 'height: 200px;'}),
             'qtd_dias_evento': forms.NumberInput(attrs={'class': 'form-control'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.comida_forms = []
+        for comida in Comida.objects.all():
+            comida_form = ComidaQuantidadeForm(initial={'comida': comida})
+            self.comida_forms.append(comida_form)
 
 
 

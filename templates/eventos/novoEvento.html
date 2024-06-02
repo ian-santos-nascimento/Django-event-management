@@ -35,8 +35,11 @@
                 {{ form.cliente }}
             </div>
             <div class="form-group mt-3" style="height: 30vh;overflow-y: scroll; border: 1px solid #ced4da">
-                <label for="{{ form.comidas.id_for_label }}">Comidas</label>
-                {{ form.comidas }}
+                {% for comida_form in form.comida_forms %}
+                    <label for="{{ comida_form.comida.id_for_label }}">{{ comida_form.comida }}</label>
+                    {{ comida_form.comida }}
+                    {{ comida_form.quantidade }}
+                {% endfor %}
             </div>
             <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
                     data-bs-target="#visualizarModal">
