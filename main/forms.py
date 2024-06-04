@@ -49,8 +49,7 @@ class CreateLocalEventoForm(forms.ModelForm):
 class CreateEventoForm(forms.ModelForm):
     local = forms.ModelChoiceField(queryset=LocalEvento.objects.all().only('nome').order_by('nome'),
                                    widget=forms.Select(attrs={'class': 'form-control mt-3'}))
-    comidas = forms.ModelMultipleChoiceField(queryset=Comida.objects.all().order_by('nome'),
-                                             widget=forms.CheckboxSelectMultiple(attrs={'style': 'overflow-y: scroll'}))
+
     data_inicio = forms.DateField(widget=forms.SelectDateWidget(attrs={'class': 'mt-3 mb-3 col-3'}))
     data_fim = forms.DateField(widget=forms.SelectDateWidget(attrs={'class': 'mt-3 mb-3 col-3'}))
     cliente = forms.ModelChoiceField(queryset=Cliente.objects.all().only('nome').order_by('nome'),

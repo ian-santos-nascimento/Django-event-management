@@ -17,6 +17,7 @@
 
 ## Fix
 - Salvar Endereco corretamente no Cliente, como feito no LocalEvento
+- Mostrar mensagem de erro caso o form seja inválido
 - "/home" gives 404 and not redirect
 - Salvar cada Comida como ComidaEvento associada ao Evento
 - 

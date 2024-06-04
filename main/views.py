@@ -25,17 +25,22 @@ def evento_create(request):
         form = CreateEventoForm(request.POST)
         if form.is_valid():
             evento = form.save(commit=False)
-            comidas = form.cleaned_data['comidas']
-            for comida in comidas:
-                comida_evento = ComidaEvento(comida=comida,evento=evento, valor=comida.valor, quantidade=comida.quantidade_minima)
+            comidas = criarComidasEvento(form)
+            for comida_id, quantidade in comidas.items():
+                comida = Comida.objects.get(pk=comida_id)
                 evento.save() #Salvar pra poder salvar a comida
-                comida_evento.save()
-                evento.comidas.add(comida, through_defaults={'valor': comida.valor, 'quantidade': comida.quantidade_minima})
+                evento.comidas.add(comida, through_defaults={'valor': comida.valor, 'quantidade': quantidade})
 
             messages.success(request, 'Evento salvo com sucesso!')
             return HttpResponseRedirect(reverse('home'))
         else:
+            error_message = ""
+            for field, errors in form.errors.items():
+                error_message += f"{field}: {', '.join(errors)}<br>"
+            messages.error(request, error_message)
             return render(request, 'eventos/novoEvento.html', {'form': form})
+    else:
+        return HttpResponseRedirect(reverse('home'))
 
 
 def user_login(request):
@@ -192,7 +197,8 @@ def handle_local_post(request):
 
 def evento_create_form(request):
     form = CreateEventoForm()
-    return render(request, 'eventos/novoEvento.html', {'form': form})
+    comidas = Comida.objects.all()
+    return render(request, 'eventos/novoEvento.html', {'form': form, 'comidas':comidas})
 
 
 def generate_registration_form(request):
@@ -264,3 +270,11 @@ def handle_comida(request):
 
     form = CreateComidaForm()
     return render(request, 'comidas/novaComida.html', {'form': form})
+
+def criarComidasEvento(post):
+    comidas = {}
+    for key, value in post.data.items():
+        if key.startswith('quantidade'):
+            comida_id = key.split('-')[1]
+            comidas[comida_id] = int(value)
+    return comidas

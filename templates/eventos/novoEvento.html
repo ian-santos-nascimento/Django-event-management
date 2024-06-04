@@ -6,6 +6,13 @@
 {% load crispy_forms_tags %}
 {% block title %} Novo Evento {% endblock %}
 {% block content %}
+    {% if messages %}
+        <div class="alert alert-danger">
+            {% for message in messages %}
+                {{ message|safe }}
+            {% endfor %}
+        </div>
+    {% endif %}
     <h1 class="text-center">Criar Novo Evento </h1>
     <div class="container">
         <form method="post" role="form" action="{% url 'evento_create' %}">
@@ -34,13 +41,21 @@
                 <label for="{{ form.local.id_for_label }}">Cliente</label>
                 {{ form.cliente }}
             </div>
-            <div class="form-group mt-3" style="height: 30vh;overflow-y: scroll; border: 1px solid #ced4da">
-                <label for="{{ form.comidas.id_for_label }}">Comidas</label>
-                {{ form.comidas }}
+            <div class="form-group mt-3">
+                <label>Comidas</label>
+                <div style="height: 30vh;overflow-y: scroll; border: 1px solid #ced4da">
+                    {% for comida in comidas %}
+                        <div class="pl-3">
+                            <input type="checkbox" name="comidas" value="{{ comida.comida_id }}"
+                                   class="form-check-input" id="comida-{{ comida.comida_id }}">
+                            <label class="form-check-label" for="comida-{{ comida.comida_id }}">{{ comida.nome }} --
+                                R${{ comida.valor }}</label>
+                            <div class="quantidade-container" style="display: inline-block; margin-left: 10px;"></div>
+                        </div>
+                    {% endfor %}
+                </div>
             </div>
-            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
-                    data-bs-target="#visualizarModal">
-            </button>
+
             <div class="form-group">
                 <label for="{{ form.data_inicio.id_for_label }}">Data de Início</label>
                 {{ form.data_inicio }}
@@ -52,5 +67,30 @@
             <button type="submit" class="btn btn-primary">Submit</button>
         </form>
     </div>
+
+    <script>
+        const checkboxes = document.querySelectorAll('input[name="comidas"]');
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', handleCheckboxChange);
+        });
+
+        function handleCheckboxChange(event) {
+            const checkbox = event.target;
+            const container = checkbox.parentNode.querySelector('.quantidade-container');
+            if (checkbox.checked) {
+                const input = document.createElement('input');
+                input.type = 'number';
+                input.name = `quantidade-${checkbox.value}`;
+                input.className = 'form-control';
+                input.style.width = '60px';
+                input.min = '1'; // set the minimum value to 1
+                input.style.display = 'inline-block';
+                input.style.marginLeft = '10px';
+                container.appendChild(input);
+            } else {
+                container.innerHTML = '';
+            }
+        }
+    </script>
 
 {% endblock %}
