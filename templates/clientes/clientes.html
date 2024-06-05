@@ -31,6 +31,7 @@
             <th scope="col">Nome</th>
             <th scope="col">Telefone</th>
             <th scope="col">Possui Evento pendente?</th>
+            <th scope="col">Visualizar Cliente</th>
             <th scope="col">Editar Cliente</th>
         </tr>
         </thead>
@@ -42,10 +43,20 @@
                 <td>{{ cliente.telefone_formatado }}</td>
                 <td>
                     {% if  cliente.evento_pk %}
-                        Sim 
+                        Sim
                     {% else %}
-                        Não 
+                        Não
                     {% endif %}</td>
+                <td>
+                    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
+                            data-bs-target="#visualizarModal" data-nome="{{ cliente.nome }}"
+                            data-endereco="{{ cliente.endereco }}"
+                            data-inscricao="{{ cliente.inscricao_estadual }}"
+                            data-telefone="{{ cliente.telefone_formatado }}"
+                            data-cnpj="{{ cliente.cnpj }}"
+                            data-razao="{{ cliente.razao_social }}">
+                        <i class="fa fa-search" style="color: #74c0fc" title="Visualizar Cliente"></i></button>
+                </td>
                 <td>
                     <form method="post">
                         {% csrf_token %}
@@ -62,5 +73,47 @@
         </tbody>
     </table>
 
+    <div class="modal fade" id="visualizarModal" tabindex="-1" aria-labelledby="visualizarModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="visualizarModalLabel">Detalhes do Cliente</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p><strong>Nome:</strong> <span id="clienteNome"></span></p>
+                    <p><strong>Endereço:</strong> <span id="clienteEndereco"></span></p>
+                    <p><strong>Inscrição Estadual:</strong> <span id="clienteInscricao"></span></p>
+                    <p><strong>Telefone:</strong> <span id="clienteTelefone"></span></p>
+                    <p><strong>Razão Social:</strong> <span id="clienteRazao"></span></p>
+                    <p><strong>CNPJ:</strong> <span id="clienteCNPJ"></span></p>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var visualizarModal = document.getElementById('visualizarModal');
+            visualizarModal.addEventListener('show.bs.modal', function (event) {
+                var button = event.relatedTarget; // Botão que acionou o modal
+                var nome = button.getAttribute('data-nome');
+                var endereco = button.getAttribute('data-endereco');
+                var inscricao = button.getAttribute('data-inscricao');
+                var telefone = button.getAttribute('data-telefone');
+                var cnpj = button.getAttribute('data-cnpj');
+                var razao = button.getAttribute('data-razao');
+                // Atualiza o conteúdo do modal
+                document.getElementById('clienteNome').textContent = nome;
+                document.getElementById('clienteEndereco').textContent = endereco;
+                document.getElementById('clienteInscricao').textContent = inscricao;
+                document.getElementById('clienteTelefone').textContent = telefone;
+                document.getElementById('clienteCNPJ').textContent = cnpj;
+                document.getElementById('clienteRazao').textContent = razao;
+            });
+        });
+    </script>
 
 {% endblock %}

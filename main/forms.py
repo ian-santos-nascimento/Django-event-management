@@ -92,7 +92,8 @@ class EditUserForm(UserChangeForm):
 class CreateClientForm(forms.ModelForm):
     class Meta:
         model = Cliente
-        fields = ["nome", "telefone", "razao_social", 'cnpj', 'endereco', 'inscricao_estadual']
+        fields = ["nome", "telefone", "razao_social", 'cnpj', 'inscricao_estadual','endereco']
+        exclude = ["endereco"]
         widgets = {'telefone': forms.TextInput(attrs={'placeholder': "(00)00000-0000", 'data-mask': "(00) 0000-0000"})}
 
 

@@ -8,18 +8,14 @@
 
 
 ## Implementation
-- Salvar Evento com Comidas, Cliente, Local, Terceiros, Logistica associada
-- Adicionar qtd por comida
-- Criar busca quando for escolher as entidades ao criar evento
+- Adicionar salvamento de Evento com Terceiros, Logistica associada
 - Order by das listas e buscar na tabela
 - Editar Usuarios e mudar senha
 - Criar uma base html pra todas as páginas de listagem
+-  Implementar Paginação em todos as listagens
 
 ## Fix
-- Salvar Endereco corretamente no Cliente, como feito no LocalEvento
 - Mostrar mensagem de erro caso o form seja inválido
-- "/home" gives 404 and not redirect
-- Salvar cada Comida como ComidaEvento associada ao Evento
-- 
+- Implementar Paginação em todos as listagens
 
 

@@ -19,6 +19,7 @@ def home(request):
     eventos = Evento.objects.only('nome', 'data_inicio', 'local', 'id_evento')
     return render(request, 'main/home.html', {'eventos': eventos})
 
+
 @login_required(login_url='login')
 def evento_create(request):
     if request.method == 'POST':
@@ -28,7 +29,7 @@ def evento_create(request):
             comidas = criarComidasEvento(form)
             for comida_id, quantidade in comidas.items():
                 comida = Comida.objects.get(pk=comida_id)
-                evento.save() #Salvar pra poder salvar a comida
+                evento.save()  # Salvar pra poder salvar a comida
                 evento.comidas.add(comida, through_defaults={'valor': comida.valor, 'quantidade': quantidade})
 
             messages.success(request, 'Evento salvo com sucesso!')
@@ -90,37 +91,36 @@ def user_list(request):
 @login_required(redirect_field_name='login')
 def client_create(request):
     if request.method == 'POST':
-        # Verifica se o formulário é para edição ou criação
-        if 'saveEditCliente' in request.POST:
-            # Se cliente_id estiver presente, é uma edição
+        if 'saveEditCliente' in request.POST:  ##edição cliente
             cliente_id = request.POST['clienteId']
             cliente = Cliente.objects.get(pk=cliente_id)
+            endereco = Endereco.objects.get(pk=cliente.endereco.id_endereco)
             form = CreateClientForm(request.POST, instance=cliente)
-        else:
-            # Senão, é uma criação de novo cliente
+            form_endereco = EnderecoForm(request.POST, instance=endereco)
+        else:  ##Novo cliente
             form = CreateClientForm(request.POST)
-        if form.is_valid():
+            form_endereco = EnderecoForm(request.POST)
+
+        if form.is_valid() and form_endereco.is_valid():
+            form.save(commit=False)
+            form_endereco.save()
+            form.endereco = form_endereco
             form.save()
             messages.success(request, 'Cliente salvo com sucesso!')
             return HttpResponseRedirect(reverse('client_list'))
+        else:
+            message_error(request, form)
+            return render(request, 'clientes/novoCliente.html', {'form': form})
     else:
-        form = CreateClientForm()
-
-    return render(request, 'clientes/novoCliente.html', {'form': form})
+        return HttpResponseRedirect(reverse('client_list'))
 
 
 @login_required(login_url='login')
 def client_list(request):
     if request.method == 'POST':
-        if 'editClient' in request.POST:
-            client_id = request.POST.get('clienteId')
-            client = Cliente.objects.get(pk=client_id)
-            form = CreateClientForm(instance=client)
-            return render(request, 'clientes/novoCliente.html', {'form': form, 'client_id': client_id})
-        else:
-            return generate_cliente_registration_form(request)
+        return handle_cliente_post(request)
     elif request.method == 'GET':
-        clientes = Cliente.objects.all()
+        clientes = Cliente.objects.all().order_by('nome')
         return render(request, 'clientes/clientes.html', {'clientes': clientes})
 
 
@@ -128,7 +128,7 @@ def client_list(request):
 def comida_list(request):
     comidas = get_paginated_comidas(request)
     if request.method == 'POST':
-        if is_file_upload(request):
+        if 'file' in request.FILES:
             return handle_file_upload(request)
         else:
             return handle_comida(request)
@@ -181,6 +181,18 @@ def local_create(request):
     return HttpResponseRedirect(reverse('local_list'))
 
 
+def handle_cliente_post(request):
+    if 'editClient' in request.POST:
+        client_id = request.POST.get('clienteId')
+        client = Cliente.objects.get(pk=client_id)
+        form = CreateClientForm(instance=client)
+        endereco_form = EnderecoForm(instance=client.endereco)
+        return render(request, 'clientes/novoCliente.html',
+                      {'form': form, 'client_id': client_id, 'endereco_form': endereco_form})
+    else:
+        return cliente_create_form(request)
+
+
 def handle_local_post(request):
     if request.method == 'POST' and 'editlocal' in request.POST:
         local_id = request.POST.get('localId')
@@ -198,7 +210,7 @@ def handle_local_post(request):
 def evento_create_form(request):
     form = CreateEventoForm()
     comidas = Comida.objects.all()
-    return render(request, 'eventos/novoEvento.html', {'form': form, 'comidas':comidas})
+    return render(request, 'eventos/novoEvento.html', {'form': form, 'comidas': comidas})
 
 
 def generate_registration_form(request):
@@ -206,9 +218,10 @@ def generate_registration_form(request):
     return render(request, 'usuarios/novoUsuario.html', {'form': form})
 
 
-def generate_cliente_registration_form(request):
+def cliente_create_form(request):
     form = CreateClientForm()
-    return render(request, 'clientes/novoCliente.html', {'form': form})
+    endereco_form = EnderecoForm()
+    return render(request, 'clientes/novoCliente.html', {'form': form, 'endereco_form': endereco_form})
 
 
 def get_paginated_comidas(request):
@@ -234,13 +247,6 @@ def get_paginated_locais(request):
         return paginator.page(1)
     except EmptyPage:
         return paginator.page(paginator.num_pages)
-
-
-def is_file_upload(request):
-    if 'file' in request.FILES:
-        return True
-    else:
-        return False
 
 
 def handle_file_upload(request):
@@ -271,6 +277,7 @@ def handle_comida(request):
     form = CreateComidaForm()
     return render(request, 'comidas/novaComida.html', {'form': form})
 
+
 def criarComidasEvento(post):
     comidas = {}
     for key, value in post.data.items():
@@ -278,3 +285,10 @@ def criarComidasEvento(post):
             comida_id = key.split('-')[1]
             comidas[comida_id] = int(value)
     return comidas
+
+
+def message_error(request, form):
+    error_message = ""
+    for field, errors in form.errors.items():
+        error_message += f"{field}: {', '.join(errors)}<br>"
+    messages.error(request, error_message)

@@ -10,6 +10,10 @@
         <form method="POST" role="form" action="{% url 'client_create' %}">
             {% csrf_token %}
             {{ form|crispy }}
+            <h3 class="text">
+                Endereço
+            </h3>
+            {{ endereco_form|crispy }}
             {% if client_id %}
                 <input type="hidden" name="clienteId" value="{{ client_id }}"/>
                 <button type="submit" name="saveEditCliente" class="btn btn-primary mt-3">Editar</button>
