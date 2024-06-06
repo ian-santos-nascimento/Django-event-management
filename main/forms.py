@@ -37,7 +37,7 @@ class CreateLocalEventoForm(forms.ModelForm):
     class Meta:
         model = LocalEvento
         fields = ['nome', 'telefone', 'email', 'observacoes', 'endereco']
-        exclude = ['endereco','agravo']
+        exclude = ['endereco', 'agravo']
         widgets = {
             'nome': forms.TextInput(attrs={'class': 'form-control'}),
             'telefone': forms.TextInput(attrs={'class': 'form-control'}),
@@ -46,15 +46,27 @@ class CreateLocalEventoForm(forms.ModelForm):
         }
 
 
+class CreateTerceiroForm(forms.ModelForm):
+    class Meta:
+        model = Terceiro
+        fields = '__all__'
+        exclude = ['id_terceiro']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.empty_permitted = True
+
+
 class CreateEventoForm(forms.ModelForm):
     local = forms.ModelChoiceField(queryset=LocalEvento.objects.all().only('nome').order_by('nome'),
-                                   widget=forms.Select(attrs={'class': 'form-control mt-3'}))
+                                   widget=forms.Select(attrs={'class': 'form-control'}))
 
     data_inicio = forms.DateField(widget=forms.SelectDateWidget(attrs={'class': 'mt-3 mb-3 col-3'}))
     data_fim = forms.DateField(widget=forms.SelectDateWidget(attrs={'class': 'mt-3 mb-3 col-3'}))
     cliente = forms.ModelChoiceField(queryset=Cliente.objects.all().only('nome').order_by('nome'),
                                      label='Cliente',
-                                     widget=forms.Select(attrs={'class': 'form-control mt-3'}))
+                                     widget=forms.Select(attrs={'class': 'form-control'}))
+    terceiros = forms.formset_factory(CreateTerceiroForm, extra=1)
 
     class Meta:
         model = Evento
@@ -67,14 +79,6 @@ class CreateEventoForm(forms.ModelForm):
             'observacao': forms.Textarea(attrs={'class': 'form-control', 'style': 'height: 200px;'}),
             'qtd_dias_evento': forms.NumberInput(attrs={'class': 'form-control'}),
         }
-
-
-
-class CreateTerceiroForm(forms.ModelForm):
-    class Meta:
-        model = Terceiro
-        fields = '__all__'
-        exclude = ['id_terceiro']
 
 
 class EditUserForm(UserChangeForm):
@@ -92,7 +96,7 @@ class EditUserForm(UserChangeForm):
 class CreateClientForm(forms.ModelForm):
     class Meta:
         model = Cliente
-        fields = ["nome", "telefone", "razao_social", 'cnpj', 'inscricao_estadual','endereco']
+        fields = ["nome", "telefone", "razao_social", 'cnpj', 'inscricao_estadual', 'endereco']
         exclude = ["endereco"]
         widgets = {'telefone': forms.TextInput(attrs={'placeholder': "(00)00000-0000", 'data-mask': "(00) 0000-0000"})}
 

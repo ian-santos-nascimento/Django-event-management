@@ -55,19 +55,39 @@
                     {% endfor %}
                 </div>
             </div>
+            <div class="row">
 
-            <div class="form-group">
-                <label for="{{ form.data_inicio.id_for_label }}">Data de Início</label>
-                {{ form.data_inicio }}
+                <div class="col-6">
+                    <label for="{{ form.data_inicio.id_for_label }}">Data de Início</label>
+                    {{ form.data_inicio }}
+                </div>
+                <div class="col-6">
+                    <label for="{{ form.data_fim.id_for_label }}">Data de Fim</label>
+                    {{ form.data_fim }}
+                </div>
             </div>
-            <div class="form-group">
-                <label for="{{ form.data_fim.id_for_label }}">Data de Fim</label>
-                {{ form.data_fim }}
+            <h2>Terceiros</h2>
+            {{ terceiros_formset.management_form }}
+            <div id="terceiros-forms">
+                {% for form in terceiros_formset %}
+                    <div class="terceiro-form">
+                        {{ form|crispy }}
+                        <button type="button" class="remove-terceiro btn btn-danger btn-sm">Remover</button>
+                    </div>
+                {% endfor %}
             </div>
-            <button type="submit" class="btn btn-primary">Submit</button>
+            <div class="container">
+                <div class="form-group">
+                    <button type="button" class="btn btn-info btn-sm " id="add-terceiro">Adicionar Terceiro</button>
+                </div>
+
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+            </div>
         </form>
     </div>
-
+    <<!--GERENCIAR COMIDA QUUANTIDADE -->
     <script>
         const checkboxes = document.querySelectorAll('input[name="comidas"]');
         checkboxes.forEach(checkbox => {
@@ -92,5 +112,23 @@
             }
         }
     </script>
+    <<!--GERENCIAR TERCEIROS -->
+    <script>
+        const addTerceiroButton = document.getElementById('add-terceiro');
+        const terceirosForms = document.getElementById('terceiros-forms');
+        const emptyForm = terceirosForms.lastElementChild.outerHTML;
 
+        addTerceiroButton.addEventListener('click', () => {
+            const newForm = document.createElement('div');
+            newForm.style = 'margin-bottom: 30px';
+            newForm.innerHTML = emptyForm;
+            terceirosForms.appendChild(newForm);
+        });
+
+        terceirosForms.addEventListener('click', (event) => {
+            if (event.target.classList.contains('remove-terceiro')) {
+                event.target.parentElement.remove();
+            }
+        });
+    </script>
 {% endblock %}
