@@ -88,6 +88,11 @@ class Evento(models.Model):
     data_fim = models.DateField(null=True, blank=True)
 
 
+class TerceiroEvento(models.Model):
+    id_terceiro = models.ForeignKey('Terceiro', on_delete=models.DO_NOTHING)
+    id_evento = models.ForeignKey('Evento', on_delete=models.DO_NOTHING)
+    valor_total = models.DecimalField(decimal_places=2, max_digits=6)
+
 
 class Orcamento(models.Model):
     id_orcamento = models.AutoField(primary_key=True)
