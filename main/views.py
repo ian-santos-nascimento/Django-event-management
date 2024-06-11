@@ -35,7 +35,7 @@ def evento_create(request):
             for terceiro_form in terceiros_formset:
                 if terceiro_form.has_changed():
                     terceiro = terceiro_form.save()
-                    TerceiroEvento.objects.create(id_terceiro=terceiro, id_evento=evento)
+                    TerceiroEvento.objects.create(id_terceiro=terceiro, id_evento=evento, through_defaults={'valor_total': terceiro.valor})
             messages.success(request, 'Evento salvo com sucesso!')
             return HttpResponseRedirect(reverse('home'))
         else:

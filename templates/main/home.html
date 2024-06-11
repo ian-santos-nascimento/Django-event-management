@@ -49,10 +49,10 @@
                 <td>{{ evento.nome }}</td>
                 <td>{{ evento.data_inicio }}</td>
                 <td>{{ evento.local }}</td>
-                    <td>
+                <td>
                     <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
-                            data-bs-target="#visualizarModal" data-nome="{{ local.nome }}"
-                            data-comidas="{{ local.comidas }}">
+                            data-bs-target="#visualizarModal" data-nome="{{ evento.nome }}"
+                            data-local="{{ evento.local }}">
                         <i class="fa fa-search" style="color: #74c0fc" title="Visualizar Evento"></i></button>
                 </td>
                 <td>
@@ -129,28 +129,28 @@
                 </div>
                 <div class="modal-body">
                     <p><strong>Nome:</strong> <span id="localNome"></span></p>
-                    {% for comida in comidas %}
-                    <p id="comida">{{ comida }}</p>
-                    {% endfor %}
+                    <label for="local" class="inline-group"><strong>Local:</strong></label>
+                    <p id="local"></p>
+
                 </div>
             </div>
         </div>
     </div>
-        <!-- Script modal visualização -->
+    <!-- Script modal visualização -->
     <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        var visualizarModal = document.getElementById('visualizarModal');
-        visualizarModal.addEventListener('show.bs.modal', function (event) {
-            var button = event.relatedTarget; // Botão que acionou o modal
-            var nome = button.getAttribute('data-nome');
-            var comidas = button.getAttribute('data-comidas');
+        document.addEventListener('DOMContentLoaded', function () {
+            var visualizarModal = document.getElementById('visualizarModal');
+            visualizarModal.addEventListener('show.bs.modal', function (event) {
+                var button = event.relatedTarget; // Botão que acionou o modal
+                var nome = button.getAttribute('data-nome');
+                var local = button.getAttribute('data-local');
 
-            // Atualiza o conteúdo do modal
-            document.getElementById('localNome').textContent = nome;
-            document.getElementById('comida').textContent = comidas;
+                // Atualiza o conteúdo do modal
+                document.getElementById('localNome').textContent = nome;
+                document.getElementById('local').textContent = local;
+            });
         });
-    });
-</script>
+    </script>
     <script>
         $(document).ready(function () {
             $('form').submit(function () {

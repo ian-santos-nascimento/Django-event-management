@@ -47,10 +47,18 @@ class CreateLocalEventoForm(forms.ModelForm):
 
 
 class CreateTerceiroForm(forms.ModelForm):
+    dias = forms.IntegerField(widget=forms.NumberInput(attrs={'class': 'form-control'}))
+
     class Meta:
         model = Terceiro
-        fields = '__all__'
+        fields = ['nome', 'descricao', 'valor']
         exclude = ['id_terceiro']
+        widgets = {
+            'dias': forms.NumberInput(attrs={'class': 'form-control'})}
+        labels = {
+            'valor': "Valor diária",
+            'dias': "Qtd dias"
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

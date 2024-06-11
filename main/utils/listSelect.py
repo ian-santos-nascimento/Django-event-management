@@ -28,3 +28,6 @@ ESTADOS_BRASILEIROS = [
     ("TO", "Tocantins"),
 ]
 
+TIPO_LOGISTICA = [("Pessoa", "Pessoa"),
+                  ("Material", "Material",
+                   )]

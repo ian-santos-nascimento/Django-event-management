@@ -57,37 +57,40 @@
             </div>
             <div class="row">
 
-                <div class="col-6">
+                <div class="form-group">
                     <label for="{{ form.data_inicio.id_for_label }}">Data de Início</label>
                     {{ form.data_inicio }}
                 </div>
-                <div class="col-6">
+                <div class="form-group">
                     <label for="{{ form.data_fim.id_for_label }}">Data de Fim</label>
                     {{ form.data_fim }}
                 </div>
             </div>
-            <h2>Terceiros</h2>
+            <h2 id="terceiro-title">Terceiros</h2>
             {{ terceiros_formset.management_form }}
             <div id="terceiros-forms">
                 {% for form in terceiros_formset %}
                     <div class="terceiro-form">
                         {{ form|crispy }}
-                        <button type="button" class="remove-terceiro btn btn-danger btn-sm">Remover</button>
+                        <button type="button" class="remove-terceiro btn btn-danger btn-sm  mb-3">Remover</button>
                     </div>
                 {% endfor %}
             </div>
             <div class="container">
-                <div class="form-group">
-                    <button type="button" class="btn btn-info btn-sm " id="add-terceiro">Adicionar Terceiro</button>
-                </div>
+                <div class="row">
+                    <div class="col">
+                        <button type="button" class="btn btn-info btn-sm pl-0" id="add-terceiro">Adicionar Terceiro
+                        </button>
+                    </div>
 
-                <div class="form-group">
-                    <button type="submit" class="btn btn-primary">Submit</button>
+                    <div class="col-md-auto">
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </div>
                 </div>
             </div>
         </form>
     </div>
-    <<!--GERENCIAR COMIDA QUUANTIDADE -->
+    <!--GERENCIAR COMIDA QUUANTIDADE -->
     <script>
         const checkboxes = document.querySelectorAll('input[name="comidas"]');
         checkboxes.forEach(checkbox => {
@@ -112,23 +115,37 @@
             }
         }
     </script>
-    <<!--GERENCIAR TERCEIROS -->
+    <!--GERENCIAR TERCEIROS -->
     <script>
         const addTerceiroButton = document.getElementById('add-terceiro');
         const terceirosForms = document.getElementById('terceiros-forms');
         const emptyForm = terceirosForms.lastElementChild.outerHTML;
+        const terceiroTitle = document.getElementById('terceiro-title');
 
         addTerceiroButton.addEventListener('click', () => {
             const newForm = document.createElement('div');
             newForm.style = 'margin-bottom: 30px';
             newForm.innerHTML = emptyForm;
             terceirosForms.appendChild(newForm);
+            updateTerceiroTitleVisibility();
         });
 
         terceirosForms.addEventListener('click', (event) => {
             if (event.target.classList.contains('remove-terceiro')) {
                 event.target.parentElement.remove();
+                updateTerceiroTitleVisibility();
             }
         });
+
+        function updateTerceiroTitleVisibility() {
+            if (terceirosForms.children.length === 0) {
+                terceiroTitle.style.display = 'none';
+            } else {
+                terceiroTitle.style.display = 'block';
+            }
+        }
+
+        updateTerceiroTitleVisibility();
     </script>
+
 {% endblock %}
