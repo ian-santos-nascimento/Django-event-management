@@ -1,7 +1,7 @@
 
 SUL_SUDESTE = ['PR', 'SC', 'RS', 'SP', 'MG', 'RJ', 'ES']
 NORTE_NORDESTE = ['BA', 'SE', 'AL', 'PE', 'PB', 'RN', 'CE', 'PI', 'MA', 'TO', 'PA', 'AP', 'RO', 'AM', 'AC', 'RR']
-CENTRO_OESTE = ['MT', 'GO', 'MS']
+CENTRO_OESTE = ['MT', 'GO', 'MS','DF']
 
 
 def incluiAgravoRegiao(localEvento):

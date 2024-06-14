@@ -1,5 +1,6 @@
 from django.db import models
 from .service import incluiAgravoRegiao
+from .utils import listSelect
 
 
 class Endereco(models.Model):
@@ -31,7 +32,6 @@ class Comida(models.Model):
     def valor_formatado(self):
         valor_str = "R$" + str(self.valor)
         return valor_str.replace('.', ',')
-
 
 
 class LocalEvento(models.Model):
@@ -83,6 +83,19 @@ class Evento(models.Model):
         super(Evento, self).save()
 
 
+class Logistica(models.Model):
+    id_logistica = models.AutoField(primary_key=True)
+    nome = models.CharField(max_length=200)
+    descricao = models.TextField()
+    valor = models.DecimalField(decimal_places=2, max_digits=6)
+    dias = models.IntegerField()
+    tipo = models.CharField(max_length=20, choices=listSelect.TIPO_LOGISTICA)
+    evento_id = models.ForeignKey(Evento, on_delete=models.CASCADE, default=None)
+
+    def __str__(self):
+        return self.nome
+
+
 class Orcamento(models.Model):
     id_orcamento = models.AutoField(primary_key=True)
     evento_id = models.ForeignKey(Evento, on_delete=models.CASCADE)
@@ -114,7 +127,7 @@ class Cliente(models.Model):
 
 
 class ComidaEvento(models.Model):
-    comida = models.ForeignKey(Comida, on_delete=models.DO_NOTHING,default=1)
+    comida = models.ForeignKey(Comida, on_delete=models.DO_NOTHING, default=1)
     evento = models.ForeignKey(Evento, on_delete=models.DO_NOTHING, default=1)
     valor = models.DecimalField(decimal_places=2, max_digits=6)
     quantidade = models.IntegerField()

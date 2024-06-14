@@ -46,6 +46,23 @@ class CreateLocalEventoForm(forms.ModelForm):
         }
 
 
+class CreateLogisticaForm(forms.ModelForm):
+    class Meta:
+        model = Logistica
+        fields = '__all__'
+        exclude = ['evento_id']
+        widgets = {
+            'tipo': forms.Select(),
+        }
+        labels = {
+            'valor': "Valor diária",
+            'dias': "Qtd dias"
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.empty_permitted = True
+
 
 class CreateEventoForm(forms.ModelForm):
     local = forms.ModelChoiceField(queryset=LocalEvento.objects.all().only('nome').order_by('nome'),

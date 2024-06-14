@@ -6,6 +6,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
+from django.forms import modelformset_factory
 
 from .forms import *
 from .models import Comida
@@ -24,14 +25,21 @@ def home(request):
 def evento_create(request):
     if request.method == 'POST':
         form = CreateEventoForm(request.POST)
-        if form.is_valid():
-            evento = form.save(commit=False)
+        logistica_formset = modelformset_factory(Logistica, CreateLogisticaForm,
+                                                 fields=('nome', 'descricao', 'valor', 'dias', 'tipo',),
+                                                 extra=request.POST['logistica-TOTAL_FORMS'], )
+        logistica_forms = logistica_formset(request.POST, prefix='logistica')
+        print(request.POST)
+        evento = form.save(commit=False)
+        if form.is_valid() and logistica_forms.is_valid():
             comidas = criarComidasEvento(form)
             for comida_id, quantidade in comidas.items():
                 comida = Comida.objects.get(pk=comida_id)
                 evento.save()
                 evento.comidas.add(comida, through_defaults={'valor': comida.valor, 'quantidade': quantidade})
-
+            for logistica in logistica_forms.save(commit=False):
+                logistica.evento_id = evento
+                logistica.save()
             messages.success(request, 'Evento salvo com sucesso!')
             return HttpResponseRedirect(reverse('home'))
         else:
@@ -207,9 +215,11 @@ def handle_local_post(request):
 
 def evento_create_form(request):
     form = CreateEventoForm()
+    logistica_formset = modelformset_factory(Logistica, CreateLogisticaForm, extra=2)
+    logistica_form = logistica_formset(prefix='logistica')
     comidas = Comida.objects.all()
     return render(request, 'eventos/novoEvento.html',
-                  {'form': form, 'comidas': comidas})
+                  {'form': form, 'comidas': comidas, 'logistica_formset': logistica_form})
 
 
 def generate_registration_form(request):
