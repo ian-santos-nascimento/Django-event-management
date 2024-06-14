@@ -18,6 +18,7 @@
 
 ## Fix
 - Mostrar mensagem de erro caso o form seja inválido
+- Não salvar Evento caso algum outro campo dê errado(Usar commit=False no Evento e só salvar no final)
 - Verificar campos necessários e opcionais(observacoes e etc)
 - Implementar Paginação em todos as listagens
 - Evitar salvar Evento caso algum campo não seja salvo

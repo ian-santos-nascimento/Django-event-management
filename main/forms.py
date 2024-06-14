@@ -46,24 +46,6 @@ class CreateLocalEventoForm(forms.ModelForm):
         }
 
 
-class CreateTerceiroForm(forms.ModelForm):
-    dias = forms.IntegerField(widget=forms.NumberInput(attrs={'class': 'form-control'}))
-
-    class Meta:
-        model = Terceiro
-        fields = ['nome', 'descricao', 'valor']
-        exclude = ['id_terceiro']
-        widgets = {
-            'dias': forms.NumberInput(attrs={'class': 'form-control'})}
-        labels = {
-            'valor': "Valor diária",
-            'dias': "Qtd dias"
-        }
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.empty_permitted = True
-
 
 class CreateEventoForm(forms.ModelForm):
     local = forms.ModelChoiceField(queryset=LocalEvento.objects.all().only('nome').order_by('nome'),
@@ -74,12 +56,11 @@ class CreateEventoForm(forms.ModelForm):
     cliente = forms.ModelChoiceField(queryset=Cliente.objects.all().only('nome').order_by('nome'),
                                      label='Cliente',
                                      widget=forms.Select(attrs={'class': 'form-control'}))
-    terceiros = forms.formset_factory(CreateTerceiroForm, extra=1)
 
     class Meta:
         model = Evento
         exclude = ['id_evento']
-        fields = ['nome', 'descricao', 'observacao', 'qtd_dias_evento', 'comidas', 'data_inicio', 'local', 'cliente',
+        fields = ['nome', 'descricao', 'observacao', 'comidas', 'data_inicio', 'local', 'cliente',
                   'data_fim']
         widgets = {
             'nome': forms.TextInput(attrs={'class': 'form-control'}),

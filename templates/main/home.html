@@ -37,6 +37,7 @@
             <th scope="col">ID</th>
             <th scope="col">Nome</th>
             <th scope="col">Data ìnicio</th>
+            <th scope="col">Data Fim</th>
             <th scope="col">Local do Evento</th>
             <th scope="col">Visualizar</th>
             <th scope="col">Editar</th>
@@ -48,6 +49,7 @@
                 <td>{{ evento.id_evento }}</td>
                 <td>{{ evento.nome }}</td>
                 <td>{{ evento.data_inicio }}</td>
+                <td>{{ evento.data_fim }}</td>
                 <td>{{ evento.local }}</td>
                 <td>
                     <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
@@ -124,13 +126,26 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="visualizarModalLabel">Detalhes do Local</h5>
+                    <h5 class="modal-title text-center" id="visualizarModalLabel">Detalhes do Evento</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <p><strong>Nome:</strong> <span id="localNome"></span></p>
-                    <label for="local" class="inline-group"><strong>Local:</strong></label>
-                    <p id="local"></p>
+                    <div class="row">
+                        <div class="col-1">
+                            <label for="nomeEvento"><strong>Evento:</strong></label>
+                        </div>
+                        <div class="col-11">
+                            <p class="form-control-plaintext p-0"  id="nomeEvento">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-1">
+                            <label for="localNome"><strong>Local:</strong></label>
+                        </div>
+                        <div class="col-11">
+                            <p class="form-control-plaintext p-0"  id="localNome">
+                        </div>
+                    </div>
 
                 </div>
             </div>
@@ -146,8 +161,8 @@
                 var local = button.getAttribute('data-local');
 
                 // Atualiza o conteúdo do modal
-                document.getElementById('localNome').textContent = nome;
-                document.getElementById('local').textContent = local;
+                document.getElementById('localNome').textContent = local;
+                document.getElementById('nomeEvento').textContent = nome;
             });
         });
     </script>

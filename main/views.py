@@ -24,25 +24,22 @@ def home(request):
 def evento_create(request):
     if request.method == 'POST':
         form = CreateEventoForm(request.POST)
-        terceiros_formset = form.terceiros(request.POST)
-        if form.is_valid() and terceiros_formset.is_valid():
+        if form.is_valid():
             evento = form.save(commit=False)
             comidas = criarComidasEvento(form)
             for comida_id, quantidade in comidas.items():
                 comida = Comida.objects.get(pk=comida_id)
                 evento.save()
                 evento.comidas.add(comida, through_defaults={'valor': comida.valor, 'quantidade': quantidade})
-            for terceiro_form in terceiros_formset:
-                if terceiro_form.has_changed():
-                    terceiro = terceiro_form.save()
-                    TerceiroEvento.objects.create(id_terceiro=terceiro, id_evento=evento, through_defaults={'valor_total': terceiro.valor})
+
             messages.success(request, 'Evento salvo com sucesso!')
             return HttpResponseRedirect(reverse('home'))
         else:
-            message_error(request, form if form.is_valid() else terceiros_formset )
+            message_error(request, form)
             return render(request, 'eventos/novoEvento.html', {'form': form})
     else:
-        return HttpResponseRedirect(reverse('home'))
+        form = CreateEventoForm()
+        return render(request, 'eventos/novoEvento.html', {'form': form, })
 
 
 def user_login(request):
@@ -211,9 +208,8 @@ def handle_local_post(request):
 def evento_create_form(request):
     form = CreateEventoForm()
     comidas = Comida.objects.all()
-    terceiros_formset = form.terceiros()
     return render(request, 'eventos/novoEvento.html',
-                  {'form': form, 'comidas': comidas, 'terceiros_formset': terceiros_formset})
+                  {'form': form, 'comidas': comidas})
 
 
 def generate_registration_form(request):

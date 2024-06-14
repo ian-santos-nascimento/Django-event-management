@@ -33,15 +33,6 @@ class Comida(models.Model):
         return valor_str.replace('.', ',')
 
 
-class Terceiro(models.Model):
-    id_terceiro = models.AutoField(primary_key=True)
-    nome = models.CharField(max_length=100)
-    descricao = models.TextField()
-    valor = models.DecimalField(decimal_places=2, max_digits=6)
-
-    def __str__(self):
-        return self.nome
-
 
 class LocalEvento(models.Model):
     id_local = models.AutoField(primary_key=True)
@@ -82,16 +73,14 @@ class Evento(models.Model):
     observacao = models.TextField()
     comidas = models.ManyToManyField(Comida, through='ComidaEvento')
     qtd_dias_evento = models.IntegerField(null=True, blank=True)
-    terceiros = models.ManyToManyField(Terceiro, through='TerceiroEvento')
     local = models.ForeignKey(LocalEvento, on_delete=models.DO_NOTHING)
     data_inicio = models.DateField(null=True, blank=True)
     data_fim = models.DateField(null=True, blank=True)
 
-
-class TerceiroEvento(models.Model):
-    id_terceiro = models.ForeignKey('Terceiro', on_delete=models.DO_NOTHING)
-    id_evento = models.ForeignKey('Evento', on_delete=models.DO_NOTHING)
-    valor_total = models.DecimalField(decimal_places=2, max_digits=6)
+    def save(self):
+        dias = self.data_fim - self.data_inicio
+        self.qtd_dias_evento = dias.days
+        super(Evento, self).save()
 
 
 class Orcamento(models.Model):
