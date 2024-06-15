@@ -90,7 +90,7 @@ class Logistica(models.Model):
     valor = models.DecimalField(decimal_places=2, max_digits=6)
     dias = models.IntegerField()
     tipo = models.CharField(max_length=20, choices=listSelect.TIPO_LOGISTICA)
-    evento_id = models.ForeignKey(Evento, on_delete=models.CASCADE, default=None)
+    evento = models.ForeignKey(Evento, on_delete=models.CASCADE, default=None)
 
     def __str__(self):
         return self.nome

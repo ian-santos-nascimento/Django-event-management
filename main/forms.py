@@ -1,4 +1,5 @@
 from django import forms
+from django.forms import modelformset_factory
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.contrib.auth.models import User
 from .models import *
@@ -50,7 +51,7 @@ class CreateLogisticaForm(forms.ModelForm):
     class Meta:
         model = Logistica
         fields = '__all__'
-        exclude = ['evento_id']
+        exclude = ['evento']
         widgets = {
             'tipo': forms.Select(),
         }
@@ -86,6 +87,7 @@ class CreateEventoForm(forms.ModelForm):
             'qtd_dias_evento': forms.NumberInput(attrs={'class': 'form-control'}),
         }
 
+CreateLogisticaFormSet = modelformset_factory(Logistica, form=CreateLogisticaForm, extra=1, can_delete=True)
 
 class EditUserForm(UserChangeForm):
     email = forms.EmailField(required=True)

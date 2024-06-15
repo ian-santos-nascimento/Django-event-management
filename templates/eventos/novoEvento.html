@@ -74,7 +74,8 @@
                     </div>
                 {% endfor %}
             </div>
-            <button type="button" class="btn btn-info btn-sm pl-0" id="add-logistica">Adicionar logistica
+            <button type="button" class="btn btn-info btn-sm pl-0"
+                    id="add-logistica" onclick="addLogisticaForm()">Adicionar logistica
             </button>
             <button type="submit" class="btn btn-primary">Submit</button>
         </form>
@@ -103,6 +104,52 @@
                 container.innerHTML = '';
             }
         }
+    </script>
+
+    <script>
+        function addLogisticaForm() {
+            var totalFormsInput = document.getElementById('id_logistica-TOTAL_FORMS');
+            var currentValue = parseInt(totalFormsInput.value);
+            totalFormsInput.value = currentValue + 1;
+        }
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            let formCount = {{ logistica_formset.total_form_count }};
+            const logisticaForms = document.getElementById('logisticas-forms');
+            const addLogisticaBtn = document.getElementById('add-logistica');
+
+            addLogisticaBtn.addEventListener('click', function () {
+                const newForm = logisticaForms.children[0].cloneNode(true);
+                const formRegex = RegExp(`logistica-(\\d){1}-`, 'g');
+                console.log("FORM COUNT" + formCount.value)
+                formCount.value++;
+                newForm.innerHTML = newForm.innerHTML.replace(formRegex, `logistica-${formCount}-`);
+                newForm.querySelectorAll('input, select, textarea').forEach(input => {
+                    input.value = '';
+                    if (input.type === 'checkbox' || input.type === 'radio') {
+                        input.checked = false;
+                    }
+                });
+                logisticaForms.appendChild(newForm);
+            });
+
+            logisticaForms.addEventListener('click', function (e) {
+                if (e.target && e.target.classList.contains('remove-logistica')) {
+                    e.target.parentElement.remove();
+                    updateManagementForm();
+                }
+            });
+
+            function updateManagementForm() {
+                const totalForms = document.getElementById('id_logistica-TOTAL_FORMS');
+                const currentForms = logisticaForms.querySelectorAll('.logistica-form').length;
+                totalForms.value = currentForms;
+            }
+
+            updateManagementForm();
+        });
     </script>
 
 {% endblock %}

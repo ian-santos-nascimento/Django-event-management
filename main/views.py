@@ -6,7 +6,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
-from django.forms import modelformset_factory
+from django.forms import modelformset_factory, formset_factory
 
 from .forms import *
 from .models import Comida
@@ -25,11 +25,14 @@ def home(request):
 def evento_create(request):
     if request.method == 'POST':
         form = CreateEventoForm(request.POST)
-        logistica_formset = modelformset_factory(Logistica, CreateLogisticaForm,
-                                                 fields=('nome', 'descricao', 'valor', 'dias', 'tipo',),
-                                                 extra=request.POST['logistica-TOTAL_FORMS'], )
+        logistica_formset = formset_factory(CreateLogisticaForm, formset=CreateLogisticaFormSet,
+
+                                            extra=request.POST['logistica-TOTAL_FORMS'], )
         logistica_forms = logistica_formset(request.POST, prefix='logistica')
         print(request.POST)
+        print(f'logistica_formset: {logistica_formset}')
+        print(f'logistica_formset.total_form_count: {logistica_formset.total_form_count}')
+
         evento = form.save(commit=False)
         if form.is_valid() and logistica_forms.is_valid():
             comidas = criarComidasEvento(form)
@@ -37,9 +40,10 @@ def evento_create(request):
                 comida = Comida.objects.get(pk=comida_id)
                 evento.save()
                 evento.comidas.add(comida, through_defaults={'valor': comida.valor, 'quantidade': quantidade})
-            for logistica in logistica_forms.save(commit=False):
-                logistica.evento_id = evento
-                logistica.save()
+            for logistica in logistica_forms:
+                logistica_obj = logistica.save(commit=False)
+                logistica_obj.evento = evento
+                logistica_obj.save()
             messages.success(request, 'Evento salvo com sucesso!')
             return HttpResponseRedirect(reverse('home'))
         else:
@@ -47,7 +51,8 @@ def evento_create(request):
             return render(request, 'eventos/novoEvento.html', {'form': form})
     else:
         form = CreateEventoForm()
-        return render(request, 'eventos/novoEvento.html', {'form': form, })
+        logistica_formset = CreateLogisticaFormSet(queryset=Logistica.objects.none(), prefix='logistica')
+        return render(request, 'eventos/novoEvento.html', {'form': form, 'logistica_formset': logistica_formset})
 
 
 def user_login(request):
@@ -215,11 +220,10 @@ def handle_local_post(request):
 
 def evento_create_form(request):
     form = CreateEventoForm()
-    logistica_formset = modelformset_factory(Logistica, CreateLogisticaForm, extra=2)
-    logistica_form = logistica_formset(prefix='logistica')
+    logistica_formset = CreateLogisticaFormSet(queryset=Logistica.objects.none(), prefix='logistica')
     comidas = Comida.objects.all()
     return render(request, 'eventos/novoEvento.html',
-                  {'form': form, 'comidas': comidas, 'logistica_formset': logistica_form})
+                  {'form': form, 'comidas': comidas, 'logistica_formset': logistica_formset})
 
 
 def generate_registration_form(request):
