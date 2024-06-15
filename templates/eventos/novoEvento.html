@@ -70,7 +70,6 @@
                 {% for form in logistica_formset %}
                     <div class="logistica-form">
                         {{ form|crispy }}
-                        <button type="button" class="remove-logistica btn btn-danger btn-sm  mb-3">Remover</button>
                     </div>
                 {% endfor %}
             </div>
@@ -95,7 +94,7 @@
                 input.type = 'number';
                 input.name = `quantidade-${checkbox.value}`;
                 input.className = 'form-control';
-                input.style.width = '60px';
+                input.style.width = '75px';
                 input.min = '1'; // set the minimum value to 1
                 input.style.display = 'inline-block';
                 input.style.marginLeft = '10px';
@@ -108,24 +107,26 @@
 
     <script>
         function addLogisticaForm() {
-            var totalFormsInput = document.getElementById('id_logistica-TOTAL_FORMS');
-            var currentValue = parseInt(totalFormsInput.value);
+            const totalFormsInput = document.getElementById('id_logistica-TOTAL_FORMS');
+            const currentValue = parseInt(totalFormsInput.value);
             totalFormsInput.value = currentValue + 1;
-        }
-    </script>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            let formCount = {{ logistica_formset.total_form_count }};
+            const formCount = currentValue;
             const logisticaForms = document.getElementById('logisticas-forms');
-            const addLogisticaBtn = document.getElementById('add-logistica');
-
-            addLogisticaBtn.addEventListener('click', function () {
+            const forms = document.getElementsByClassName('logistica-form');
+            if (forms.length === 1 && forms[0].style.display === 'none') {
+                console.log("CAIU AQUI")
+                forms[0].style.display = 'grid';
+                forms[0].querySelectorAll('input').forEach(input => {
+                    if (input.type === 'checkbox') {
+                        input.checked = false;
+                    }
+                })
+            } else {
                 const newForm = logisticaForms.children[0].cloneNode(true);
                 const formRegex = RegExp(`logistica-(\\d){1}-`, 'g');
-                console.log("FORM COUNT" + formCount.value)
-                formCount.value++;
                 newForm.innerHTML = newForm.innerHTML.replace(formRegex, `logistica-${formCount}-`);
+
                 newForm.querySelectorAll('input, select, textarea').forEach(input => {
                     input.value = '';
                     if (input.type === 'checkbox' || input.type === 'radio') {
@@ -133,8 +134,7 @@
                     }
                 });
                 logisticaForms.appendChild(newForm);
-            });
-
+            }
             logisticaForms.addEventListener('click', function (e) {
                 if (e.target && e.target.classList.contains('remove-logistica')) {
                     e.target.parentElement.remove();
@@ -142,13 +142,35 @@
                 }
             });
 
-            function updateManagementForm() {
-                const totalForms = document.getElementById('id_logistica-TOTAL_FORMS');
-                const currentForms = logisticaForms.querySelectorAll('.logistica-form').length;
-                totalForms.value = currentForms;
-            }
+        }
 
+        function handleDeleteCheckboxChange(event) {
+            const checkbox = event.target;
+            if (checkbox.checked) {
+                const form = checkbox.closest('.logistica-form');
+                console.log("FORM PROXIMO" + form)
+                form.style.display = 'none';  // Oculta o formulário em vez de removê-lo
+                form.querySelector('input[type="checkbox"][name*="-DELETE"]').checked = true; // Garante que o checkbox esteja marcado
+                updateManagementForm();
+            }
+        }
+
+        function updateManagementForm() {
+            const totalForms = document.getElementById('id_logistica-TOTAL_FORMS');
+            const logisticaForms = document.getElementById('logisticas-forms');
+            totalForms.value = Array.from(logisticaForms.querySelectorAll('.logistica-form')).filter((form) => form.style.display !== 'none').length;
+            console.log("TOTALFORMS VALUE" + totalForms.value)
+        }
+
+
+        document.addEventListener('DOMContentLoaded', function () {
             updateManagementForm();
+
+            // Adicione event listeners para os checkboxes de exclusão existentes
+            const deleteCheckboxes = document.querySelectorAll('input[type="checkbox"][name*="-DELETE"]');
+            deleteCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', handleDeleteCheckboxChange);
+            });
         });
     </script>
 

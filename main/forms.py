@@ -87,7 +87,7 @@ class CreateEventoForm(forms.ModelForm):
             'qtd_dias_evento': forms.NumberInput(attrs={'class': 'form-control'}),
         }
 
-CreateLogisticaFormSet = modelformset_factory(Logistica, form=CreateLogisticaForm, extra=1, can_delete=True)
+CreateLogisticaFormSet = modelformset_factory(Logistica, form=CreateLogisticaForm, extra=1, can_delete=True, can_delete_extra=True)
 
 class EditUserForm(UserChangeForm):
     email = forms.EmailField(required=True)

@@ -6,7 +6,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
-from django.forms import modelformset_factory, formset_factory
+from django.forms import formset_factory
 
 from .forms import *
 from .models import Comida
@@ -17,7 +17,7 @@ from .utils import csvConverter
 def home(request):
     if request.method == 'POST':
         return evento_create_form(request)
-    eventos = Evento.objects.only('nome', 'data_inicio', 'local', 'id_evento')
+    eventos = get_paginated_eventos(request)
     return render(request, 'main/home.html', {'eventos': eventos})
 
 
@@ -26,33 +26,18 @@ def evento_create(request):
     if request.method == 'POST':
         form = CreateEventoForm(request.POST)
         logistica_formset = formset_factory(CreateLogisticaForm, formset=CreateLogisticaFormSet,
-
                                             extra=request.POST['logistica-TOTAL_FORMS'], )
         logistica_forms = logistica_formset(request.POST, prefix='logistica')
         print(request.POST)
-        print(f'logistica_formset: {logistica_formset}')
-        print(f'logistica_formset.total_form_count: {logistica_formset.total_form_count}')
-
-        evento = form.save(commit=False)
         if form.is_valid() and logistica_forms.is_valid():
-            comidas = criarComidasEvento(form)
-            for comida_id, quantidade in comidas.items():
-                comida = Comida.objects.get(pk=comida_id)
-                evento.save()
-                evento.comidas.add(comida, through_defaults={'valor': comida.valor, 'quantidade': quantidade})
-            for logistica in logistica_forms:
-                logistica_obj = logistica.save(commit=False)
-                logistica_obj.evento = evento
-                logistica_obj.save()
+            saveEvento(form, logistica_forms)
             messages.success(request, 'Evento salvo com sucesso!')
             return HttpResponseRedirect(reverse('home'))
         else:
-            message_error(request, form)
-            return render(request, 'eventos/novoEvento.html', {'form': form})
+            message_error(request, form if logistica_forms.is_valid() else logistica_forms)
+            return render(request, 'eventos/novoEvento.html', {'form': form, 'logistica_formset': logistica_forms})
     else:
-        form = CreateEventoForm()
-        logistica_formset = CreateLogisticaFormSet(queryset=Logistica.objects.none(), prefix='logistica')
-        return render(request, 'eventos/novoEvento.html', {'form': form, 'logistica_formset': logistica_formset})
+        evento_create_form(request)
 
 
 def user_login(request):
@@ -93,10 +78,9 @@ def user_list(request):
         return render(request, 'usuarios/editarUsuario.html', {'form': form})
     elif request.method == 'POST':
         return generate_registration_form(request)
-    if request.method == 'GET':
-        messages = get_messages(request)
-        usuarios = User.objects.exclude(username='admin')
-        return render(request, 'usuarios/usuarios.html', {'usuarios': usuarios, 'messages': messages})
+    messages = get_messages(request)
+    usuarios = get_paginated_usuarios(request)
+    return render(request, 'usuarios/usuarios.html', {'usuarios': usuarios, 'messages': messages})
 
 
 @login_required(redirect_field_name='login')
@@ -131,7 +115,7 @@ def client_list(request):
     if request.method == 'POST':
         return handle_cliente_post(request)
     elif request.method == 'GET':
-        clientes = Cliente.objects.all().order_by('nome')
+        clientes = get_paginated_clientes(request)
         return render(request, 'clientes/clientes.html', {'clientes': clientes})
 
 
@@ -160,7 +144,7 @@ def comida_create(request):
             messages.success(request, 'Comida salva com sucesso!')
             return HttpResponseRedirect(reverse('comida_list'))
         else:
-            return render(request, 'comidas/novaComida.html', {'form': form})
+            evento_create_form(request, form)
 
 
 @login_required(login_url='login')
@@ -192,6 +176,21 @@ def local_create(request):
     return HttpResponseRedirect(reverse('local_list'))
 
 
+def saveEvento(form, logistica_forms):
+    evento = form.save(commit=False)
+    comidas = criarComidasEvento(form)
+    for comida_id, quantidade in comidas.items():
+        comida = Comida.objects.get(pk=comida_id)
+        evento.save()  ##TODO better way to save
+        evento.comidas.add(comida,
+                           through_defaults={'valor': comida.valor,
+                                             'quantidade': quantidade if quantidade > comida.quantidade_minima else comida.quantidade_minima})
+    for logistica in logistica_forms:
+        logistica_obj = logistica.save(commit=False)
+        logistica_obj.evento = evento
+        logistica_obj.save()
+
+
 def handle_cliente_post(request):
     if 'editClient' in request.POST:
         client_id = request.POST.get('clienteId')
@@ -218,8 +217,11 @@ def handle_local_post(request):
         return render(request, 'locais/novoLocal.html', {'form': form, 'formEndereco': form_endereco})
 
 
-def evento_create_form(request):
-    form = CreateEventoForm()
+def evento_create_form(request, evento_form=None, ):
+    if evento_form:
+        form = CreateEventoForm(request.POST, instance=evento_form)
+    else:
+        form = CreateEventoForm()
     logistica_formset = CreateLogisticaFormSet(queryset=Logistica.objects.none(), prefix='logistica')
     comidas = Comida.objects.all()
     return render(request, 'eventos/novoEvento.html',
@@ -237,21 +239,33 @@ def cliente_create_form(request):
     return render(request, 'clientes/novoCliente.html', {'form': form, 'endereco_form': endereco_form})
 
 
+def get_paginated_usuarios(request):
+    usuarios = User.objects.exclude(username='admin').order_by('username')
+    return generic_paginator(request, usuarios)
+
+
+def get_paginated_clientes(request):
+    clientes_list = Cliente.objects.all().order_by('nome')
+    return generic_paginator(request, clientes_list)
+
+
+def get_paginated_eventos(request):
+    evento_list = Evento.objects.only('nome', 'data_inicio', 'local', 'id_evento').order_by('data_inicio')
+    return generic_paginator(request, evento_list)
+
+
 def get_paginated_comidas(request):
     comidas_list = Comida.objects.all().order_by('nome')
-    paginator = Paginator(comidas_list, 20)
-    page = request.GET.get('page')
-    try:
-        return paginator.page(page)
-    except PageNotAnInteger:
-        return paginator.page(1)
-    except EmptyPage:
-        return paginator.page(paginator.num_pages)
+    return generic_paginator(request, comidas_list)
 
 
 def get_paginated_locais(request):
     locais_list = LocalEvento.objects.all().order_by('id_local')
-    paginator = Paginator(locais_list, 20)
+    return generic_paginator(request, locais_list)
+
+
+def generic_paginator(request, object_list):
+    paginator = Paginator(object_list, 20)
     page = request.GET.get('page')
 
     try:

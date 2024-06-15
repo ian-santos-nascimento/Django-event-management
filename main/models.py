@@ -76,7 +76,7 @@ class Evento(models.Model):
     local = models.ForeignKey(LocalEvento, on_delete=models.DO_NOTHING)
     data_inicio = models.DateField(null=True, blank=True)
     data_fim = models.DateField(null=True, blank=True)
-
+    data_criacao = models.DateField(auto_now_add=True)
     def save(self):
         dias = self.data_fim - self.data_inicio
         self.qtd_dias_evento = dias.days
