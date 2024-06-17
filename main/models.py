@@ -77,11 +77,14 @@ class Evento(models.Model):
     data_inicio = models.DateField(null=True, blank=True)
     data_fim = models.DateField(null=True, blank=True)
     data_criacao = models.DateField(auto_now_add=True)
+
     def save(self):
         dias = self.data_fim - self.data_inicio
         self.qtd_dias_evento = dias.days
         super(Evento, self).save()
 
+    def __str__(self):
+        return self.nome
 
 class Logistica(models.Model):
     id_logistica = models.AutoField(primary_key=True)
@@ -99,7 +102,7 @@ class Logistica(models.Model):
 class Orcamento(models.Model):
     id_orcamento = models.AutoField(primary_key=True)
     evento_id = models.ForeignKey(Evento, on_delete=models.CASCADE)
-    valor_total = models.DecimalField(decimal_places=2, max_digits=6)
+    valor_total = models.DecimalField(decimal_places=2, max_digits=10)
 
 
 class Cliente(models.Model):

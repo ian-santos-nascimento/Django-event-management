@@ -27,6 +27,13 @@
             $('[name=telefone]').mask('(00) 00000-0000');
         });
 
+        $(document).ready(function () {
+            $('[name=cep]').mask('00000-000');
+        });
+        $(document).ready(function () {
+            $('[name=cnpj]').mask('00.000.000/0000-00');
+        });
+
     </script>
 
 {% endblock %}

@@ -22,7 +22,10 @@ class EnderecoForm(forms.ModelForm):
         fields = '__all__'
         exclude = ['id_endereco']
         widgets = {
-            'cep': forms.TextInput(attrs={'class': 'form-control'}),
+            'cep': forms.TextInput(attrs={
+                'placeholder': "XXXXX-XXX",
+                'data-mask': "00000-000"
+            }),
             'endereco': forms.TextInput(attrs={'class': 'form-control'}),
             'bairro': forms.TextInput(attrs={'class': 'form-control'}),
             'cidade': forms.TextInput(attrs={'class': 'form-control'}),
@@ -106,7 +109,8 @@ class CreateClientForm(forms.ModelForm):
         model = Cliente
         fields = ["nome", "telefone", "razao_social", 'cnpj', 'inscricao_estadual', 'endereco']
         exclude = ["endereco"]
-        widgets = {'telefone': forms.TextInput(attrs={'placeholder': "(00)00000-0000", 'data-mask': "(00) 0000-0000"})}
+        widgets = {'telefone': forms.TextInput(attrs={'placeholder': "(00)00000-0000", 'data-mask': "(00) 0000-0000"}),
+                   'cnpj':forms.TextInput(attrs={'placeholder': "12.345.678/0000-00", 'data-mask': "00.000.000/0000-00"})}
 
 
 class CreateComidaForm(forms.ModelForm):

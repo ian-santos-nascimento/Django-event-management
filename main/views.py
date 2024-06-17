@@ -7,6 +7,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from django.forms import formset_factory
+from decimal import Decimal
 
 from .forms import *
 from .models import Comida
@@ -178,17 +179,19 @@ def local_create(request):
 
 def saveEvento(form, logistica_forms):
     evento = form.save(commit=False)
+    evento.save()
     comidas = criarComidasEvento(form)
+    logisticas = [logistica.save(commit=False) for logistica in logistica_forms]
+    evento = Evento.objects.get(pk=evento.id_evento)
+    evento.comidas.set([])
     for comida_id, quantidade in comidas.items():
         comida = Comida.objects.get(pk=comida_id)
-        evento.save()  ##TODO better way to save
-        evento.comidas.add(comida,
-                           through_defaults={'valor': comida.valor,
-                                             'quantidade': quantidade if quantidade > comida.quantidade_minima else comida.quantidade_minima})
-    for logistica in logistica_forms:
-        logistica_obj = logistica.save(commit=False)
-        logistica_obj.evento = evento
-        logistica_obj.save()
+        quantidade_comida = quantidade if quantidade > comida.quantidade_minima else comida.quantidade_minima
+        ComidaEvento.objects.create(evento=evento, comida=comida, quantidade=quantidade_comida, valor=comida.valor)
+    create_orcamento(evento, logisticas, )
+    for logistica in logisticas:
+        logistica.evento = evento
+        logistica.save()
 
 
 def handle_cliente_post(request):
@@ -319,3 +322,12 @@ def message_error(request, form):
     for field, errors in form.errors.items():
         error_message += f"{field}: {', '.join(errors)}<br>"
     messages.error(request, error_message)
+
+
+def create_orcamento(evento, logisticas):
+    valor_total = Decimal()
+    for comida_evento in ComidaEvento.objects.filter(evento=evento):
+        valor_total += Decimal(comida_evento.valor) * Decimal(comida_evento.quantidade)
+    for logistica in logisticas:
+        valor_total += logistica.valor * logistica.dias
+    Orcamento.objects.create(evento_id=evento, valor_total=valor_total)
