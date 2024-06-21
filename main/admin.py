@@ -19,12 +19,14 @@ class Logisticadmin(admin.ModelAdmin):
     pass
 
 
+@admin.register(ComidaEvento)
+class ComidaEvento(admin.ModelAdmin):
+    pass
 
 
 @admin.register(Orcamento)
 class OrcamentoAdmin(admin.ModelAdmin):
     pass
-
 
 
 @admin.register(LocalEvento)

@@ -14,6 +14,5 @@ urlpatterns = [
     path('locais', views.local_list, name='local_list'),
     path('novoLocal', views.local_create, name='local_create'),
     path('novoEvento', views.evento_create, name='evento_create'),
+    path('editEvento', views.handle_event_edit_post, name='edit_evento'),
 ]
-
-

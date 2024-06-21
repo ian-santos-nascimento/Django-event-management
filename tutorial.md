@@ -6,11 +6,11 @@
 
 
 ## Implementation
-- Implement mask in Evento
-- Order by das listas e buscar na tabela
+- Editar Evento e orçamento
+- Implementar lógica pra diferente tipos de eventos
+- Order by das listas e buscar na tabela e search
 - Editar Usuarios e mudar senha
 - Criar uma base html pra todas as páginas de listagem
-- Implementar Paginação em todos as listagens
 
 ## Fix
 - Mostrar mensagem de erro caso o form seja inválido

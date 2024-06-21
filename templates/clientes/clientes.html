@@ -30,7 +30,6 @@
             <th scope="col">ID</th>
             <th scope="col">Nome</th>
             <th scope="col">Telefone</th>
-            <th scope="col">Possui Evento pendente?</th>
             <th scope="col">Visualizar Cliente</th>
             <th scope="col">Editar Cliente</th>
         </tr>
@@ -41,12 +40,7 @@
                 <td>{{ cliente.id_cliente }}</td>
                 <td>{{ cliente.nome }}</td>
                 <td>{{ cliente.telefone_formatado }}</td>
-                <td>
-                    {% if  cliente.evento_pk %}
-                        Sim
-                    {% else %}
-                        Não
-                    {% endif %}</td>
+              
                 <td>
                     <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
                             data-bs-target="#visualizarModal" data-nome="{{ cliente.nome }}"

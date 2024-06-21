@@ -1,0 +1,128 @@
+{% extends 'main/base.html' %}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet"/>
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.10/jquery.mask.js"></script>
+{% load bootstrap %}
+{% load crispy_forms_tags %}
+{% block title %} Evento {% endblock %}
+{% block content %}
+    {% if messages %}
+        <div class="alert alert-danger">
+            {% for message in messages %}
+                {{ message|safe }}
+            {% endfor %}
+        </div>
+    {% endif %}
+    <h1 class="text-center">Editar Evento </h1>
+    <div class="container">
+        <form method="post" role="form" action="{% url 'edit_evento' %}">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="{{ form.nome.id_for_label }}">Nome</label>
+                {{ form.nome }}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.descricao.id_for_label }}">Descrição</label>
+                {{ form.descricao }}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.observacao.id_for_label }}">Observação</label>
+                {{ form.observacao }}
+            </div>
+            <div class="row">
+                <div class="col">
+                    <label for="{{ form.local.id_for_label }}">Local</label>
+                    {{ form.local }}
+                </div>
+                <div class="col">
+                    <label for="{{ form.local.id_for_label }}">Cliente</label>
+                    {{ form.cliente }}
+                </div>
+            </div>
+            <div class="form-group mt-3">
+                <label>Comidas selecionadas</label>
+                <div style="height: 30vh;overflow-y: scroll; border: 1px solid #ced4da">
+                    {% for comidaEvento in comidasEvento %}
+                        <div class="pl-3">
+                            <input type="checkbox" name="comidas-evento" value="{{ comidaEvento.quantidade }}"
+                                   class="form-check-input" id="{{ comidaEvento.comida.comida_id }}">
+                            <label class="form-check-label"
+                                   for="comida-{{ comidaEvento.comida.comida_id }}">{{ comidaEvento.comida.nome }} --
+                                R${{ comidaEvento.comida.valor }}</label>
+                            <div class="quantidade-container-evento"
+                                 style="display: inline-block; margin-left: 10px;"></div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="form-group mt-3">
+                <label>Comidas</label>
+                <div style="height: 30vh;overflow-y: scroll; border: 1px solid #ced4da">
+                    {% for comida in comidas %}
+                        <div class="pl-3">
+                            <input type="checkbox" name="comidas" value="{{ comida.comida_id }}"
+                                   class="form-check-input" id="comida-{{ comida.comida_id }}">
+                            <label class="form-check-label" for="comida-{{ comida.comida_id }}">{{ comida.nome }} --
+                                R${{ comida.valor }}</label>
+                            <div class="quantidade-container" style="display: inline-block; margin-left: 10px;"></div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <label for="{{ form.data_inicio.id_for_label }}">Data de Início</label>
+                    {{ form.data_inicio }}
+                </div>
+                <div class="col">
+                    <label for="{{ form.data_fim.id_for_label }}">Data de Fim</label>
+                    {{ form.data_fim }}
+                </div>
+            </div>
+
+            <input type="hidden" name="eventoId" value="{{ evento_id }}"/>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
+    <script>
+        const checkboxes = document.querySelectorAll('input[name="comidas"]');
+        const checkboxesEvento = document.querySelectorAll('input[name="comidas-evento"]');
+        checkboxesEvento.forEach(checkbox => {
+            checkbox.checked = true;
+            const container = checkbox.parentNode.querySelector('.quantidade-container-evento');
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.value = checkbox.value
+            input.name = `quantidade-${checkbox.id}`;
+            input.className = 'form-control';
+            input.style.width = '75px';
+            input.min = '1'; // set the minimum value to 1
+            input.style.display = 'inline-block';
+            input.style.marginLeft = '10px';
+            container.appendChild(input);
+        })
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', handleCheckboxChange);
+        });
+
+        function handleCheckboxChange(event) {
+            const checkbox = event.target;
+            const container = checkbox.parentNode.querySelector('.quantidade-container');
+            if (checkbox.checked) {
+                const input = document.createElement('input');
+                input.type = 'number';
+                input.name = `quantidade-${checkbox.value}`;
+                input.className = 'form-control';
+                input.style.width = '75px';
+                input.min = '1'; // set the minimum value to 1
+                input.style.display = 'inline-block';
+                input.style.marginLeft = '10px';
+                container.appendChild(input);
+            } else {
+                container.innerHTML = '';
+            }
+        }
+    </script>
+
+
+{% endblock %}

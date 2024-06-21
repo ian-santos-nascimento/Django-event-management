@@ -16,6 +16,8 @@ from .utils import csvConverter
 
 @login_required(login_url='login')
 def home(request):
+    if request.method == 'POST' and 'editEvento' in request.POST:
+        return handle_evento_edit(request)
     if request.method == 'POST':
         return evento_create_form(request)
     eventos = get_paginated_eventos(request)
@@ -25,20 +27,9 @@ def home(request):
 @login_required(login_url='login')
 def evento_create(request):
     if request.method == 'POST':
-        form = CreateEventoForm(request.POST)
-        logistica_formset = formset_factory(CreateLogisticaForm, formset=CreateLogisticaFormSet,
-                                            extra=request.POST['logistica-TOTAL_FORMS'], )
-        logistica_forms = logistica_formset(request.POST, prefix='logistica')
-        print(request.POST)
-        if form.is_valid() and logistica_forms.is_valid():
-            saveEvento(form, logistica_forms)
-            messages.success(request, 'Evento salvo com sucesso!')
-            return HttpResponseRedirect(reverse('home'))
-        else:
-            message_error(request, form if logistica_forms.is_valid() else logistica_forms)
-            return render(request, 'eventos/novoEvento.html', {'form': form, 'logistica_formset': logistica_forms})
+        return handle_evento_post(request)
     else:
-        evento_create_form(request)
+        return evento_create_form(request)
 
 
 def user_login(request):
@@ -183,7 +174,6 @@ def saveEvento(form, logistica_forms):
     comidas = criarComidasEvento(form)
     logisticas = [logistica.save(commit=False) for logistica in logistica_forms]
     evento = Evento.objects.get(pk=evento.id_evento)
-    evento.comidas.set([])
     for comida_id, quantidade in comidas.items():
         comida = Comida.objects.get(pk=comida_id)
         quantidade_comida = quantidade if quantidade > comida.quantidade_minima else comida.quantidade_minima
@@ -328,6 +318,60 @@ def create_orcamento(evento, logisticas):
     valor_total = Decimal()
     for comida_evento in ComidaEvento.objects.filter(evento=evento):
         valor_total += Decimal(comida_evento.valor) * Decimal(comida_evento.quantidade)
-    for logistica in logisticas:
-        valor_total += logistica.valor * logistica.dias
-    Orcamento.objects.create(evento_id=evento, valor_total=valor_total)
+    if logisticas:
+        for logistica in logisticas:
+            valor_total += logistica.valor * logistica.dias
+    Orcamento.objects.update_or_create(evento_id=evento.id_evento, defaults={'valor_total': valor_total})
+
+
+def handle_evento_post(request):
+    form = CreateEventoForm(request.POST)
+    logistica_formset = formset_factory(CreateLogisticaForm, formset=CreateLogisticaFormSet,
+                                        extra=request.POST['logistica-TOTAL_FORMS'], )
+    logistica_forms = logistica_formset(request.POST, prefix='logistica')
+    return handle_evento_post_edit(request, form, logistica_forms)
+
+
+def handle_evento_post_edit(request, form, logistica_forms):
+    if form.is_valid() and logistica_forms.is_valid():
+        saveEvento(form, logistica_forms)
+        messages.success(request, 'Evento salvo com sucesso!')
+        return HttpResponseRedirect(reverse('home'))
+    else:
+        message_error(request, form if logistica_forms.is_valid() else logistica_forms)
+        return render(request, 'eventos/novoEvento.html', {'form': form, 'logistica_formset': logistica_forms})
+
+
+def handle_evento_edit(request):
+    evento_id = request.POST.get('eventoId')
+    evento = Evento.objects.get(pk=evento_id)
+    form = CreateEventoForm(instance=evento)
+    form.local = LocalEvento.objects.get(pk=evento.local.id_local)
+    form.cliente = Cliente.objects.get(evento=evento_id)
+    comidas = Comida.objects.all()
+    comidasEvento = ComidaEvento.objects.filter(evento=evento)
+    return render(request, 'eventos/editEvento.html',
+                  {'form': form, 'comidas': comidas, 'comidasEvento': comidasEvento, 'evento_id': evento_id})
+
+
+def handle_event_edit_post(request):
+    evento_id = request.POST.get('eventoId')
+    evento = Evento.objects.get(pk=evento_id)
+    evento_form = CreateEventoForm(request.POST, instance=evento)
+    comidas = criarComidasEvento(evento_form)
+    evento = evento_form.save(commit=False)
+    evento.save()
+    for comida_id, quantidade in comidas.items():
+        comida = Comida.objects.get(pk=comida_id)
+        quantidade_comida = quantidade if quantidade > comida.quantidade_minima else comida.quantidade_minima
+        comida_evento, created = ComidaEvento.objects.update_or_create(
+            evento=evento,
+            comida=comida,
+            defaults={
+                'quantidade': quantidade_comida,
+                'valor': comida.valor
+            }
+        )
+        create_orcamento(evento, None)
+    messages.success(request, 'Evento editado com sucesso!')
+    return HttpResponseRedirect(reverse('home'))

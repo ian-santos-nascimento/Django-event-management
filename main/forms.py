@@ -68,6 +68,25 @@ class CreateLogisticaForm(forms.ModelForm):
         self.empty_permitted = True
 
 
+class LogisticaFormEvento(forms.ModelForm):
+    evento = forms.ModelChoiceField(
+        queryset=Evento.objects.all().only('nome').order_by('nome'),
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+
+    class Meta:
+        model = Logistica
+        fields = '__all__'
+        exclude = ['id_logistica']
+        widgets = {
+            'tipo': forms.Select(),
+        }
+        labels = {
+            'valor': "Valor diária",
+            'dias': "Qtd dias"
+        }
+
+
 class CreateEventoForm(forms.ModelForm):
     local = forms.ModelChoiceField(queryset=LocalEvento.objects.all().only('nome').order_by('nome'),
                                    widget=forms.Select(attrs={'class': 'form-control'}))
@@ -82,7 +101,7 @@ class CreateEventoForm(forms.ModelForm):
         model = Evento
         exclude = ['id_evento']
         fields = ['nome', 'descricao', 'observacao', 'comidas', 'data_inicio', 'local', 'cliente',
-                  'data_fim']
+                  'data_fim', 'cliente']
         widgets = {
             'nome': forms.TextInput(attrs={'class': 'form-control'}),
             'descricao': forms.Textarea(attrs={'class': 'form-control', 'style': 'height: 200px;'}),
@@ -90,7 +109,10 @@ class CreateEventoForm(forms.ModelForm):
             'qtd_dias_evento': forms.NumberInput(attrs={'class': 'form-control'}),
         }
 
-CreateLogisticaFormSet = modelformset_factory(Logistica, form=CreateLogisticaForm, extra=1, can_delete=True, can_delete_extra=True)
+
+CreateLogisticaFormSet = modelformset_factory(Logistica, form=CreateLogisticaForm, extra=1, can_delete=True,
+                                              can_delete_extra=True)
+
 
 class EditUserForm(UserChangeForm):
     email = forms.EmailField(required=True)
@@ -110,7 +132,8 @@ class CreateClientForm(forms.ModelForm):
         fields = ["nome", "telefone", "razao_social", 'cnpj', 'inscricao_estadual', 'endereco']
         exclude = ["endereco"]
         widgets = {'telefone': forms.TextInput(attrs={'placeholder': "(00)00000-0000", 'data-mask': "(00) 0000-0000"}),
-                   'cnpj':forms.TextInput(attrs={'placeholder': "12.345.678/0000-00", 'data-mask': "00.000.000/0000-00"})}
+                   'cnpj': forms.TextInput(
+                       attrs={'placeholder': "12.345.678/0000-00", 'data-mask': "00.000.000/0000-00"})}
 
 
 class CreateComidaForm(forms.ModelForm):

@@ -24,7 +24,7 @@
                 {% csrf_token %}
                 <button type="submit" name="novoEvento" class="btn btn-sm btn-outline-primary"
                         title="Adicionar novo Evento"
-                        value="Nova comida">Adicionar Evento
+                        value="Novo Evento]">Adicionar Evento
                 </button>
             </form>
         </div>
@@ -39,6 +39,7 @@
             <th scope="col">Data ìnicio</th>
             <th scope="col">Data Fim</th>
             <th scope="col">Local do Evento</th>
+            <th scope="col">Valor do Evento</th>
             <th scope="col">Visualizar</th>
             <th scope="col">Editar</th>
         </tr>
@@ -51,6 +52,14 @@
                 <td>{{ evento.data_inicio }}</td>
                 <td>{{ evento.data_fim }}</td>
                 <td>{{ evento.local }}</td>
+                <td>
+                {% for orcamento in evento.orcamentos.all %}
+                    R${{ orcamento.valor_total }}
+                {% empty %}
+                    Sem dado
+                {% endfor %}
+                
+            </td>
                 <td>
                     <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
                             data-bs-target="#visualizarModal" data-nome="{{ evento.nome }}"
@@ -67,6 +76,7 @@
                     </form>
                 </td>
             </tr>
+            
         {% endfor %}
         </tbody>
     </table>
@@ -135,7 +145,7 @@
                             <label for="nomeEvento"><strong>Evento:</strong></label>
                         </div>
                         <div class="col-11">
-                            <p class="form-control-plaintext p-0"  id="nomeEvento">
+                            <p class="form-control-plaintext p-0" id="nomeEvento">
                         </div>
                     </div>
                     <div class="row">
@@ -143,7 +153,7 @@
                             <label for="localNome"><strong>Local:</strong></label>
                         </div>
                         <div class="col-11">
-                            <p class="form-control-plaintext p-0"  id="localNome">
+                            <p class="form-control-plaintext p-0" id="localNome">
                         </div>
                     </div>
 

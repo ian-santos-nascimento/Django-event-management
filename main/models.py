@@ -66,45 +66,6 @@ class LocalEvento(models.Model):
         return self.nome
 
 
-class Evento(models.Model):
-    id_evento = models.AutoField(primary_key=True)
-    nome = models.CharField(max_length=100)
-    descricao = models.TextField()
-    observacao = models.TextField()
-    comidas = models.ManyToManyField(Comida, through='ComidaEvento')
-    qtd_dias_evento = models.IntegerField(null=True, blank=True)
-    local = models.ForeignKey(LocalEvento, on_delete=models.DO_NOTHING)
-    data_inicio = models.DateField(null=True, blank=True)
-    data_fim = models.DateField(null=True, blank=True)
-    data_criacao = models.DateField(auto_now_add=True)
-
-    def save(self):
-        dias = self.data_fim - self.data_inicio
-        self.qtd_dias_evento = dias.days
-        super(Evento, self).save()
-
-    def __str__(self):
-        return self.nome
-
-class Logistica(models.Model):
-    id_logistica = models.AutoField(primary_key=True)
-    nome = models.CharField(max_length=200)
-    descricao = models.TextField()
-    valor = models.DecimalField(decimal_places=2, max_digits=6)
-    dias = models.IntegerField()
-    tipo = models.CharField(max_length=20, choices=listSelect.TIPO_LOGISTICA)
-    evento = models.ForeignKey(Evento, on_delete=models.CASCADE, default=None)
-
-    def __str__(self):
-        return self.nome
-
-
-class Orcamento(models.Model):
-    id_orcamento = models.AutoField(primary_key=True)
-    evento_id = models.ForeignKey(Evento, on_delete=models.CASCADE)
-    valor_total = models.DecimalField(decimal_places=2, max_digits=10)
-
-
 class Cliente(models.Model):
     id_cliente = models.AutoField(primary_key=True)
     razao_social = models.CharField(max_length=200)
@@ -112,7 +73,6 @@ class Cliente(models.Model):
     inscricao_estadual = models.CharField(max_length=200)
     nome = models.CharField(max_length=200)
     telefone = models.CharField(max_length=100)
-    evento_pk = models.ForeignKey(Evento, on_delete=models.DO_NOTHING, null=True)
     endereco = models.OneToOneField(Endereco, on_delete=models.CASCADE, blank=True, null=True)
 
     def __str__(self):
@@ -129,11 +89,52 @@ class Cliente(models.Model):
             return self.telefone
 
 
+class Evento(models.Model):
+    id_evento = models.AutoField(primary_key=True)
+    nome = models.CharField(max_length=100)
+    descricao = models.TextField()
+    observacao = models.TextField()
+    comidas = models.ManyToManyField(Comida, through='ComidaEvento')
+    qtd_dias_evento = models.IntegerField(null=True, blank=True)
+    local = models.ForeignKey(LocalEvento, on_delete=models.DO_NOTHING)
+    data_inicio = models.DateField(null=True, blank=True)
+    data_fim = models.DateField(null=True, blank=True)
+    data_criacao = models.DateField(auto_now_add=True)
+    cliente = models.ForeignKey(Cliente, on_delete=models.DO_NOTHING)
+
+    def save(self):
+        dias = self.data_fim - self.data_inicio
+        self.qtd_dias_evento = dias.days
+        super(Evento, self).save()
+
+    def __str__(self):
+        return self.nome
+
+
+class Logistica(models.Model):
+    id_logistica = models.AutoField(primary_key=True)
+    nome = models.CharField(max_length=200)
+    descricao = models.TextField()
+    valor = models.DecimalField(decimal_places=2, max_digits=6)
+    dias = models.IntegerField()
+    tipo = models.CharField(max_length=20, choices=listSelect.TIPO_LOGISTICA)
+    evento = models.ForeignKey(Evento, on_delete=models.CASCADE, default=None)
+
+    def __str__(self):
+        return self.nome
+
+
+class Orcamento(models.Model):
+    id_orcamento = models.AutoField(primary_key=True)
+    evento = models.ForeignKey(Evento, related_name='orcamentos', on_delete=models.CASCADE)
+    valor_total = models.DecimalField(decimal_places=2, max_digits=10)
+
+
 class ComidaEvento(models.Model):
-    comida = models.ForeignKey(Comida, on_delete=models.DO_NOTHING, default=1)
-    evento = models.ForeignKey(Evento, on_delete=models.DO_NOTHING, default=1)
+    comida = models.ForeignKey(Comida, on_delete=models.DO_NOTHING, )
+    evento = models.ForeignKey(Evento, on_delete=models.DO_NOTHING, )
     valor = models.DecimalField(decimal_places=2, max_digits=6)
     quantidade = models.IntegerField()
 
     def __str__(self):
-        return self.comida.nome
+        return f'{self.comida.nome} - {self.evento.nome}'

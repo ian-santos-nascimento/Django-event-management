@@ -1,11 +1,12 @@
 import pandas as pd
-from main.models import Comida
 import logging
 
 logging.basicConfig(level=logging.INFO)
 
 
 def createComidaFromCsv(file):
+    from main.models import Comida
+
     print(file)
     if file:
         df = pd.read_excel(file)
