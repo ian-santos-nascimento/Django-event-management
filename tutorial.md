@@ -6,7 +6,7 @@
 
 
 ## Implementation
-- Editar Evento e orçamento
+- Editar orçamento
 - Implementar lógica pra diferente tipos de eventos
 - Order by das listas e buscar na tabela e search
 - Editar Usuarios e mudar senha

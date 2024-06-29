@@ -243,7 +243,7 @@ def get_paginated_clientes(request):
 
 
 def get_paginated_eventos(request):
-    evento_list = Evento.objects.only('nome', 'data_inicio', 'local', 'id_evento').order_by('data_inicio')
+    evento_list = Evento.objects.only('nome', 'data_inicio', 'local', 'id_evento').order_by('-data_inicio')
     return generic_paginator(request, evento_list)
 
 
