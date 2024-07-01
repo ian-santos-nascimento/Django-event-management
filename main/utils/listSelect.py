@@ -28,3 +28,27 @@ ESTADOS_BRASILEIROS = [
     ("TO", "Tocantins"),
 ]
 
+TIPO_LOGISTICA = [("Pessoa", "Pessoa"),
+                  ("Material", "Material",
+                   )]
+
+PRAZO_PAGAMENTO = [
+    ("30 dias", "30 dias"),
+    ("60 dias", "60 dias"),
+    ("90 dias", "90 dias"),
+    ("120 dias", "120 dias"),
+    ("150 dias", "150 dias"),
+    ("180 dias", "180 dias")
+]
+
+TIPO_COMIDA = [
+    ("Doces", "Doces"),
+    ("Acompanhamentos", "Acompanhamentos"),
+    ("Bebidas", "Bebidas"),
+    ("Salgados", "Salgados"),
+    ("Almoço", "Almoço"),
+    ("Embalagem", "Embalagem"),
+    ("Lanches", "Lanches"),
+    ("Terceirizado", "Terceirizado"),
+
+]
