@@ -38,9 +38,9 @@ MIDDLEWARE = [
 ]
 
 CORS_ORIGIN_WHITELIST = [
-    'http://localhost:3000',  # replace with the URL of your ReactJS application
+    'http://localhost:3000',  #TODO replace with the URL of your ReactJS application
 ]
-
+CSRF_COOKIE_NAME = 'csrftoken'
 CORS_ALLOW_CREDENTIALS = True
 ROOT_URLCONF = 'BoutiqueGourmet.urls'
 

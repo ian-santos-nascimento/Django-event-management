@@ -1,18 +1,19 @@
 import './NavBar.css'
 import axios from "axios";
 import csrftoken from "./ApiCall/CsrfToken";
+const apiUrl = process.env.REACT_APP_API_URL;
 
-export default function NavBar({setAuthenticated}) {
+export default function NavBar({ setAuthenticated, isAuthenticated }) {
     const logout = async () => {
         try {
-            await axios.post('http://127.0.0.1:8000/api/logout/', {}, {
+            await axios.post(`${apiUrl}logout/`, {}, {
                 headers: {
                     'X-CSRFToken': csrftoken,
                     'Content-Type': 'application/json'
                 },
                 withCredentials: true
             });
-            setAuthenticated = false;
+            setAuthenticated(false);
             window.location.reload(); // Refresh the page
         } catch (error) {
             console.error('Error logging out:', error);

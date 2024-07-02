@@ -1,4 +1,6 @@
 from rest_framework import status
+from rest_framework.authentication import TokenAuthentication, SessionAuthentication
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from .models import Evento, Comida, LocalEvento, Cliente
@@ -19,7 +21,9 @@ class EventoAnnotatedViewSet(ModelViewSet):
 
 class LocalEventoAnnotatedViewSet(ModelViewSet):
     queryset = LocalEvento.objects.all().order_by('nome')
+    #permission_classes = [IsAuthenticated]
     serializer_class = LocalEventoSerializer
+    #authentication_classes = [TokenAuthentication, SessionAuthentication]
 
 
 class ClienteAnnotatedViewSet(ModelViewSet):

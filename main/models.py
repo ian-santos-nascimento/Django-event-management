@@ -10,6 +10,14 @@ class Cidade(models.Model):
     estado = models.CharField(max_length=300, choices=listSelect.ESTADOS_BRASILEIROS)
     taxa_deslocamento = models.DecimalField(max_digits=5, decimal_places=2)
 
+    @property
+    def agravo_formatado(self) -> str:
+        return "%.0f%%" % (self.taxa_deslocamento * 100)
+
+    def __str__(self):
+        return f"{self.nome}-{self.estado}"
+
+
 class Endereco(models.Model):
     id_endereco = models.AutoField(primary_key=True)
     cep = models.CharField(max_length=20, unique=False)
@@ -42,25 +50,14 @@ class Comida(models.Model):
         return valor_str.replace('.', ',')
 
 
-
 class LocalEvento(models.Model):
     id_local = models.AutoField(primary_key=True)
     nome = models.CharField(max_length=200)
     cidade = models.OneToOneField(Cidade, on_delete=models.DO_NOTHING)
     endereco = models.CharField(max_length=400, unique=False)
-    agravo = models.DecimalField(decimal_places=2, max_digits=8)
     telefone = models.CharField(max_length=20, unique=False)
     email = models.EmailField(unique=False)
     observacoes = models.TextField(null=True, blank=True)
-
-    @property
-    def agravo_formatado(self) -> str:
-        return "%.0f%%" % (self.agravo * 100)
-
-    def save(self):
-        if self.agravo is None:
-            incluiAgravoRegiao(self)
-        super(LocalEvento, self).save()
 
     @property
     def telefone_formatado(self):
@@ -85,14 +82,18 @@ class Cliente(models.Model):
     telefone = models.CharField(max_length=100)
     endereco = models.OneToOneField(Endereco, on_delete=models.CASCADE, blank=True, null=True)
     prazo_pagamento = models.CharField(choices=listSelect.PRAZO_PAGAMENTO)
-    taxa_financeira = models.DecimalField(decimal_places=2, max_digits=8)
+    taxa_financeira = models.DecimalField(decimal_places=2, max_digits=8, blank=True, null=True)
     inicio_contrato = models.DateField(blank=True, null=True)
     fim_contrato = models.DateField(blank=True, null=True)
+
+    @property
+    def taxa_financeira_formatado(self) -> str:
+        return "%.0f%%" % (self.taxa_financeira * 100)
 
     def save(self, *args, **kwargs):
         prazo_pagamento_value = int(self.prazo_pagamento.split()[0])
         meses = prazo_pagamento_value / 30
-        self.taxa_financeira = (meses * 0.03) ## 3 é a taxa/mensal cobrada
+        self.taxa_financeira = (meses * 0.03)  ## 3 é a taxa/mensal cobrada
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -116,12 +117,13 @@ class Evento(models.Model):
     descricao = models.TextField()
     observacao = models.TextField()
     comidas = models.ManyToManyField(Comida, through='ComidaEvento')
-    clientes = models.ForeignKey(Cliente, on_delete=models.DO_NOTHING, null=True)
+    clientes = models.ManyToManyField(Cliente, null=True)
     qtd_dias_evento = models.IntegerField(null=True, blank=True)
-    local = models.OneToOneField(LocalEvento, on_delete=models.DO_NOTHING)
+    local = models.ForeignKey(LocalEvento, on_delete=models.DO_NOTHING)
     qtd_pessoas = models.IntegerField(null=False, blank=False)
     data_inicio = models.DateField(null=True, blank=True)
     data_fim = models.DateField(null=True, blank=True)
+
 
 class ComidaEvento(models.Model):
     comida = models.ForeignKey(Comida, on_delete=models.DO_NOTHING, default=1)
@@ -131,6 +133,7 @@ class ComidaEvento(models.Model):
 
     def __str__(self):
         return self.comida.nome
+
 
 class LogisticaCidade(models.Model):
     id_logistica_cidade = models.AutoField(primary_key=True)
