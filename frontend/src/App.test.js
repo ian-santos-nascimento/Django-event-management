@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import App from './CreateEventoForm';
+import App from './forms/CreateEventoForm';
 
 test('renders learn react link', () => {
   render(<App />);

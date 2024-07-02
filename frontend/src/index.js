@@ -1,14 +1,14 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import App from './CreateEventoForm';
 import reportWebVitals from './reportWebVitals';
 import 'bootstrap/dist/css/bootstrap.css';
-import CreateEventoForm from "./CreateEventoForm";
+import NavBar from "./NavBar";
+import App from "./App";
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <CreateEventoForm />
+      <App></App>
   </React.StrictMode>
 );
 
