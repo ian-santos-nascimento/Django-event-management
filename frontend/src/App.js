@@ -7,23 +7,27 @@ import LocaisList from "./ApiCall/locaisList.tsx";
 
 const App = () => {
     const [authenticated, setAuthenticated] = useState(false);
+    const [sessionId, setSessionId] = useState('');
 
     useEffect(() => {
-        const auth = localStorage.getItem('authenticated');
-        if (auth === 'true') {
+        const auth = localStorage.getItem('sessionId');
+        setSessionId(auth)
+        if (!isNaN(auth)) {
+            console.log("AUTENTICADA")
             setAuthenticated(true);
         }
     }, []);
-
-    const handleLogin = (authStatus) => {
-        setAuthenticated(authStatus);
-        localStorage.setItem('authenticated', authStatus);
-    };
     console.log("AUTENTICADA", authenticated)
+
+    if (!authenticated) {
+        console.log("ENTRANDO NO LOGIN", authenticated)
+        return <Login setAuthenticated={setAuthenticated}/>
+    }
+
     return (
         <div>
-            <NavBar setAuthenticated={handleLogin} isAuthenticated={authenticated} />
-            <LocaisList/>
+            <NavBar setAuthenticated={setAuthenticated} isAuthenticated={authenticated}/>
+            <LocaisList sessionId={sessionId}/>
             {/* Your authenticated components go here */}
         </div>
     );

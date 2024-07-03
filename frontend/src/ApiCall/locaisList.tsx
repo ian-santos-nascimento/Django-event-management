@@ -1,9 +1,13 @@
-import axios from "axios";
 import csrftoken from "./CsrfToken";
 import {useEffect, useState} from 'react';
 import {render} from "@testing-library/react";
+import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_API_URL
+const COOKIE = csrftoken
+axios.defaults.xsrfCookieName = 'csrftoken';
+axios.defaults.xsrfHeaderName = 'X-CSRFToken';
+axios.defaults.withCredentials = true;
 
 interface Local {
     id_local: string,
@@ -15,21 +19,36 @@ interface Local {
     cidade: string,
 }
 
-export default function LocaisList() {
+export default function LocaisList({sessionId}) {
     const [locais, setLocais] = useState<Local[]>([])
-    useEffect(() => {
-        const fetchLocais = async () => {
-            const response = await fetch(`${API_URL}locais/`);
-            console.log(response)
-            const locais = await response.json() as Local;
-            // @ts-ignore
-            setLocais(locais)
-        };
-        fetchLocais();
+    try {
 
-    }, []);
+        useEffect(() => {
+            const fetchLocais = async () => {
+                const response = axios.get(`${API_URL}locais/`, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken,
+                        'sessionId': sessionId
+                    },
+                    credentials: 'include',
+                }).then(function (responseData) {
+                    const locais = responseData.data as Local[]
+                    console.log("LOCALLISt", locais)
+                    // @ts-ignore
+                    setLocais(locais)
+                })
+                console.log(response)
+                setLocais(locais)
+            };
+            fetchLocais();
 
-    console.log(locais)
+        }, []);
+        console.log(locais)
+    } catch (error) {
+        console.log(error)
+    }
+
 
     return (
         <div className="container">

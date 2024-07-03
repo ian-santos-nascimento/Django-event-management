@@ -1,8 +1,28 @@
+from django.contrib.auth import get_user_model, authenticate
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 
 from .models import Evento, Comida, LocalEvento, Cliente, ComidaEvento, Endereco
 
+UserModel = get_user_model()
+
+
+class UserLoginSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    password = serializers.CharField()
+
+    def check_user(self, clean_data):
+        user = authenticate(username=clean_data['username'], password=clean_data['password'])
+        if not user:
+            raise ValidationError('Username or password is incorrect')
+        return user
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserModel
+        fields = ('email', 'username')
 
 class ComidaSerializer(serializers.ModelSerializer):
     comida_id = serializers.IntegerField()

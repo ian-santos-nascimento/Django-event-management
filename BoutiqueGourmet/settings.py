@@ -27,6 +27,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -34,13 +35,17 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
 ]
 
 CORS_ORIGIN_WHITELIST = [
     'http://localhost:3000',  #TODO replace with the URL of your ReactJS application
 ]
-CSRF_COOKIE_NAME = 'csrftoken'
+CORS_ALLOWED_ORIGINS = [ #TODO replacte with actual URL
+    'http://localhost',
+    'http://127.0.0.1',
+    'http://0.0.0.0',
+]
+CSRF_TRUSTED_ORIGINS = ['http://localhost:3000', 'http://127.0.0.1:3000']
 CORS_ALLOW_CREDENTIALS = True
 ROOT_URLCONF = 'BoutiqueGourmet.urls'
 
@@ -114,10 +119,7 @@ CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-LOGIN_REDIRECT_URL = "home"
-LOGIN_URL = "login"
-LOGOUT_REDIRECT_URL = "login"
-
-MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
+LOGIN_URL = 'login'
 
 DJANGO_LOG_LEVEL = DEBUG
+CORS_ORIGIN_ALLOW_ALL = True

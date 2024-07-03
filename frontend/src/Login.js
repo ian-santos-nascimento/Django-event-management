@@ -1,10 +1,17 @@
 // Login.js
 
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import axios from 'axios';
 import csrftoken from './ApiCall/CsrfToken'; // Import the CSRF token utility
+const API_URL = process.env.REACT_APP_API_URL
+axios.defaults.xsrfCookieName = 'csrftoken';
+axios.defaults.withXSRFToken = true
+axios.defaults.xsrfHeaderName = 'X-CSRFToken';
+axios.defaults.withCredentials = true;
 
-const Login = ({ setAuthenticated }) => {
+const login = axios.create({baseURL: API_URL})
+
+const Login = ({setAuthenticated}) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
@@ -12,17 +19,21 @@ const Login = ({ setAuthenticated }) => {
     const handleSubmit = async (event) => {
         event.preventDefault();
         try {
-            const response = await axios.post('http://127.0.0.1:8000/api/login/', {
-                username,
-                password
-            }, {
-                headers: {
-                    'X-CSRFToken': csrftoken,
-                    'Content-Type': 'application/json'
+            console.log("FAZENDO POST REQUEST")
+            login.post('login/', {
+                    username: username,
+                    password: password
                 },
-                withCredentials: true
-            });
-            setAuthenticated(true);
+                {
+                    headers: {
+                        'X-CSRFToken': csrftoken,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            ).then(function (responseData) {
+                setAuthenticated(true)
+                console.log("RESPONSE:", responseData)
+            })
         } catch (error) {
             setErrorMessage('Invalid credentials');
             console.error('Error logging in:', error);

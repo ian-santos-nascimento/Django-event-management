@@ -21,9 +21,9 @@ class EventoAnnotatedViewSet(ModelViewSet):
 
 class LocalEventoAnnotatedViewSet(ModelViewSet):
     queryset = LocalEvento.objects.all().order_by('nome')
-    #permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     serializer_class = LocalEventoSerializer
-    #authentication_classes = [TokenAuthentication, SessionAuthentication]
+    authentication_classes = [SessionAuthentication]
 
 
 class ClienteAnnotatedViewSet(ModelViewSet):
