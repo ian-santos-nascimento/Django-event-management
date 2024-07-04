@@ -6,6 +6,7 @@ from . import viewset
 router = DefaultRouter()
 router.register(r'comidas', viewset.ComidaViewSet)
 router.register(r'locais', viewset.LocalEventoAnnotatedViewSet)
+router.register(r'cidades', viewset.CidadeAnnotatedViewSet)
 router.register(r'clientes', viewset.ClienteAnnotatedViewSet)
 router.register(r'eventos', viewset.EventoAnnotatedViewSet)
 urlpatterns = [

@@ -5,7 +5,7 @@ from .utils import listSelect
 
 
 class Cidade(models.Model):
-    id_cidade = models.IntegerField(primary_key=True)
+    id_cidade = models.AutoField(primary_key=True)
     nome = models.CharField(max_length=300)
     estado = models.CharField(max_length=300, choices=listSelect.ESTADOS_BRASILEIROS)
     taxa_deslocamento = models.DecimalField(max_digits=5, decimal_places=2)
