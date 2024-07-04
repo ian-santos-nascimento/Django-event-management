@@ -10,6 +10,5 @@ router.register(r'clientes', viewset.ClienteAnnotatedViewSet)
 router.register(r'eventos', viewset.EventoAnnotatedViewSet)
 urlpatterns = [
     path('', include(router.urls)),
-    path('login/', login_view, name='login'),
-    path('logout/', logout_view, name='logout'),
+    path('login/', UserLogin.as_view(), name='login'),
 ]

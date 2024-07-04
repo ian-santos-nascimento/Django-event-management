@@ -6,6 +6,7 @@ const apiUrl = process.env.REACT_APP_API_URL;
 export default function NavBar({ setAuthenticated, isAuthenticated }) {
     const logout = async () => {
         try {
+            console.log("SAINDO LOGOUT")
             await axios.post(`${apiUrl}logout/`, {}, {
                 headers: {
                     'X-CSRFToken': csrftoken,

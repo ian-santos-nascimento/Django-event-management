@@ -2,6 +2,9 @@
 - migrate
 - Create superuser
 
+## Observacoes
+- Cuidado ao utilizar diferentes origens como localhost, 127.0.0.1 pois os cookies não serão mandados e então o sessionId não será inserido no frontend
+
 ## Dúvias
 - Quais dados dos espaços de Eventos vocês guardam e precisam
 - Quais dados da Logística vocês precisam e usam para cálculo

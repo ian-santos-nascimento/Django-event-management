@@ -7,7 +7,7 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from django.contrib.auth import get_user_model, login, logout
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.views import APIView
@@ -19,6 +19,7 @@ from .forms import *
 
 @csrf_exempt
 @api_view(['POST'])
+@permission_classes([permissions.AllowAny])
 def login_view(request):
     username = request.data.get('username')
     password = request.data.get('password')

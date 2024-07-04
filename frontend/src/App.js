@@ -3,7 +3,7 @@
 import React, {useEffect, useState} from 'react';
 import Login from './Login';
 import NavBar from "./NavBar";
-import LocaisList from "./ApiCall/locaisList.tsx";
+import LocaisList from "./ApiCall/LocaisList.tsx";
 
 const App = () => {
     const [authenticated, setAuthenticated] = useState(false);

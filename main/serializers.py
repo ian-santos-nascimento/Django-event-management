@@ -3,7 +3,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 
-from .models import Evento, Comida, LocalEvento, Cliente, ComidaEvento, Endereco
+from .models import *
 
 UserModel = get_user_model()
 
@@ -48,6 +48,10 @@ class EventoSerializer(serializers.ModelSerializer):
                                         quantidade=comida.quantidade_minima)
         return evento
 
+class CidadeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Cidade
+        fields = '__all__'
 
 class LocalEventoSerializer(serializers.ModelSerializer):
     class Meta:
