@@ -2,7 +2,7 @@
 
 import React, {useState} from 'react';
 import axios from 'axios';
-import csrftoken from './ApiCall/CsrfToken'; // Import the CSRF token utility
+import csrftoken from '../ApiCall/CsrfToken'; // Import the CSRF token utility
 const API_URL = process.env.REACT_APP_API_URL
 axios.defaults.xsrfCookieName = 'csrftoken';
 axios.defaults.withXSRFToken = true

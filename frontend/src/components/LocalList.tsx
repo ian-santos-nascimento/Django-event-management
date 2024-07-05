@@ -4,7 +4,7 @@ import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 // @ts-ignore
 import LocalEvento from '../forms/LocalEvento.tsx';
-import csrftoken from "./CsrfToken";
+import csrftoken from "../ApiCall/CsrfToken";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 
 const API_URL = process.env.REACT_APP_API_URL;
@@ -22,7 +22,7 @@ interface Local {
     cidade: number
 }
 
-export default function LocaisList({sessionId}) {
+export default function LocalList({sessionId}) {
     const [locais, setLocais] = useState<Local[]>([]);
     const [selectedLocal, setSelectedLocal] = useState<Local | null>(null);
     const [showModal, setShowModal] = useState(false);

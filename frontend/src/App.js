@@ -4,8 +4,8 @@ import React, {useEffect, useState} from 'react';
 import { fab } from '@fortawesome/free-brands-svg-icons'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faSearch, faEdit } from '@fortawesome/free-solid-svg-icons'
-import Login from './Login';
-import NavBar from "./NavBar";
+import Login from './components/Login';
+import NavBar from "./components/NavBar";
 library.add(fab, faSearch, faEdit)
 
 const App = () => {
@@ -20,10 +20,8 @@ const App = () => {
             setAuthenticated(true);
         }
     }, []);
-    console.log("AUTENTICADA", authenticated)
 
     if (!authenticated) {
-        console.log("ENTRANDO NO LOGIN", authenticated)
         return <Login setAuthenticated={setAuthenticated}/>
     }
 

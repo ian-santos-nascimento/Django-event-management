@@ -1,6 +1,5 @@
-import './NavBar.css'
 import axios from "axios";
-import csrftoken from "./ApiCall/CsrfToken";
+import csrftoken from "../ApiCall/CsrfToken";
 import React from "react";
 import {
     BrowserRouter as Router,
@@ -13,7 +12,9 @@ import Container from 'react-bootstrap/Container';
 import Form from 'react-bootstrap/Form';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
-import LocaisList from "./ApiCall/LocaisList.tsx";
+import './NavBar.css'
+import LocalList from "./LocalList.tsx";
+import CidadeList from "./CidadeList.tsx";
 
 const apiUrl = process.env.REACT_APP_API_URL;
 const logo_url = './bg-logo.png'
@@ -54,7 +55,9 @@ export default function NavBar({setAuthenticated, isAuthenticated}) {
                         <Nav.Link>
                             <Link className="nav-link" to="/locais">Locais</Link>
                         </Nav.Link>
-
+                        <Nav.Link>
+                            <Link className="nav-link" to="/cidades">Cidades</Link>
+                        </Nav.Link>
                     </Nav>
                     <Form className="d-flex">
                         <Form.Control
@@ -70,7 +73,11 @@ export default function NavBar({setAuthenticated, isAuthenticated}) {
             <Routes>
                 <Route
                     path="/locais"
-                    element={<LocaisList/>}
+                    element={<LocalList/>}
+                ></Route>
+                 <Route
+                    path="/cidades"
+                    element={<CidadeList/>}
                 ></Route>
             </Routes>
         </Router>
