@@ -1,9 +1,12 @@
 // App.js
 
 import React, {useEffect, useState} from 'react';
+import { fab } from '@fortawesome/free-brands-svg-icons'
+import { library } from '@fortawesome/fontawesome-svg-core'
+import { faSearch, faEdit } from '@fortawesome/free-solid-svg-icons'
 import Login from './Login';
 import NavBar from "./NavBar";
-import LocaisList from "./ApiCall/LocaisList.tsx";
+library.add(fab, faSearch, faEdit)
 
 const App = () => {
     const [authenticated, setAuthenticated] = useState(false);
@@ -27,10 +30,9 @@ const App = () => {
     return (
         <div>
             <NavBar setAuthenticated={setAuthenticated} isAuthenticated={authenticated}/>
-            <LocaisList sessionId={sessionId}/>
-            {/* Your authenticated components go here */}
         </div>
-    );
+    )
+
 };
 
 export default App;

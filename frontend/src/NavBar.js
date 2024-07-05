@@ -1,9 +1,23 @@
 import './NavBar.css'
 import axios from "axios";
 import csrftoken from "./ApiCall/CsrfToken";
-const apiUrl = process.env.REACT_APP_API_URL;
+import React from "react";
+import {
+    BrowserRouter as Router,
+    Routes,
+    Route,
+    Link,
+} from "react-router-dom";
+import Button from 'react-bootstrap/Button';
+import Container from 'react-bootstrap/Container';
+import Form from 'react-bootstrap/Form';
+import Nav from 'react-bootstrap/Nav';
+import Navbar from 'react-bootstrap/Navbar';
+import LocaisList from "./ApiCall/LocaisList.tsx";
 
-export default function NavBar({ setAuthenticated, isAuthenticated }) {
+const apiUrl = process.env.REACT_APP_API_URL;
+const logo_url = './bg-logo.png'
+export default function NavBar({setAuthenticated, isAuthenticated}) {
     const logout = async () => {
         try {
             console.log("SAINDO LOGOUT")
@@ -21,26 +35,44 @@ export default function NavBar({ setAuthenticated, isAuthenticated }) {
         }
     };
     return (
-        <div className="container">
-            <header className="d-flex flex-wrap justify-content-center py-2 mb-4 border-bottom">
-                <a href="/"
-                   className="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
-                    <img src="../public/bg-logo.png" alt=""/>
-                    <span className="fs-4">Boutique Gourmet</span>
-                </a>
+        <Router>
+            <Navbar expand="lg" className="bg-body-tertiary">
+                <Container fluid>
+                    <Navbar.Brand href="/">
+                        <img src={logo_url}
+                             alt="Logo"/>
+                    </Navbar.Brand>
+                    <Navbar.Toggle aria-controls="navbarScroll"/>
+                    <Nav
+                        className="me-auto my-2 my-lg-0"
+                        style={{maxHeight: '100px'}}
+                        navbarScroll
+                    >
+                        <Nav.Link>
+                            <Link className="nav-link" to="/">Home</Link>
+                        </Nav.Link>
+                        <Nav.Link>
+                            <Link className="nav-link" to="/locais">Locais</Link>
+                        </Nav.Link>
 
-                <ul className="nav nav-pills">
-                    <li className="nav-item"><a href="/" className="nav-link"
-                                                aria-current="page">Home</a></li>
-                    <li className="nav-item"><a href="/" className="nav-link">Eventos</a></li>
-                    <li className="nav-item"><a href="/" className="nav-link">Cardápio</a></li>
-                    <li className="nav-item"><a href="/" className="nav-link">Terceiros</a></li>
-                    <li className="nav-item"><a href="/" className="nav-link">Usuarios</a></li>
-                    <li className="nav-item">
-                        <button onClick={logout} className="nav-link">Log Out</button>
-                    </li>
-                </ul>
-            </header>
-        </div>
+                    </Nav>
+                    <Form className="d-flex">
+                        <Form.Control
+                            type="search"
+                            placeholder="Search"
+                            className="me-2"
+                            aria-label="Search"
+                        />
+                        <Button variant="outline-success">Search</Button>
+                    </Form>
+                </Container>
+            </Navbar>
+            <Routes>
+                <Route
+                    path="/locais"
+                    element={<LocaisList/>}
+                ></Route>
+            </Routes>
+        </Router>
     )
 }
