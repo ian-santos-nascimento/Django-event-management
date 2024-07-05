@@ -9,6 +9,7 @@ class Cidade(models.Model):
     nome = models.CharField(max_length=300)
     estado = models.CharField(max_length=300, choices=listSelect.ESTADOS_BRASILEIROS)
     taxa_deslocamento = models.DecimalField(max_digits=5, decimal_places=2)
+    excluida = models.BooleanField(default=False)
 
     @property
     def agravo_formatado(self) -> str:

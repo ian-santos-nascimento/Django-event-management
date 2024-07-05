@@ -22,59 +22,6 @@ interface Cidade {
     taxa_deslocamento: number
 }
 
-interface CidadeEventoProps {
-    cidade: Cidade;
-    handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
-    handleSubmit: (e: React.FormEvent) => void;
-}
-
-const CidadeEvento: React.FC<CidadeEventoProps> = ({cidade, handleChange, handleSubmit}) => {
-    return (
-        <div className="container">
-            <h2 className="text-center">Edição da Cidade</h2>
-            <Form onSubmit={handleSubmit}>
-                <Row className="mb-3">
-                    <Form.Group as={Col} controlId="formGridNome">
-                        <Form.Label>Nome</Form.Label>
-                        <Form.Control
-                            name="nome"
-                            value={cidade.nome}
-                            onChange={handleChange}
-                            type="text"
-                            placeholder="Nome"
-                        />
-                    </Form.Group>
-
-                    <Form.Group as={Col} controlId="formGridEmail">
-                        <Form.Label>Estado</Form.Label>
-                        <Form.Control
-                            name="estado"
-                            value={cidade.estado}
-                            onChange={handleChange}
-                            type="text"
-                        />
-                    </Form.Group>
-                </Row>
-
-                <Form.Group className="mb-3" controlId="formGridEndereco">
-                    <Form.Label>Taxa deslocamento (Em decimal. Ex: 0.02)</Form.Label>
-                    <Form.Control
-                        name="taxa_deslocamento"
-                        value={cidade.taxa_deslocamento}
-                        onChange={handleChange}
-                        placeholder="0.02"
-                    />
-                </Form.Group>
-
-
-                <Button variant="primary" type="submit">
-                    Editar
-                </Button>
-            </Form>
-        </div>
-    );
-}
-
 
 export default function CidadeList({sessionId}) {
     const [cidades, setCidades] = useState<Cidade[]>([]);
@@ -101,14 +48,15 @@ export default function CidadeList({sessionId}) {
 
     const handleEditCidade = (cidade: Cidade) => {
         setSelectedCidade(cidade);
+        setShowModal(true);
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        const { name, value } = e.target;
-        setSelectedCidade((prevCidade) => prevCidade ? { ...prevCidade, [name]: value } : null);
+        const {name, value} = e.target;
+        setSelectedCidade((prevCidade) => prevCidade ? {...prevCidade, [name]: value} : null);
     };
 
-    const handleSubmit = async(e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault()
         try {
             await axios.put(`${API_URL}cidades/${selectedCidade.id_cidade}/`, selectedCidade, {
@@ -133,9 +81,26 @@ export default function CidadeList({sessionId}) {
         setSelectedCidade(null);
     };
 
-    if (selectedCidade && !showModal) {
-        return <CidadeEvento cidade={selectedCidade} handleChange={handleChange} handleSubmit={handleSubmit}/>;
+    const handleExcluirCidade = async () => {
+        try {
+            await axios.delete(`${API_URL}cidades/${selectedCidade.id_cidade}/`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                    'sessionId': sessionId
+                },
+                withCredentials: true,
+            });
+            alert(`Cidade ${selectedCidade.nome} excluída com sucesso.`);
+            window.location.reload()
+        } catch (error) {
+            console.error('Error updating local:', error);
+            alert('Failed to update local.');
+        }
+        handleCloseModal()
+
     }
+
 
     return (
         <div className="container">
@@ -177,18 +142,52 @@ export default function CidadeList({sessionId}) {
                 </Modal.Header>
                 <Modal.Body>
                     {selectedCidade && (
-                        <div>
-                            <p><strong>ID:</strong> {selectedCidade.id_cidade}</p>
-                            <p><strong>Nome:</strong> {selectedCidade.nome}</p>
-                            <p><strong>Endereço:</strong> {selectedCidade.estado}</p>
-                            <p><strong>Telefone:</strong> {selectedCidade.taxa_deslocamento * 100}%</p>
-                        </div>
+                        <Form onSubmit={handleSubmit}>
+                            <Row className="mb-3">
+                                <Form.Group as={Col} controlId="formGridNome">
+                                    <Form.Label>Nome</Form.Label>
+                                    <Form.Control
+                                        name="nome"
+                                        value={selectedCidade.nome}
+                                        onChange={handleChange}
+                                        type="text"
+                                        placeholder="Nome"
+                                    />
+                                </Form.Group>
+
+                                <Form.Group as={Col} controlId="formGridEmail">
+                                    <Form.Label>Estado</Form.Label>
+                                    <Form.Control
+                                        name="estado"
+                                        value={selectedCidade.estado}
+                                        onChange={handleChange}
+                                        type="text"
+                                    />
+                                </Form.Group>
+                            </Row>
+
+                            <Form.Group className="mb-3" controlId="formGridEndereco">
+                                <Form.Label>Taxa deslocamento (Em decimal. Ex: 0.02)</Form.Label>
+                                <Form.Control
+                                    name="taxa_deslocamento"
+                                    value={selectedCidade.taxa_deslocamento}
+                                    onChange={handleChange}
+                                    placeholder="0.02"
+                                />
+                            </Form.Group>
+
+                        </Form>
                     )}
                 </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={handleCloseModal}>
-                        Fechar
-                    </Button>
+                <Modal.Footer className="modal-footer-custom">
+                    <div className="d-flex justify-content-between w-100">
+                        <Button variant="danger" type="submit" onClick={handleExcluirCidade}>
+                            Excluir
+                        </Button>
+                        <Button variant="primary" type="submit" onClick={handleSubmit}>
+                            Editar
+                        </Button>
+                    </div>
                 </Modal.Footer>
             </Modal>
         </div>
