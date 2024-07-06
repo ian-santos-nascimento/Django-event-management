@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import login_view, logout_view, UserLogin
+from .views import  logout_view, UserLogin
 from . import viewset
 
 router = DefaultRouter()
@@ -12,4 +12,5 @@ router.register(r'eventos', viewset.EventoAnnotatedViewSet)
 urlpatterns = [
     path('', include(router.urls)),
     path('login/', UserLogin.as_view(), name='login'),
+    path('logout/', logout_view, name='logout'),
 ]

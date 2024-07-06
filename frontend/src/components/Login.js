@@ -11,7 +11,7 @@ axios.defaults.withCredentials = true;
 
 const login = axios.create({baseURL: API_URL})
 
-const Login = ({setAuthenticated}) => {
+const Login = ({setAuthenticated, setSessionId}) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
@@ -32,6 +32,7 @@ const Login = ({setAuthenticated}) => {
                 }
             ).then(function (responseData) {
                 setAuthenticated(true)
+                setSessionId(responseData.headers.get('sessionid'))
                 console.log("RESPONSE:", responseData)
             })
         } catch (error) {

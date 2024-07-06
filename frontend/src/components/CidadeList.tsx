@@ -51,6 +51,16 @@ export default function CidadeList({sessionId}) {
         setShowModal(true);
     };
 
+    const handleCreateCidade = () => {
+        setSelectedCidade({
+            id_cidade: null,
+            nome: '',
+            estado: '',
+            taxa_deslocamento: 0.0
+        })
+        setShowModal(true)
+    }
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const {name, value} = e.target;
         setSelectedCidade((prevCidade) => prevCidade ? {...prevCidade, [name]: value} : null);
@@ -59,15 +69,27 @@ export default function CidadeList({sessionId}) {
     const handleSubmit = async (e) => {
         e.preventDefault()
         try {
-            await axios.put(`${API_URL}cidades/${selectedCidade.id_cidade}/`, selectedCidade, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken,
-                    'sessionId': sessionId
-                },
-                withCredentials: true,
-            });
-            alert('Local updated successfully!');
+            if (selectedCidade.id_cidade !== null) {
+                await axios.put(`${API_URL}cidades/${selectedCidade.id_cidade}/`, selectedCidade, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken,
+                        'sessionId': sessionId
+                    },
+                    withCredentials: true,
+                });
+                alert('Cidade updated successfully!');
+            } else {
+                await axios.post(`${API_URL}cidades/`, selectedCidade, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken,
+                        'sessionId': sessionId
+                    },
+                    withCredentials: true,
+                });
+                alert('Cidade created successfully!');
+            }
             window.location.reload()
         } catch (error) {
             console.error('Error updating local:', error);
@@ -105,6 +127,7 @@ export default function CidadeList({sessionId}) {
     return (
         <div className="container">
             <h2 className="text-center">Controle de Locais Evento</h2>
+            <Button variant='primary' className='mb-3' onClick={handleCreateCidade}>Nova Cidade</Button>
             <table className="table table-success">
                 <thead>
                 <tr>
@@ -159,6 +182,8 @@ export default function CidadeList({sessionId}) {
                                     <Form.Label>Estado</Form.Label>
                                     <Form.Control
                                         name="estado"
+                                        placeholder='SP'
+                                        maxLength={2}
                                         value={selectedCidade.estado}
                                         onChange={handleChange}
                                         type="text"
@@ -181,11 +206,12 @@ export default function CidadeList({sessionId}) {
                 </Modal.Body>
                 <Modal.Footer className="modal-footer-custom">
                     <div className="d-flex justify-content-between w-100">
-                        <Button variant="danger" type="submit" onClick={handleExcluirCidade}>
+                        <Button disabled={selectedCidade !== null && selectedCidade.id_cidade === null} variant="danger"
+                                type="submit" onClick={handleExcluirCidade}>
                             Excluir
                         </Button>
                         <Button variant="primary" type="submit" onClick={handleSubmit}>
-                            Editar
+                            {selectedCidade !== null && selectedCidade.id_cidade === null ? 'Criar' : 'Editar'}
                         </Button>
                     </div>
                 </Modal.Footer>

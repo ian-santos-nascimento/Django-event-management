@@ -41,39 +41,13 @@ class UserLogin(APIView):
         if serializer.is_valid(raise_exception=True):
             user = serializer.check_user(data)
             login(request, user)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-class UserView(APIView):
-    permission_classes = (permissions.IsAuthenticated,)
-    authentication_classes = (SessionAuthentication,)
-
-    ##
-    def get(self, request):
-        serializer = UserSerializer(request.user)
-        return Response({'user': serializer.data}, status=status.HTTP_200_OK)
+            return Response({"Login successful"}, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
 def logout_view(request):
     logout(request)
     return JsonResponse({'message': 'Logout successful'})
-
-
-def user_login(request):
-    if request.method == 'POST':
-        # Process the request if posted data are available
-        username = request.POST['username']
-        password = request.POST['password']
-        user = authenticate(username=username, password=password)
-        if user is not None:
-            login(request, user)
-            return HttpResponseRedirect(reverse('home'))
-        else:
-            return render(request, 'registration/login.html',
-                          {'error_message': 'Nome de usuário ou senha incorreto!'})
-    else:
-        return render(request, 'registration/login.html')
 
 
 @login_required(redirect_field_name='redirect')

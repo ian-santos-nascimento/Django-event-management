@@ -131,6 +131,6 @@ LOGIN_URL = 'login'
 DJANGO_LOG_LEVEL = DEBUG
 CORS_ORIGIN_ALLOW_ALL = True
 
-SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_HTTPONLY = False #TODO change to TRUE to security
 SESSION_COOKIE_SECURE = False  # Defina como True em produção
 SESSION_COOKIE_SAMESITE = 'Lax'  # Pode ser 'Strict' ou 'None' conforme suas necessidades

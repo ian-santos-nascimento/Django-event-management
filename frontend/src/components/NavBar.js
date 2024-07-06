@@ -68,6 +68,12 @@ export default function NavBar({setAuthenticated, isAuthenticated}) {
                         />
                         <Button variant="outline-success">Search</Button>
                     </Form>
+                    <Nav>
+                        <Nav.Link>
+                            <Button className="nav-link" onClick={logout}>LogOut</Button>
+                        </Nav.Link>
+                    </Nav>
+
                 </Container>
             </Navbar>
             <Routes>
@@ -75,7 +81,7 @@ export default function NavBar({setAuthenticated, isAuthenticated}) {
                     path="/locais"
                     element={<LocalList/>}
                 ></Route>
-                 <Route
+                <Route
                     path="/cidades"
                     element={<CidadeList/>}
                 ></Route>
