@@ -15,6 +15,7 @@ import Navbar from 'react-bootstrap/Navbar';
 import './NavBar.css'
 import LocalList from "./LocalList.tsx";
 import CidadeList from "./CidadeList.tsx";
+import ClienteList from "./ClienteList.tsx"
 
 const apiUrl = process.env.REACT_APP_API_URL;
 const logo_url = './bg-logo.png'
@@ -58,16 +59,11 @@ export default function NavBar({setAuthenticated, isAuthenticated}) {
                         <Nav.Link>
                             <Link className="nav-link" to="/cidades">Cidades</Link>
                         </Nav.Link>
+                        <Nav.Link>
+                            <Link className="nav-link" to="/clientes">Clientes</Link>
+                        </Nav.Link>
                     </Nav>
-                    <Form className="d-flex">
-                        <Form.Control
-                            type="search"
-                            placeholder="Search"
-                            className="me-2"
-                            aria-label="Search"
-                        />
-                        <Button variant="outline-success">Search</Button>
-                    </Form>
+
                     <Nav>
                         <Nav.Link>
                             <Button className="nav-link" onClick={logout}>LogOut</Button>
@@ -84,6 +80,10 @@ export default function NavBar({setAuthenticated, isAuthenticated}) {
                 <Route
                     path="/cidades"
                     element={<CidadeList/>}
+                ></Route>
+                <Route
+                    path="/clientes"
+                    element={<ClienteList/>}
                 ></Route>
             </Routes>
         </Router>

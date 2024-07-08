@@ -1,4 +1,4 @@
-import {Component, useEffect, useState} from "react";
+import {useEffect, useState} from "react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import axios from 'axios';
 import Modal from 'react-bootstrap/Modal';
@@ -126,7 +126,7 @@ export default function CidadeList({sessionId}) {
 
     return (
         <div className="container">
-            <h2 className="text-center">Controle de Locais Evento</h2>
+            <h2 className="text-center">Controle das Cidades</h2>
             <Button variant='primary' className='mb-3' onClick={handleCreateCidade}>Nova Cidade</Button>
             <table className="table table-success">
                 <thead>

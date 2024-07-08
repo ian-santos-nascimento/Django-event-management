@@ -79,8 +79,6 @@ class ClienteSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        # Remove taxa_financeira from the serialized data
-        data.pop('taxa_financeira', None)
         return data
 
     def create(self, validated_data):

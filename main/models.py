@@ -82,7 +82,7 @@ class Cliente(models.Model):
     nome = models.CharField(max_length=200)
     telefone = models.CharField(max_length=100)
     endereco = models.OneToOneField(Endereco, on_delete=models.CASCADE, blank=True, null=True)
-    prazo_pagamento = models.CharField(choices=listSelect.PRAZO_PAGAMENTO)
+    prazo_pagamento = models.CharField()
     taxa_financeira = models.DecimalField(decimal_places=2, max_digits=8, blank=True, null=True)
     inicio_contrato = models.DateField(blank=True, null=True)
     fim_contrato = models.DateField(blank=True, null=True)
@@ -93,7 +93,7 @@ class Cliente(models.Model):
 
     def save(self, *args, **kwargs):
         prazo_pagamento_value = int(self.prazo_pagamento.split()[0])
-        meses = prazo_pagamento_value / 30
+        meses = prazo_pagamento_value / 30 #Divide pra pegar o mes
         self.taxa_financeira = (meses * 0.03)  ## 3 é a taxa/mensal cobrada
         super().save(*args, **kwargs)
 
