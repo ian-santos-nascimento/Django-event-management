@@ -89,8 +89,12 @@ class ClienteSerializer(serializers.ModelSerializer):
         endereco_data = validated_data.pop('endereco', None)
         if endereco_data:
             if instance.endereco:
-                instance.endereco.update(**endereco_data)
+                # Atualizar cada campo do endereço manualmente
+                for attr, value in endereco_data.items():
+                    setattr(instance.endereco, attr, value)
+                instance.endereco.save()
             else:
+                # Criar novo endereço se não existir
                 endereco = Endereco.objects.create(**endereco_data)
                 instance.endereco = endereco
         for attr, value in validated_data.items():
