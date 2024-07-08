@@ -4,6 +4,8 @@ import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Button from "react-bootstrap/Button";
+import InputMask from 'react-input-mask';
+import {FormControl} from "react-bootstrap";
 
 interface Cliente {
     id_cliente: string,
@@ -132,29 +134,37 @@ export default function Cliente({cliente, csrfToken, sessionId, setSelectedClien
 
                     <Form.Group as={Col} controlId="formGridCNPJ">
                         <Form.Label>CNPJ</Form.Label>
-                        <Form.Control
-                            required
-                            name="cnpj"
-                            placeholder='XX. XXX. XXX/0001-XX'
-                            maxLength={14}
+                        <InputMask
+                            mask="99.999.999/9999-99"
                             value={selectedCliente.cnpj}
                             onChange={handleChange}
-                            type="text"
-                        />
+                        >
+                            {() => <Form.Control
+                                required
+                                name="cnpj"
+                                placeholder='XX.XXX.XXX/0001-XX'
+                                maxLength={18}
+                                type="text"
+                            />}
+                        </InputMask>
                         <Form.Control.Feedback type="invalid">
                             Insira um CNPJ válido!
                         </Form.Control.Feedback>
                     </Form.Group>
                     <Form.Group as={Col} controlId="formGridTelefone">
                         <Form.Label>Telefone de contato</Form.Label>
-                        <Form.Control
-                            required
-                            name="telefone"
-                            placeholder='(XX)XXXXX-XXXX'
+                        <InputMask
+                            mask="(99) 99999-9999"
                             value={selectedCliente.telefone}
                             onChange={handleChange}
-                            type="text"
-                        />
+                        >
+                            {() => <Form.Control
+                                required
+                                name="telefone"
+                                placeholder='(XX) XXXXX-XXXX'
+                                type="text"
+                            />}
+                        </InputMask>
                         <Form.Control.Feedback type="invalid">
                             Informe um número para contato!
                         </Form.Control.Feedback>
@@ -279,14 +289,18 @@ export default function Cliente({cliente, csrfToken, sessionId, setSelectedClien
                         </Form.Control.Feedback>
                     </Form.Group>
                     <Form.Group as={Col} controlId="formGridEnderecoCep">
-                        <Form.Label>Endereço CEP</Form.Label>
-                        <Form.Control
-                            required
-                            name="endereco_cep"
+                        <Form.Label>CEP</Form.Label>
+                        <InputMask
+                            mask='99999-999'
                             value={selectedCliente.endereco.cep}
                             onChange={handleChangeEndereco}
-                            type="text"
-                        />
+                        >
+                            {() =>
+                                <Form.Control required
+                                             name="endereco_cep"
+                                             type="text"/>
+                            }
+                        </InputMask>
                         <Form.Control.Feedback type="invalid">
                             Insira o CEP!
                         </Form.Control.Feedback>
