@@ -39,7 +39,7 @@ class Comida(models.Model):
     descricao = models.TextField()
     valor = models.DecimalField(decimal_places=2, max_digits=8)
     quantidade_minima = models.IntegerField()
-    tipo = models.CharField(max_length=200, choices=listSelect.TIPO_COMIDA)
+    tipo = models.CharField(max_length=200)
 
     def __str__(self):
         comida = str(self.comida_id) + "-" + self.nome + " - " + "R$" + str(self.valor)

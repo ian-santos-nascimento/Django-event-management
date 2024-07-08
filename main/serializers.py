@@ -25,11 +25,9 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ('email', 'username')
 
 class ComidaSerializer(serializers.ModelSerializer):
-    comida_id = serializers.IntegerField()
-
     class Meta:
         model = Comida
-        fields = ['comida_id', 'nome', 'descricao', 'valor', 'quantidade_minima']
+        fields = '__all__'
 
 
 class EventoSerializer(serializers.ModelSerializer):

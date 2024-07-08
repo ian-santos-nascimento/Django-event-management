@@ -16,6 +16,7 @@ import './NavBar.css'
 import LocalList from "./LocalList.tsx";
 import CidadeList from "./CidadeList.tsx";
 import ClienteList from "./ClienteList.tsx"
+import ComidaList from "./ComidaList.tsx"
 
 const apiUrl = process.env.REACT_APP_API_URL;
 const logo_url = './bg-logo.png'
@@ -62,6 +63,9 @@ export default function NavBar({setAuthenticated, isAuthenticated}) {
                         <Nav.Link>
                             <Link className="nav-link" to="/clientes">Clientes</Link>
                         </Nav.Link>
+                         <Nav.Link>
+                            <Link className="nav-link" to="/comidas">Comidas</Link>
+                        </Nav.Link>
                     </Nav>
 
                     <Nav>
@@ -84,6 +88,10 @@ export default function NavBar({setAuthenticated, isAuthenticated}) {
                 <Route
                     path="/clientes"
                     element={<ClienteList/>}
+                ></Route>
+                <Route
+                    path="/comidas"
+                    element={<ComidaList/>}
                 ></Route>
             </Routes>
         </Router>
