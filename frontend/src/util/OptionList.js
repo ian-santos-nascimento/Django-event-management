@@ -29,6 +29,6 @@ export const ESTADOS_BRASILEIROS = [
 ];
 
 export const TIPO_LOGISTICA = [
-    'Pesosa', 'Material', 'Outros'
+    'Pessoa', 'Material', 'Outros'
 ]
 

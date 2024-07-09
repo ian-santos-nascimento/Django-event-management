@@ -141,7 +141,7 @@ class LogisticaCidade(models.Model):
     cidade = models.ForeignKey(Cidade, on_delete=models.DO_NOTHING)
     hospedagem = models.DecimalField(decimal_places=2, max_digits=8)
     passagem = models.DecimalField(decimal_places=2, max_digits=8)
-    frete = models.DecimalField(decimal_places=2, max_digits=8)
+    alimentacao = models.DecimalField(decimal_places=2, max_digits=8)
 
 
 class Logistica(models.Model):
