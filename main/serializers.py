@@ -1,7 +1,6 @@
 from django.contrib.auth import get_user_model, authenticate
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 
 from .models import *
 
@@ -23,6 +22,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserModel
         fields = ('email', 'username')
+
 
 class ComidaSerializer(serializers.ModelSerializer):
     class Meta:
@@ -46,10 +46,18 @@ class EventoSerializer(serializers.ModelSerializer):
                                         quantidade=comida.quantidade_minima)
         return evento
 
+
+class LogissticaSerializar(serializers.ModelSerializer):
+    class Meta:
+        model = Logistica
+        fields = '__all__'
+
+
 class CidadeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Cidade
         fields = '__all__'
+
 
 class LocalEventoSerializer(serializers.ModelSerializer):
     class Meta:

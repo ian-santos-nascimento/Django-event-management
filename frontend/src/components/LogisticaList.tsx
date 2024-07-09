@@ -1,37 +1,40 @@
 import {useEffect, useState} from "react";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import axios from 'axios';
+import axios from "axios";
+
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import csrfToken from "../ApiCall/CsrfToken";
-
+import {TIPO_LOGISTICA, ESTADOS_BRASILEIROS} from "../util/OptionList.js";
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+
+
+interface Logistica {
+    id_logistica: number,
+    nome: string,
+    descricao: string,
+    valor: number,
+    tipo: string,
+    in_sp: boolean,
+    evento: number,
+
+}
 
 const API_URL = process.env.REACT_APP_API_URL;
 axios.defaults.xsrfCookieName = 'csrftoken';
 axios.defaults.xsrfHeaderName = 'X-CSRFToken';
 axios.defaults.withCredentials = true;
 
-interface Comida {
-    comida_id: number
-    nome: string,
-    descricao: string,
-    tipo: string,
-    valor: number,
-    quantidade_minima: number,
-}
-
-
-export default function CidadeList({sessionId}) {
-    const [comidas, setCidades] = useState<Comida[]>([]);
-    const [selectedComida, setSelectedComida] = useState<Comida | null>(null);
+export default function LogisticaList({sessionId, csrfToken}) {
+    const [logisticas, setLogisticas] = useState<Logistica[]>([])
+    const [selectedLogistica, setSelectedLogistica] = useState<Logistica>(null)
     const [showModal, setShowModal] = useState(false);
 
     useEffect(() => {
-        const fetchCidades = async () => {
-            const response = await axios.get(`${API_URL}comidas/`, {
+        const fetchLogisticas = async () => {
+            const response = await axios.get(`${API_URL}logisticas/`, {
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRFToken': csrfToken,
@@ -41,39 +44,41 @@ export default function CidadeList({sessionId}) {
                 credentials: 'include',
             });
 
-            const comidas = response.data as Comida[];
-            setCidades(comidas);
+            const comidas = response.data as Logistica[];
+            setLogisticas(comidas);
         };
-        fetchCidades();
+        fetchLogisticas();
     }, [sessionId]);
 
-    const handleEditComida = (comida: Comida) => {
-        setSelectedComida(comida);
+    const handleEditLogistica = (logistica: Logistica) => {
+        setSelectedLogistica(logistica);
         setShowModal(true);
     };
 
-    const handleCreateCidade = () => {
-        setSelectedComida({
-            comida_id: null,
+    const handleCreateLogistica = () => {
+        setSelectedLogistica({
+            id_logistica: null,
             nome: '',
             descricao: '',
-            tipo: '',
-            valor: 0.0,
-            quantidade_minima: 0
+            tipo: TIPO_LOGISTICA[0],
+            valor: 0,
+            in_sp: true,
+            evento: null
         })
         setShowModal(true)
     }
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        const {name, value} = e.target;
-        setSelectedComida((prevComida) => prevComida ? {...prevComida, [name]: value} : null);
+        const {name, value, type, checked} = e.target;
+        const fieldValue = type === 'checkbox' ? checked : value;
+        setSelectedLogistica((prevLogistica) => prevLogistica ? {...prevLogistica, [name]: fieldValue} : null);
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault()
         try {
-            if (selectedComida.comida_id !== null) {
-                await axios.put(`${API_URL}comidas/${selectedComida.comida_id}/`, selectedComida, {
+            if (selectedLogistica.id_logistica !== null) {
+                await axios.put(`${API_URL}logisticas/${selectedLogistica.id_logistica}/`, selectedLogistica, {
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRFToken': csrfToken,
@@ -81,9 +86,9 @@ export default function CidadeList({sessionId}) {
                     },
                     withCredentials: true,
                 });
-                alert('Comida updated successfully!');
+                alert('Logistica updated successfully!');
             } else {
-                await axios.post(`${API_URL}comidas/`, selectedComida, {
+                await axios.post(`${API_URL}logisticas/`, selectedLogistica, {
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRFToken': csrfToken,
@@ -91,24 +96,24 @@ export default function CidadeList({sessionId}) {
                     },
                     withCredentials: true,
                 });
-                alert('Comida created successfully!');
+                alert('Logistica created successfully!');
             }
             window.location.reload()
         } catch (error) {
-            console.error('Error updating comida:', error);
-            alert('Failed to update comida.');
+            console.error('Error updating Logistica:', error);
+            alert('Failed to update Logistica.');
         }
 
     }
 
     const handleCloseModal = () => {
         setShowModal(false);
-        setSelectedComida(null);
+        setSelectedLogistica(null);
     };
 
-    const handleExcluirCidade = async () => {
+    const handleExcluirLogistica = async () => {
         try {
-            await axios.delete(`${API_URL}comidas/${selectedComida.comida_id}/`, {
+            await axios.delete(`${API_URL}logisticas/${selectedLogistica.id_logistica}/`, {
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRFToken': csrfToken,
@@ -116,11 +121,11 @@ export default function CidadeList({sessionId}) {
                 },
                 withCredentials: true,
             });
-            alert(`Comida ${selectedComida.nome} excluída com sucesso.`);
+            alert(`Logistica ${selectedLogistica.nome} excluída com sucesso.`);
             window.location.reload()
         } catch (error) {
-            console.error('Error updating comida:', error);
-            alert('Failed to update comida.');
+            console.error('Error updating Logistica:', error);
+            alert('Failed to update Logistica.');
         }
         handleCloseModal()
 
@@ -129,32 +134,32 @@ export default function CidadeList({sessionId}) {
 
     return (
         <div className="container">
-            <h2 className="text-center">Controle das comidas</h2>
-            <Button variant='primary' className='mb-3' onClick={handleCreateCidade}>Nova Comida</Button>
+            <h2 className="text-center">Controle das Logisticas</h2>
+            <Button variant='primary' className='mb-3' onClick={handleCreateLogistica}>Nova Logistica</Button>
             <table className="table table-success">
                 <thead>
                 <tr>
                     <th scope="col">ID</th>
                     <th scope="col">Nome</th>
                     <th scope="col">Descricao</th>
-                    <th scope="col">Qtd.Minima</th>
                     <th scope="col">Tipo</th>
                     <th scope="col">Valor</th>
+                    <th scope="col">Em SP</th>
                     <th scope="col">Editar</th>
                 </tr>
                 </thead>
                 <tbody>
-                {comidas.map(item =>
-                    <tr key={item.comida_id}>
-                        <td>{item.comida_id}</td>
+                {logisticas.map(item =>
+                    <tr key={item.id_logistica}>
+                        <td>{item.id_logistica}</td>
                         <td>{item.nome}</td>
-                        <td>{item.descricao.slice(0,50)}</td>
-                        <td>{item.quantidade_minima}</td>
+                        <td>{item.descricao.slice(0, 50)}</td>
                         <td>{item.tipo}</td>
                         <td>R${item.valor}</td>
+                        <td>{item.in_sp ? 'SIM' : 'NÃO'}</td>
                         <td>
                             <button
-                                onClick={() => handleEditComida(item)}
+                                onClick={() => handleEditLogistica(item)}
                                 type="button"
                                 className="btn btn-sm btn-outline-primary"
                             >
@@ -168,17 +173,17 @@ export default function CidadeList({sessionId}) {
 
             <Modal show={showModal} onHide={handleCloseModal}>
                 <Modal.Header closeButton>
-                    <Modal.Title>Detalhes do Comida</Modal.Title>
+                    <Modal.Title>Detalhes da Logistica</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    {selectedComida && (
+                    {selectedLogistica && (
                         <Form onSubmit={handleSubmit}>
                             <Row className="mb-3">
                                 <Form.Group as={Col} controlId="formGridNome">
                                     <Form.Label>Nome</Form.Label>
                                     <Form.Control
                                         name="nome"
-                                        value={selectedComida.nome}
+                                        value={selectedLogistica.nome}
                                         onChange={handleChange}
                                         type="text"
                                         placeholder="Nome"
@@ -188,22 +193,26 @@ export default function CidadeList({sessionId}) {
                             </Row>
                             <Row>
                                 <Form.Group as={Col} controlId="formGridQtdMinima">
-                                    <Form.Label>Quantidade minima</Form.Label>
-                                    <Form.Control
-                                        name="quantidade_minima"
-                                        placeholder='4'
-                                        value={selectedComida.quantidade_minima}
+                                    <Form.Label>Tipo da Logistica</Form.Label>
+                                    <Form.Select
+                                        name="tipo"
+                                        value={selectedLogistica.tipo}
                                         onChange={handleChange}
-                                        type="number"
-                                    />
+                                    >
+                                        {TIPO_LOGISTICA.map((tipo, index) => (
+                                            <option key={index} value={tipo}>
+                                                {tipo}
+                                            </option>
+                                        ))}
+                                    </Form.Select>
                                 </Form.Group>
 
                                 <Form.Group as={Col} controlId="formGridEValor">
-                                    <Form.Label>Valor</Form.Label>
+                                    <Form.Label>Valor Diária</Form.Label>
                                     <Form.Control
                                         name="valor"
                                         placeholder='30,50'
-                                        value={selectedComida.valor}
+                                        value={selectedLogistica.valor}
                                         onChange={handleChange}
                                         type="number"
                                     />
@@ -214,32 +223,20 @@ export default function CidadeList({sessionId}) {
                                 <Form.Label>Descricao</Form.Label>
                                 <Form.Control
                                     name="descricao"
-                                    value={selectedComida.descricao}
+                                    value={selectedLogistica.descricao}
                                     onChange={handleChange}
-                                    placeholder="Comida feita pelo chef"
+                                    placeholder="Logistica feita pelo chef"
                                     type='text'
                                 />
                             </Form.Group>
-
-                            <Form.Group as={Col} controlId="formGriPrazoPagamento">
-                                <Form.Label>Tipo de comida</Form.Label>
-                                <Form.Select
-                                    required
-                                    name="tipo"
-                                    value={selectedComida.tipo}
-                                    onChange={handleChange}>
-                                    <option value="Doces">Doces</option>
-                                    <option value="Acompanhamentos">Acompanhamentos</option>
-                                    <option value="Bebidas">Bebidas</option>
-                                    <option value="Salgados">Salgados</option>
-                                    <option value="Almoço">Almoço</option>
-                                    <option value="Embalagem">Embalagem</option>
-                                    <option value="Lanches">Lanches</option>
-                                    <option value="Terceirizado">Terceirizado</option>
-                                </Form.Select>
-                                <Form.Control.Feedback type="invalid">
-                                    Escolha o tipo da comida
-                                </Form.Control.Feedback>
+                            <Form.Group className="mb-3" controlId="formGridDescricao">
+                                <Form.Label>Em SP?</Form.Label>
+                                <Form.Check
+                                    name="in_sp"
+                                    checked={selectedLogistica.in_sp}
+                                    onChange={handleChange}
+                                    type='switch'
+                                />
                             </Form.Group>
 
                         </Form>
@@ -247,16 +244,18 @@ export default function CidadeList({sessionId}) {
                 </Modal.Body>
                 <Modal.Footer className="modal-footer-custom">
                     <div className="d-flex justify-content-between w-100">
-                        <Button disabled={selectedComida !== null && selectedComida.comida_id === null} variant="danger"
-                                type="submit" onClick={handleExcluirCidade}>
+                        <Button disabled={selectedLogistica !== null && selectedLogistica.id_logistica === null}
+                                variant="danger"
+                                type="submit" onClick={handleExcluirLogistica}>
                             Excluir
                         </Button>
                         <Button variant="primary" type="submit" onClick={handleSubmit}>
-                            {selectedComida !== null && selectedComida.comida_id === null ? 'Criar' : 'Editar'}
+                            {selectedLogistica !== null && selectedLogistica.id_logistica === null ? 'Criar' : 'Editar'}
                         </Button>
                     </div>
                 </Modal.Footer>
             </Modal>
         </div>
     );
+
 }

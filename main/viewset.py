@@ -32,6 +32,19 @@ class CidadeAnnotatedViewSet(ModelViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+class LogisticaAnnotatedViewSet(ModelViewSet):
+    queryset = Logistica.objects.all().filter(excluida=False)
+    permission_classes = [IsAuthenticated]
+    serializer_class = LogissticaSerializar
+    authentication_classes = [SessionAuthentication]
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.excluida = True
+        instance.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
 class LocalEventoAnnotatedViewSet(ModelViewSet):
     queryset = LocalEvento.objects.all().order_by('nome')
     permission_classes = [IsAuthenticated]
@@ -41,9 +54,13 @@ class LocalEventoAnnotatedViewSet(ModelViewSet):
 
 class ClienteAnnotatedViewSet(ModelViewSet):
     queryset = Cliente.objects.all().order_by('nome')
+    permission_classes = [IsAuthenticated]
     serializer_class = ClienteSerializer
+    authentication_classes = [SessionAuthentication]
 
 
 class ComidaViewSet(ModelViewSet):
     queryset = Comida.objects.all().order_by('nome')
+    permission_classes = [IsAuthenticated]
     serializer_class = ComidaSerializer
+    authentication_classes = [SessionAuthentication]

@@ -149,10 +149,9 @@ class Logistica(models.Model):
     nome = models.CharField(max_length=200)
     descricao = models.TextField()
     valor = models.DecimalField(decimal_places=2, max_digits=6)
-    dias = models.IntegerField()
-    tipo = models.CharField(max_length=20, choices=listSelect.TIPO_LOGISTICA)
+    tipo = models.CharField(max_length=20)
     in_sp = models.BooleanField(default=True)
-    evento = models.ForeignKey(Evento, on_delete=models.CASCADE, default=None)
+    excluida = models.BooleanField(default=False)
 
     def __str__(self):
         return self.nome
