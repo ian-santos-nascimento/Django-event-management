@@ -117,7 +117,7 @@ class Migration(migrations.Migration):
             ],
         ),
         migrations.CreateModel(
-            name='LocalEvento',
+            name='Local',
             fields=[
                 ('id_local', models.AutoField(primary_key=True, serialize=False)),
                 ('nome', models.CharField(max_length=200)),

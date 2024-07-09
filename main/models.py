@@ -59,6 +59,7 @@ class LocalEvento(models.Model):
     telefone = models.CharField(max_length=20, unique=False)
     email = models.EmailField(unique=False)
     observacoes = models.TextField(null=True, blank=True)
+    excluida = models.BooleanField(default=False)
 
     @property
     def telefone_formatado(self):

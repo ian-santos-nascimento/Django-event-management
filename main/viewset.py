@@ -46,10 +46,16 @@ class LogisticaAnnotatedViewSet(ModelViewSet):
 
 
 class LocalEventoAnnotatedViewSet(ModelViewSet):
-    queryset = LocalEvento.objects.all().order_by('nome')
+    queryset = LocalEvento.objects.all().order_by('nome').filter(excluida=False)
     permission_classes = [IsAuthenticated]
     serializer_class = LocalEventoSerializer
     authentication_classes = [SessionAuthentication]
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.excluida = True
+        instance.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class ClienteAnnotatedViewSet(ModelViewSet):

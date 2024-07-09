@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import {useEffect, useState} from "react";
 import axios from "axios";
 import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
@@ -25,7 +25,7 @@ interface Cidade {
     taxa_deslocamento: number;
 }
 
-export default function LocalEvento({ local, sessionId }) {
+export default function Local({local, sessionId}) {
     const [localState, setLocalState] = useState<Local>(local);
     const [cidades, setCidades] = useState<Cidade[]>([]);
 
@@ -43,6 +43,7 @@ export default function LocalEvento({ local, sessionId }) {
 
                 const cidadesData = response.data as Cidade[];
                 setCidades(cidadesData);
+                localState.cidade = local.cidade === null ? Number(cidadesData[0].id_cidade) : local.cidade
             } catch (error) {
                 console.error('Error fetching cidades:', error);
             }
@@ -52,7 +53,7 @@ export default function LocalEvento({ local, sessionId }) {
     }, [sessionId]);
 
     const handleChange = (e) => {
-        const { name, value } = e.target;
+        const {name, value} = e.target;
         setLocalState((prevLocal) => ({
             ...prevLocal,
             [name]: value,
@@ -60,30 +61,64 @@ export default function LocalEvento({ local, sessionId }) {
     };
 
     const handleCityChange = (e) => {
-        const { value } = e.target;
+        const {value} = e.target;
         setLocalState((prevLocal) => ({
             ...prevLocal,
             cidade: parseInt(value, 10),
         }));
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-
+    const handleExcluirLocal = async () => {
         try {
-            await axios.put(`${API_URL}locais/${local.id_local}/`, localState, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken,
-                    'sessionId': sessionId
-                },
-                withCredentials: true,
-            });
-            alert('Local updated successfully!');
+            await axios.delete(`${API_URL}locais/${localState.id_local}/`,
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken,
+                        'sessionId': sessionId
+                    },
+                    withCredentials: true,
+                });
+            alert('Local removed successfully!');
+
         } catch (error) {
             console.error('Error updating local:', error);
             alert('Failed to update local.');
         }
+        window.location.reload();
+
+    }
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        try {
+            if (local.id_local === null) {
+                await axios.post(`${API_URL}locais/`, localState, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken,
+                        'sessionId': sessionId
+                    },
+                    withCredentials: true,
+                })
+                alert('Local created successfully!');
+            } else {
+                await axios.put(`${API_URL}locais/${local.id_local}/`, localState, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken,
+                        'sessionId': sessionId
+                    },
+                    withCredentials: true,
+                });
+                alert('Local updated successfully!');
+            }
+        } catch (error) {
+            console.error('Error updating local:', error);
+            alert('Failed to update local.');
+        }
+        window.location.reload();
     };
 
     return (
@@ -160,9 +195,17 @@ export default function LocalEvento({ local, sessionId }) {
                     </Form.Group>
                 </Row>
 
-                <Button variant="primary" type="submit">
-                    Editar
-                </Button>
+                <div className="d-flex justify-content-between w-100">
+                    <Button disabled={local.id_local === null}
+                            variant="danger"
+                            type="button" onClick={handleExcluirLocal}>
+                        Excluir
+                    </Button>
+                    <Button variant="primary" type="submit">
+                        {local.id_local === null ? 'Criar' : 'Editar'}
+                    </Button>
+                </div>
+
             </Form>
         </div>
     );

@@ -3,7 +3,7 @@ import axios from 'axios';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 // @ts-ignore
-import LocalEvento from '../forms/LocalEvento.tsx';
+import Local from './Local.tsx';
 import csrftoken from "../ApiCall/CsrfToken";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 
@@ -49,6 +49,18 @@ export default function LocalList({sessionId}) {
         setSelectedLocal(local);
     };
 
+    const handleCreateLocal = () =>{
+        setSelectedLocal({
+            id_local: null,
+            nome: '',
+            endereco: '',
+            observacoes:'',
+            cidade:null,
+            email:'',
+            telefone: ''
+        })
+    }
+
     const handleViewLocal = (local: Local) => {
         setSelectedLocal(local);
         setShowModal(true);
@@ -60,12 +72,14 @@ export default function LocalList({sessionId}) {
     };
 
     if (selectedLocal && !showModal) {
-        return <LocalEvento sessionId={sessionId} local={selectedLocal}/>;
+        return <Local sessionId={sessionId} local={selectedLocal}/>;
     }
 
     return (
         <div className="container">
             <h2 className="text-center">Controle de Locais Evento</h2>
+            <Button variant='primary' className='mb-3' onClick={handleCreateLocal}>Novo Local</Button>
+
             <table className="table table-success">
                 <thead>
                 <tr>
@@ -90,7 +104,7 @@ export default function LocalList({sessionId}) {
                                 type="button"
                                 className="btn btn-sm btn-outline-primary"
                             >
-                                <FontAwesomeIcon icon="search" />
+                                <FontAwesomeIcon icon="search"/>
                             </button>
                         </td>
                         <td>
@@ -99,7 +113,7 @@ export default function LocalList({sessionId}) {
                                 type="button"
                                 className="btn btn-sm btn-outline-primary"
                             >
-                                <FontAwesomeIcon icon="edit" />
+                                <FontAwesomeIcon icon="edit"/>
                             </button>
                         </td>
                     </tr>
