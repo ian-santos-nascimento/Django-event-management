@@ -3,12 +3,11 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import axios from 'axios';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
-import csrftoken from "../ApiCall/CsrfToken";
-import csrfToken from "../ApiCall/CsrfToken";
-
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
+import {ESTADOS_BRASILEIROS} from '../util/OptionList'
+import csrftoken from "../ApiCall/CsrfToken"
 
 const API_URL = process.env.REACT_APP_API_URL;
 axios.defaults.xsrfCookieName = 'csrftoken';
@@ -180,14 +179,17 @@ export default function CidadeList({sessionId}) {
 
                                 <Form.Group as={Col} controlId="formGridEmail">
                                     <Form.Label>Estado</Form.Label>
-                                    <Form.Control
+                                    <Form.Select
                                         name="estado"
-                                        placeholder='SP'
-                                        maxLength={2}
                                         value={selectedCidade.estado}
                                         onChange={handleChange}
-                                        type="text"
-                                    />
+                                    >
+                                        {ESTADOS_BRASILEIROS.map((valor, index) => (
+                                            <option key={index} value={valor.sigla}>
+                                                {valor.nome}
+                                            </option>
+                                        ))}
+                                    </Form.Select>
                                 </Form.Group>
                             </Row>
 

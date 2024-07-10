@@ -18,6 +18,7 @@ import CidadeList from "./CidadeList.tsx";
 import ClienteList from "./ClienteList.tsx"
 import ComidaList from "./ComidaList.tsx"
 import LogisticaList from "./LogisticaList.tsx"
+import EventoList from "./EventoList.tsx";
 
 const apiUrl = process.env.REACT_APP_API_URL;
 const logo_url = './bg-logo.png'
@@ -100,6 +101,10 @@ export default function NavBar({setAuthenticated, isAuthenticated}) {
                 <Route
                     path="/logisticas"
                     element={<LogisticaList/>}
+                ></Route>
+                <Route
+                    path="/"
+                    element={<EventoList/>}
                 ></Route>
             </Routes>
         </Router>

@@ -31,20 +31,10 @@ class ComidaSerializer(serializers.ModelSerializer):
 
 
 class EventoSerializer(serializers.ModelSerializer):
-    comidas = ComidaSerializer(many=True)
-
     class Meta:
         model = Evento
         fields = '__all__'
 
-    def create(self, validated_data):
-        comidas_data = validated_data.pop('comidas')
-        evento = Evento.objects.create(**validated_data)
-        for comida_data in comidas_data:
-            comida = Comida.objects.get(pk=comida_data['comida_id'])
-            ComidaEvento.objects.create(evento=evento, comida=comida, valor=comida.valor,
-                                        quantidade=comida.quantidade_minima)
-        return evento
 
 
 class LogissticaSerializar(serializers.ModelSerializer):

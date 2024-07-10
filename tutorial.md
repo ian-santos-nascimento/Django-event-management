@@ -7,8 +7,8 @@
 
 
 ## Implementation
+- implementar logistica para Material
 - Comida no Evento: Agrupar por tipo
-- Salvar, Editar, Excluir Logistica
 - Salvar, Editar, Excluir Evento
 - Editar Usuarios e mudar senha
 - Criar uma base html pra todas as páginas de listagem
