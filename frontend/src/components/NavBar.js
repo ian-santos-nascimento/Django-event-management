@@ -1,15 +1,9 @@
 import axios from "axios";
 import csrftoken from "../ApiCall/CsrfToken";
 import React from "react";
-import {
-    BrowserRouter as Router,
-    Routes,
-    Route,
-    Link,
-} from "react-router-dom";
+import {BrowserRouter as Router, Link, Route, Routes,} from "react-router-dom";
 import Button from 'react-bootstrap/Button';
 import Container from 'react-bootstrap/Container';
-import Form from 'react-bootstrap/Form';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import './NavBar.css'
@@ -19,6 +13,7 @@ import ClienteList from "./ClienteList.tsx"
 import ComidaList from "./ComidaList.tsx"
 import LogisticaList from "./LogisticaList.tsx"
 import EventoList from "./EventoList.tsx";
+import OrcamentoList from "./OrcamentoList.tsx";
 
 const apiUrl = process.env.REACT_APP_API_URL;
 const logo_url = './bg-logo.png'
@@ -65,11 +60,14 @@ export default function NavBar({setAuthenticated, isAuthenticated}) {
                         <Nav.Link>
                             <Link className="nav-link" to="/clientes">Clientes</Link>
                         </Nav.Link>
-                         <Nav.Link>
+                        <Nav.Link>
                             <Link className="nav-link" to="/comidas">Comidas</Link>
                         </Nav.Link>
                         <Nav.Link>
                             <Link className="nav-link" to="/logisticas">Logisticas</Link>
+                        </Nav.Link>
+                        <Nav.Link>
+                            <Link className="nav-link" to="/orcamentos">Orçamentos</Link>
                         </Nav.Link>
                     </Nav>
 
@@ -106,6 +104,8 @@ export default function NavBar({setAuthenticated, isAuthenticated}) {
                     path="/"
                     element={<EventoList/>}
                 ></Route>
+                <Route path='/orcamentos' element={<OrcamentoList/>}>
+                </Route>
             </Routes>
         </Router>
     )

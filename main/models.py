@@ -54,7 +54,7 @@ class Comida(models.Model):
 class LocalEvento(models.Model):
     id_local = models.AutoField(primary_key=True)
     nome = models.CharField(max_length=200)
-    cidade = models.OneToOneField(Cidade, on_delete=models.DO_NOTHING)
+    cidade = models.OneToOneField(Cidade, on_delete=models.CASCADE)
     endereco = models.CharField(max_length=400, unique=False)
     telefone = models.CharField(max_length=20, unique=False)
     email = models.EmailField(unique=False)
@@ -82,7 +82,7 @@ class Cliente(models.Model):
     inscricao_estadual = models.CharField(max_length=200)
     nome = models.CharField(max_length=200)
     telefone = models.CharField(max_length=100)
-    endereco = models.OneToOneField(Endereco, on_delete=models.CASCADE, blank=True, null=True)
+    endereco = models.OneToOneField(Endereco, on_delete=models.SET_NULL, blank=True, null=True)
     prazo_pagamento = models.CharField()
     taxa_financeira = models.DecimalField(decimal_places=2, max_digits=8, blank=True, null=True)
     inicio_contrato = models.DateField(blank=True, null=True)
@@ -94,7 +94,7 @@ class Cliente(models.Model):
 
     def save(self, *args, **kwargs):
         prazo_pagamento_value = int(self.prazo_pagamento.split()[0])
-        meses = prazo_pagamento_value / 30 #Divide pra pegar o mes
+        meses = prazo_pagamento_value / 30  # Divide pra pegar o mes
         self.taxa_financeira = (meses * 0.03)  ## 3 é a taxa/mensal cobrada
         super().save(*args, **kwargs)
 
@@ -126,19 +126,9 @@ class Evento(models.Model):
     data_fim = models.DateField(null=True, blank=True)
 
 
-class ComidaEvento(models.Model):
-    comida = models.ForeignKey(Comida, on_delete=models.DO_NOTHING, default=1)
-    evento = models.ForeignKey(Evento, on_delete=models.DO_NOTHING, default=1)
-    valor = models.DecimalField(decimal_places=2, max_digits=8)
-    quantidade = models.IntegerField()
-
-    def __str__(self):
-        return self.comida.nome
-
-
 class LogisticaCidade(models.Model):
     id_logistica_cidade = models.AutoField(primary_key=True)
-    cidade = models.ForeignKey(Cidade, on_delete=models.DO_NOTHING)
+    cidade = models.ForeignKey(Cidade, on_delete=models.CASCADE)
     hospedagem = models.DecimalField(decimal_places=2, max_digits=8)
     passagem = models.DecimalField(decimal_places=2, max_digits=8)
     alimentacao = models.DecimalField(decimal_places=2, max_digits=8)
@@ -159,5 +149,27 @@ class Logistica(models.Model):
 
 class Orcamento(models.Model):
     id_orcamento = models.AutoField(primary_key=True)
+    nome = models.CharField(max_length=200)
     evento = models.ForeignKey(Evento, related_name='orcamentos', on_delete=models.CASCADE)
+    cliente = models.ForeignKey(Cliente, related_name='orcamentos', on_delete=models.CASCADE)
+    comidas = models.ManyToManyField(Comida, through='ComidaOrcamento')
+    logisticas = models.ManyToManyField(Logistica, through='LogisticaOrcamento')
     valor_total = models.DecimalField(decimal_places=2, max_digits=10)
+
+
+class ComidaOrcamento(models.Model):
+    comida = models.ForeignKey(Comida, on_delete=models.DO_NOTHING, )
+    orcamento = models.ForeignKey(Orcamento, on_delete=models.CASCADE, )
+    valor = models.DecimalField(decimal_places=2, max_digits=8)
+    quantidade = models.IntegerField()
+
+    def __str__(self):
+        return self.comida.nome
+
+
+class LogisticaOrcamento(models.Model):
+    id_logistica_orcamento = models.AutoField(primary_key=True)
+    logistica = models.ForeignKey(Logistica, on_delete=models.DO_NOTHING, )
+    orcamento = models.ForeignKey(Orcamento, on_delete=models.DO_NOTHING, )
+    valor = models.DecimalField(decimal_places=2, max_digits=8)
+

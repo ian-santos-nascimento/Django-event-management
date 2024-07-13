@@ -36,7 +36,6 @@ class EventoSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-
 class LogissticaSerializar(serializers.ModelSerializer):
     class Meta:
         model = Logistica
@@ -46,6 +45,18 @@ class LogissticaSerializar(serializers.ModelSerializer):
 class CidadeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Cidade
+        fields = '__all__'
+
+
+class OrcamentoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Orcamento
+        fields = '__all__'
+
+
+class LogisticaCidadeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LogisticaCidade
         fields = '__all__'
 
 
@@ -66,8 +77,8 @@ class EnderecoSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class ClienteSerializer(serializers.ModelSerializer):
-    endereco = EnderecoSerializer()  # Nested serializer for Endereco
+class ClienteEnderecoSerializer(serializers.ModelSerializer):
+    endereco = EnderecoSerializer()
 
     class Meta:
         model = Cliente
@@ -99,3 +110,17 @@ class ClienteSerializer(serializers.ModelSerializer):
             setattr(instance, attr, value)
         instance.save()
         return instance
+
+
+class ClienteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Cliente
+        exclude = ['endereco']  # Exclua o campo 'endereco'
+
+
+class EventoClienteSerializer(serializers.ModelSerializer):
+    clientes = ClienteSerializer(many=True)
+    local = LocalEventoSerializer()
+    class Meta:
+        model = Evento
+        fields = '__all__'

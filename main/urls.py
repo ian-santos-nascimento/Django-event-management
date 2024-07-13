@@ -10,8 +10,10 @@ router.register(r'logisticas', viewset.LogisticaAnnotatedViewSet)
 router.register(r'cidades', viewset.CidadeAnnotatedViewSet)
 router.register(r'clientes', viewset.ClienteAnnotatedViewSet)
 router.register(r'eventos', viewset.EventoAnnotatedViewSet)
+router.register(r'orcamentos', viewset.OrcamentoAnnotatedViewSet)
 urlpatterns = [
     path('', include(router.urls)),
     path('login/', UserLogin.as_view(), name='login'),
     path('logout/', logout_view, name='logout'),
+    path('logistica-cidade/<int:cidade_id>/', viewset.LogisticaCidadeByCidadeView.as_view(), name='logistica-cidade-by-cidade'),
 ]

@@ -18,7 +18,6 @@ interface Logistica {
     valor: number,
     tipo: string,
     in_sp: boolean,
-    evento: number,
 
 }
 
@@ -63,7 +62,6 @@ export default function LogisticaList({sessionId, csrfToken}) {
             tipo: TIPO_LOGISTICA[0],
             valor: 0,
             in_sp: true,
-            evento: null
         })
         setShowModal(true)
     }

@@ -29,7 +29,7 @@ INSERT INTO main_logisticacidade (cidade_id, hospedagem, passagem, alimentacao) 
 ((SELECT id_cidade FROM main_cidade WHERE nome='Rio Branco' AND estado='AC'), 350.00, 3500.00, 70.00),
 ((SELECT id_cidade FROM main_cidade WHERE nome='Rio de Janeiro' AND estado='RJ'), 350.00, 1500.00, 70.00),
 ((SELECT id_cidade FROM main_cidade WHERE nome='Salvador' AND estado='BA'), 350.00, 3000.00, 70.00),
-((SELECT id_cidade FROM main_cidade WHERE nome='Santos' E estado='SP'), 350.00, 500.00, 70.00),
+((SELECT id_cidade FROM main_cidade WHERE nome='Santos' AND estado='SP'), 350.00, 500.00, 70.00),
 ((SELECT id_cidade FROM main_cidade WHERE nome='São José do Rio Preto' AND estado='SP'), 350.00, 800.00, 70.00),
 ((SELECT id_cidade FROM main_cidade WHERE nome='São Luis' AND estado='MA'), 350.00, 3000.00, 70.00),
 ((SELECT id_cidade FROM main_cidade WHERE nome='São Paulo' AND estado='SP'), 0.00, 0.00, 70.00),
