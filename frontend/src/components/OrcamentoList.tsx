@@ -35,7 +35,7 @@ interface Orcamento {
     id_orcamento: number,
     nome: string,
     evento: number,
-    cliente: number,
+    clientes: number[],
     comidas: number[],
     logisticas: number[],
     valor_total: number,
@@ -90,9 +90,9 @@ export default function EventoList({sessionId}) {
             id_orcamento: null,
             nome: '',
             evento: null,
-            cliente: null,
-            comidas: null,
-            logisticas: null,
+            clientes: [],
+            comidas: [],
+            logisticas: [],
             valor_total: 0,
         })
     }

@@ -41,7 +41,7 @@ interface Comida {
 }
 
 interface Cliente {
-    id_cliente: string,
+    id_cliente: number,
     cnpj: string,
     nome: string,
     taxa_financeira: string,
@@ -88,8 +88,11 @@ const API_URL = process.env.REACT_APP_API_URL;
 export default function Orcamento({orcamentoState, eventoState: eventoId}) {
     const [orcamento, setOrcamento] = useState<Orcamento>(orcamentoState)
     const [comidas, setComidas] = useState<Comida[]>([])
+    const [comidasSelecionadas, setComidasSelecionadas] = useState<Comida[]>([]);
     const [logisticas, setLogisticas] = useState<Logistica[]>([])
     const [logisticaCidade, setLogisticaCidade] = useState<LogisticaCidade>()
+    const [logisticaSelecionada, setLogisticaSelecionada] = useState<Logistica[]>([])
+    const [clientesSelecionados, setClientesSelecionados] = useState<Cliente[]>([])
     const [evento, setEvento] = useState<Evento>({
         id_evento: 0,
         codigo_evento: 0,
@@ -115,6 +118,15 @@ export default function Orcamento({orcamentoState, eventoState: eventoId}) {
 
     useEffect(() => {
         getModels();
+    }, []);
+
+    useEffect(() => {
+        if (!evento.clientes || evento) {
+            const eventoResponse = axios.get(`${API_URL}eventos/${eventoId}`).then(response => {
+                setEvento(response.data as Evento)
+
+            });
+        }
     }, []);
 
     useEffect(() => {
@@ -149,7 +161,7 @@ export default function Orcamento({orcamentoState, eventoState: eventoId}) {
 
             const eventoResponse = await axios.get(`${API_URL}eventos/${eventoId}`);
             setEvento(eventoResponse.data as Evento);
-
+            console.log("EVENTOSET", evento)
         } catch (error) {
             if (axios.isAxiosError(error) && error.response?.status === 403) {
                 window.location.href = '/login';
@@ -164,6 +176,52 @@ export default function Orcamento({orcamentoState, eventoState: eventoId}) {
         setOrcamento((prevOrcamento) => prevOrcamento ? {...prevOrcamento, [name]: value} : null);
     };
 
+    const handleSelectCliente = (e) => {
+        const selectedId = parseInt(e.target.value); // Converte selectedId para um número
+        const selectedItem = evento.clientes.find(cliente => cliente.id_cliente === selectedId);
+
+        if (selectedItem) { // Verifica se selectedItem não é undefined
+            setOrcamento(prevOrcamento => ({
+                ...prevOrcamento,
+                clientes: [...prevOrcamento.clientes, selectedItem.id_cliente]
+            }));
+
+            setEvento(prevState => ({
+                ...prevState,
+                clientes: prevState.clientes.filter(cliente => cliente.id_cliente !== selectedId) // Use prevState.clientes
+            }));
+            setClientesSelecionados(prevState => [...prevState, selectedItem]);
+
+        } else {
+            console.error(`Cliente com id ${selectedId} não encontrado.`);
+        }
+    };
+
+    const handleSelectLogistica = (e) => {
+        const selectedId = parseInt(e.target.value);
+        const selectedItem = logisticas.find(logistica => logistica.id_logistica === selectedId);
+
+        setOrcamento(prevOrcamento => ({
+            ...prevOrcamento,
+            logisticas: [...prevOrcamento.logisticas, selectedItem.id_logistica]
+        }));
+        setLogisticaSelecionada(prevState => [...prevState, selectedItem]);
+
+        setLogisticas(logisticas.filter(logistica => logistica.id_logistica !== selectedId));
+    };
+
+    const handleSelectComida = (e) => {
+        const selectedId = parseInt(e.target.value);
+        const selectedItem = comidas.find(comida => comida.comida_id === selectedId);
+
+        setOrcamento(prevOrcamento => ({
+            ...prevOrcamento,
+            comidas: [{id: selectedItem.comida_id, quantidade: selectedItem.quantidade_minima}]
+        }));
+        setComidasSelecionadas(prevState => [...prevState, selectedItem]);
+        setComidas(comidas.filter(comida => comida.comida_id !== selectedId));
+    };
+
     const handleSubmit = (e) => {
         console.log(e)
     }
@@ -172,9 +230,8 @@ export default function Orcamento({orcamentoState, eventoState: eventoId}) {
         <div className='container'>
             <h2 className='text-center'>Orçamento</h2>
             <Form onSubmit={handleSubmit}>
-
                 <Row>
-                    <Form.Group as={Col} className="mb-3" controlId="formGridDescricao">
+                    <Form.Group as={Col} className="mb-3" controlId="formGridNome">
                         <Form.Label>Nome do Orçamento</Form.Label>
                         <Form.Control
                             name="descricao"
@@ -184,63 +241,101 @@ export default function Orcamento({orcamentoState, eventoState: eventoId}) {
                             type='text'
                         />
                     </Form.Group>
-                    <Form.Group as={Col} className="mb-3" controlId="formGridDescricao">
-                        <Form.Label> Evento do Orçamento</Form.Label>
+                    <Form.Group as={Col} className="mb-3" controlId="formGridEvento">
+                        <Form.Label>Evento do Orçamento</Form.Label>
                         <Form.Control
                             name="evento"
                             disabled={true}
                             value={evento.nome}
                         />
                     </Form.Group>
-
                 </Row>
                 <Row>
-                    <Form.Group as={Col} className="mb-3" controlId="formGridDescricao">
-                        <Form.Label>Clientes do Evento para ORçamento</Form.Label>
-                        <Form.Select
-                            name="clientes"
-                            multiple
-                        >
-                            {evento.clientes.map((cliente) => (
-                                <option value={cliente.id_cliente}>{cliente.nome}</option>
-                            ))}
-                        </Form.Select>
-                    </Form.Group>
-                    <Form.Group as={Col} className="mb-3" controlId="formGridDescricao">
-                        <Form.Label> Logistica do Orçamento</Form.Label>
-                        <Form.Select
-                            name="logisticas"
-                            multiple
-                        >
-                            {logisticas.map((logistica) => (
-                                <option value={logistica.id_logistica}>{logistica.nome}</option>
-                            ))}
-                        </Form.Select>
-                    </Form.Group>
+                    <Col>
+                        <Form.Group className="mb-3" controlId="formGridClientes">
+                            <Form.Label>Clientes do Evento para Orçamento</Form.Label>
+                            <Form.Select
+                                name="clientes"
+                                onChange={handleSelectCliente}
+                            >
+                                {evento.clientes.map((cliente) => (
+                                    <option key={cliente.id_cliente} value={cliente.id_cliente}>{cliente.nome}</option>
+                                ))}
+                            </Form.Select>
+                        </Form.Group>
+                    </Col>
+                    <Col>
+                        <Form.Group className="mb-3" controlId="formGridClientesSelecionados">
+                            <Form.Label>Clientes Selecionados</Form.Label>
+                            <div>
+                                {clientesSelecionados.map((cliente) => (
+                                    <p key={cliente.id_cliente}>{cliente.nome}</p>
+                                ))}
+                            </div>
+                        </Form.Group>
+                    </Col>
                 </Row>
                 <Row>
-                    <Form.Group as={Col} className="mb-3" controlId="formGridDescricao">
-                        <Form.Label>Comidas do Orçamento</Form.Label>
-                        <Form.Select
-                            name="comidas"
-                            multiple
-                        >
-                            {comidas.map((comida) => (
-                                <option value={comida.comida_id}>{comida.nome}</option>
-                            ))}
-                        </Form.Select>
-                    </Form.Group>
-                    <Form.Group as={Col} className="mb-3" controlId="formGridDescricao">
-                        <Form.Label> Observações do Orçamento</Form.Label>
+                    <Col>
+                        <Form.Group className="mb-3" controlId="formGridLogisticas">
+                            <Form.Label>Logistica do Orçamento</Form.Label>
+                            <Form.Select
+                                name="logisticas"
+                                onChange={handleSelectLogistica}
+                            >
+                                {logisticas.map((logistica) => (
+                                    <option key={logistica.id_logistica}
+                                            value={logistica.id_logistica}>{logistica.nome}</option>
+                                ))}
+                            </Form.Select>
+                        </Form.Group>
+                    </Col>
+                    <Col>
+                        <Form.Group className="mb-3" controlId="formGridLogisticasSelecionadas">
+                            <Form.Label>Logisticas Selecionadas</Form.Label>
+                            <div>
+                                {logisticaSelecionada.map((logistica) => (
+                                    <p key={logistica.id_logistica}>{logistica.nome}</p>
+                                ))}
+                            </div>
+                        </Form.Group>
+                    </Col>
+                </Row>
+                <Row>
+                    <Col>
+                        <Form.Group className="mb-3" controlId="formGridComidas">
+                            <Form.Label>Comidas do Orçamento</Form.Label>
+                            <Form.Select
+                                name="comidas"
+                                onChange={handleSelectComida}
+                            >
+                                {comidas.map((comida) => (
+                                    <option key={comida.comida_id} value={comida.comida_id}>{comida.nome}</option>
+                                ))}
+                            </Form.Select>
+                        </Form.Group>
+                    </Col>
+                    <Col>
+                        <Form.Group className="mb-3" controlId="formGridComidasSelecionadas">
+                            <Form.Label>Comidas Selecionadas</Form.Label>
+                            <div>
+                                {comidasSelecionadas.map((comida) => (
+                                    <p key={comida.comida_id}>{comida.nome}</p>
+                                ))}
+                            </div>
+                        </Form.Group>
+                    </Col>
+                </Row>
+                <Row>
+                    <Form.Group as={Col} className="mb-3" controlId="formGridObservacoes">
+                        <Form.Label>Observações do Orçamento</Form.Label>
                         <Form.Control
                             name="observacoes"
                             value={orcamento.observacoes}
                             as='textarea'
+                            onChange={handleChange}
                         />
                     </Form.Group>
-                </Row>
-                <Row>
-
                 </Row>
             </Form>
 
