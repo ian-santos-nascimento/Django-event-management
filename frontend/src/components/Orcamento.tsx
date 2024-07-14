@@ -3,6 +3,7 @@ import axios from "axios";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Form from "react-bootstrap/Form";
+import Button from "react-bootstrap/Button";
 
 interface Orcamento {
     id_orcamento: number,
@@ -124,7 +125,7 @@ export default function Orcamento({orcamentoState, eventoState: eventoId}) {
         if (!evento.clientes || evento) {
             const eventoResponse = axios.get(`${API_URL}eventos/${eventoId}`).then(response => {
                 setEvento(response.data as Evento)
-
+                setOrcamento({...orcamento, evento:eventoId})
             });
         }
     }, []);
@@ -171,105 +172,160 @@ export default function Orcamento({orcamentoState, eventoState: eventoId}) {
         }
     }
 
+    const handleToggleComida = (comida: Comida) => {
+        if (comidasSelecionadas.includes(comida)) {
+            // Remover da lista de selecionados e adicionar de volta à lista de disponíveis
+            setComidasSelecionadas(comidasSelecionadas.filter(c => c !== comida));
+            setComidas([...comidas, comida]);
+
+            if (orcamento) {
+                const updatedComidas = orcamento.comidas.filter(c => c.id !== comida.comida_id);
+                setOrcamento({ ...orcamento, comidas: updatedComidas });
+            }
+        } else {
+            // Adicionar à lista de selecionados e remover da lista de disponíveis
+            setComidasSelecionadas([...comidasSelecionadas, comida]);
+            setComidas(comidas.filter(c => c !== comida));
+
+            if (orcamento) {
+                setOrcamento({
+                    ...orcamento,
+                    comidas: [...orcamento.comidas, { id: comida.comida_id, quantidade: comida.quantidade_minima }]
+                });
+            }
+        }
+    };
+
+    const handleToggleLogistica = (logistica: Logistica) => {
+        if (logisticaSelecionada.includes(logistica)) {
+            // Remover da lista de selecionados e adicionar de volta à lista de disponíveis
+            setLogisticaSelecionada(logisticaSelecionada.filter(l => l !== logistica));
+            setLogisticas([...logisticas, logistica]);
+
+            if (orcamento) {
+                const updatedLogisticas = orcamento.logisticas.filter(id => id !== logistica.id_logistica);
+                setOrcamento({ ...orcamento, logisticas: updatedLogisticas });
+            }
+        } else {
+            // Adicionar à lista de selecionados e remover da lista de disponíveis
+            setLogisticaSelecionada([...logisticaSelecionada, logistica]);
+            setLogisticas(logisticas.filter(l => l !== logistica));
+
+            if (orcamento) {
+                setOrcamento({ ...orcamento, logisticas: [...orcamento.logisticas, logistica.id_logistica] });
+            }
+        }
+    };
+
+    const handleToggleCliente = (cliente: Cliente) => {
+        if (clientesSelecionados.includes(cliente)) {
+            // Cliente desmarcado: remover da lista de selecionados e adicionar de volta à lista de clientes do evento
+            setClientesSelecionados(clientesSelecionados.filter(c => c !== cliente));
+
+            if (orcamento) {
+                const updatedClientes = orcamento.clientes.filter(id => id !== cliente.id_cliente);
+                setOrcamento({...orcamento, clientes: updatedClientes});
+            }
+
+            setEvento(prevEvento => ({
+                ...prevEvento,
+                clientes: [...prevEvento.clientes, cliente]
+            }));
+        } else {
+            // Cliente marcado: adicionar à lista de selecionados e remover da lista de clientes do evento
+            setClientesSelecionados([...clientesSelecionados, cliente]);
+
+            if (orcamento) {
+                setOrcamento({...orcamento, clientes: [...orcamento.clientes, cliente.id_cliente]});
+            }
+
+            setEvento(prevEvento => ({
+                ...prevEvento,
+                clientes: prevEvento.clientes.filter(c => c.id_cliente !== cliente.id_cliente)
+            }));
+        }
+    };
+
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const {name, value} = e.target;
         setOrcamento((prevOrcamento) => prevOrcamento ? {...prevOrcamento, [name]: value} : null);
     };
 
-    const handleSelectCliente = (e) => {
-        const selectedId = parseInt(e.target.value); // Converte selectedId para um número
-        const selectedItem = evento.clientes.find(cliente => cliente.id_cliente === selectedId);
-
-        if (selectedItem) { // Verifica se selectedItem não é undefined
-            setOrcamento(prevOrcamento => ({
-                ...prevOrcamento,
-                clientes: [...prevOrcamento.clientes, selectedItem.id_cliente]
-            }));
-
-            setEvento(prevState => ({
-                ...prevState,
-                clientes: prevState.clientes.filter(cliente => cliente.id_cliente !== selectedId) // Use prevState.clientes
-            }));
-            setClientesSelecionados(prevState => [...prevState, selectedItem]);
-
-        } else {
-            console.error(`Cliente com id ${selectedId} não encontrado.`);
-        }
-    };
-
-    const handleSelectLogistica = (e) => {
-        const selectedId = parseInt(e.target.value);
-        const selectedItem = logisticas.find(logistica => logistica.id_logistica === selectedId);
-
-        setOrcamento(prevOrcamento => ({
-            ...prevOrcamento,
-            logisticas: [...prevOrcamento.logisticas, selectedItem.id_logistica]
-        }));
-        setLogisticaSelecionada(prevState => [...prevState, selectedItem]);
-
-        setLogisticas(logisticas.filter(logistica => logistica.id_logistica !== selectedId));
-    };
-
-    const handleSelectComida = (e) => {
-        const selectedId = parseInt(e.target.value);
-        const selectedItem = comidas.find(comida => comida.comida_id === selectedId);
-
-        setOrcamento(prevOrcamento => ({
-            ...prevOrcamento,
-            comidas: [{id: selectedItem.comida_id, quantidade: selectedItem.quantidade_minima}]
-        }));
-        setComidasSelecionadas(prevState => [...prevState, selectedItem]);
-        setComidas(comidas.filter(comida => comida.comida_id !== selectedId));
-    };
 
     const handleSubmit = (e) => {
-        console.log(e)
+        e.preventDefault()
+        console.log("SUBMIT", orcamento)
     }
 
     return (
         <div className='container'>
             <h2 className='text-center'>Orçamento</h2>
-            <Form onSubmit={handleSubmit}>
+            <Form>
                 <Row>
-                    <Form.Group as={Col} className="mb-3" controlId="formGridNome">
-                        <Form.Label>Nome do Orçamento</Form.Label>
+                    <Form.Group as={Col} controlId="formGridNome">
+                        <Form.Label>Nome</Form.Label>
                         <Form.Control
-                            name="descricao"
+                            name="nome"
                             value={orcamento.nome}
                             onChange={handleChange}
-                            placeholder="Orcamento tal"
-                            type='text'
+                            type="text"
+                            placeholder="Nome"
                         />
                     </Form.Group>
-                    <Form.Group as={Col} className="mb-3" controlId="formGridEvento">
-                        <Form.Label>Evento do Orçamento</Form.Label>
+                </Row>
+                <Row>
+                    <Form.Group as={Col} controlId="formGridNome">
+                        <Form.Label>Observações</Form.Label>
                         <Form.Control
-                            name="evento"
-                            disabled={true}
-                            value={evento.nome}
+                            name="observacoes"
+                            value={orcamento.observacoes}
+                            onChange={handleChange}
+                            as="textarea"
                         />
                     </Form.Group>
                 </Row>
                 <Row>
                     <Col>
-                        <Form.Group className="mb-3" controlId="formGridClientes">
-                            <Form.Label>Clientes do Evento para Orçamento</Form.Label>
-                            <Form.Select
-                                name="clientes"
-                                onChange={handleSelectCliente}
-                            >
-                                {evento.clientes.map((cliente) => (
-                                    <option key={cliente.id_cliente} value={cliente.id_cliente}>{cliente.nome}</option>
+                        <Form.Group className="mb-3" controlId="formGridComidas">
+                            <Form.Label>Comidas do Orçamento</Form.Label>
+                            <div style={{
+                                maxHeight: '150px',
+                                overflowY: 'scroll',
+                                border: '1px solid #ced4da',
+                                padding: '10px'
+                            }}>
+                                {comidas.map((comida) => (
+                                    <Form.Check
+                                        key={comida.comida_id}
+                                        type="checkbox"
+                                        label={comida.nome}
+                                        value={comida.comida_id}
+                                        checked={comidasSelecionadas.includes(comida)}
+                                        onChange={() => handleToggleComida(comida)}
+                                    />
                                 ))}
-                            </Form.Select>
+                            </div>
                         </Form.Group>
                     </Col>
                     <Col>
-                        <Form.Group className="mb-3" controlId="formGridClientesSelecionados">
-                            <Form.Label>Clientes Selecionados</Form.Label>
-                            <div>
-                                {clientesSelecionados.map((cliente) => (
-                                    <p key={cliente.id_cliente}>{cliente.nome}</p>
+                        <Form.Group className="mb-3" controlId="formGridComidasSelecionadas">
+                            <Form.Label>Comidas Selecionadas</Form.Label>
+                            <div style={{
+                                maxHeight: '150px',
+                                overflowY: 'scroll',
+                                border: '1px solid #ced4da',
+                                padding: '10px'
+                            }}>
+                                {comidasSelecionadas.map((comida) => (
+                                    <Form.Check
+                                        key={comida.comida_id}
+                                        type="checkbox"
+                                        label={comida.nome}
+                                        value={comida.comida_id}
+                                        checked={true}
+                                        onChange={() => handleToggleComida(comida)}
+                                    />
                                 ))}
                             </div>
                         </Form.Group>
@@ -278,24 +334,44 @@ export default function Orcamento({orcamentoState, eventoState: eventoId}) {
                 <Row>
                     <Col>
                         <Form.Group className="mb-3" controlId="formGridLogisticas">
-                            <Form.Label>Logistica do Orçamento</Form.Label>
-                            <Form.Select
-                                name="logisticas"
-                                onChange={handleSelectLogistica}
-                            >
+                            <Form.Label>Logisticas do Orçamento</Form.Label>
+                            <div style={{
+                                maxHeight: '150px',
+                                overflowY: 'scroll',
+                                border: '1px solid #ced4da',
+                                padding: '10px'
+                            }}>
                                 {logisticas.map((logistica) => (
-                                    <option key={logistica.id_logistica}
-                                            value={logistica.id_logistica}>{logistica.nome}</option>
+                                    <Form.Check
+                                        key={logistica.id_logistica}
+                                        type="checkbox"
+                                        label={logistica.nome}
+                                        value={logistica.id_logistica}
+                                        checked={logisticaSelecionada.includes(logistica)}
+                                        onChange={() => handleToggleLogistica(logistica)}
+                                    />
                                 ))}
-                            </Form.Select>
+                            </div>
                         </Form.Group>
                     </Col>
                     <Col>
                         <Form.Group className="mb-3" controlId="formGridLogisticasSelecionadas">
                             <Form.Label>Logisticas Selecionadas</Form.Label>
-                            <div>
+                            <div style={{
+                                maxHeight: '150px',
+                                overflowY: 'scroll',
+                                border: '1px solid #ced4da',
+                                padding: '10px'
+                            }}>
                                 {logisticaSelecionada.map((logistica) => (
-                                    <p key={logistica.id_logistica}>{logistica.nome}</p>
+                                    <Form.Check
+                                        key={logistica.id_logistica}
+                                        type="checkbox"
+                                        label={logistica.nome}
+                                        value={logistica.id_logistica}
+                                        checked={true}
+                                        onChange={() => handleToggleLogistica(logistica)}
+                                    />
                                 ))}
                             </div>
                         </Form.Group>
@@ -303,42 +379,54 @@ export default function Orcamento({orcamentoState, eventoState: eventoId}) {
                 </Row>
                 <Row>
                     <Col>
-                        <Form.Group className="mb-3" controlId="formGridComidas">
-                            <Form.Label>Comidas do Orçamento</Form.Label>
-                            <Form.Select
-                                name="comidas"
-                                onChange={handleSelectComida}
-                            >
-                                {comidas.map((comida) => (
-                                    <option key={comida.comida_id} value={comida.comida_id}>{comida.nome}</option>
+                        <Form.Group className="mb-3" controlId="formGridClientes">
+                            <Form.Label>Clientes do Evento para Orçamento</Form.Label>
+                            <div style={{
+                                maxHeight: '150px',
+                                overflowY: 'scroll',
+                                border: '1px solid #ced4da',
+                                padding: '10px'
+                            }}>
+                                {evento.clientes.map((cliente) => (
+                                    <Form.Check
+                                        key={cliente.id_cliente}
+                                        type="checkbox"
+                                        label={cliente.nome}
+                                        value={cliente.id_cliente}
+                                        checked={clientesSelecionados.includes(cliente)}
+                                        onChange={() => handleToggleCliente(cliente)}
+                                    />
                                 ))}
-                            </Form.Select>
+                            </div>
                         </Form.Group>
                     </Col>
                     <Col>
-                        <Form.Group className="mb-3" controlId="formGridComidasSelecionadas">
-                            <Form.Label>Comidas Selecionadas</Form.Label>
-                            <div>
-                                {comidasSelecionadas.map((comida) => (
-                                    <p key={comida.comida_id}>{comida.nome}</p>
+                        <Form.Group className="mb-3" controlId="formGridClientesSelecionados">
+                            <Form.Label>Clientes Selecionados</Form.Label>
+                            <div style={{
+                                maxHeight: '150px',
+                                overflowY: 'scroll',
+                                border: '1px solid #ced4da',
+                                padding: '10px'
+                            }}>
+                                {clientesSelecionados.map((cliente) => (
+                                    <Form.Check
+                                        key={cliente.id_cliente}
+                                        type="checkbox"
+                                        label={cliente.nome}
+                                        value={cliente.id_cliente}
+                                        checked={true}
+                                        onChange={() => handleToggleCliente(cliente)}
+                                    />
                                 ))}
                             </div>
                         </Form.Group>
                     </Col>
                 </Row>
-                <Row>
-                    <Form.Group as={Col} className="mb-3" controlId="formGridObservacoes">
-                        <Form.Label>Observações do Orçamento</Form.Label>
-                        <Form.Control
-                            name="observacoes"
-                            value={orcamento.observacoes}
-                            as='textarea'
-                            onChange={handleChange}
-                        />
-                    </Form.Group>
-                </Row>
+                <Button variant="primary" type="submit" onClick={handleSubmit}>
+                    {orcamento !== null && orcamento.id_orcamento === null ? 'Criar' : 'Editar'}
+                </Button>
             </Form>
-
         </div>
     )
 
