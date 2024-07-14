@@ -9,14 +9,18 @@ interface Orcamento {
     id_orcamento: number,
     nome: string,
     evento: number,
-    clientes: number[],
+    cliente: number,
     logisticas: number[],
     comidas: [{
         id: number,
         quantidade: number
     }]
     observacoes: string,
-    valor_total:number
+    valor_total_comidas: number,
+    desconto_total_comidas: number,
+    valor_total_logisticas: number,
+    desconto_total_logisticas: number,
+
 }
 
 interface Evento {
@@ -94,7 +98,7 @@ export default function Orcamento({orcamentoState, eventoState: eventoId}) {
     const [logisticas, setLogisticas] = useState<Logistica[]>([])
     const [logisticaCidade, setLogisticaCidade] = useState<LogisticaCidade>()
     const [logisticaSelecionada, setLogisticaSelecionada] = useState<Logistica[]>([])
-    const [clientesSelecionados, setClientesSelecionados] = useState<Cliente[]>([])
+    const [clientesSelecionados, setClientesSelecionados] = useState<Cliente>([])
     const [evento, setEvento] = useState<Evento>({
         id_evento: 0,
         codigo_evento: 0,
@@ -117,6 +121,7 @@ export default function Orcamento({orcamentoState, eventoState: eventoId}) {
         },
         clientes: []
     })
+    const [valorComidaTotal, setValorComidaTotal] = useState(0.0)
 
     useEffect(() => {
         getModels();
@@ -139,6 +144,15 @@ export default function Orcamento({orcamentoState, eventoState: eventoId}) {
             console.log("Evento not ready yet:", evento);
         }
     }, [evento]);
+
+    useEffect(() => {
+        // Calculando o valor total das comidas selecionadas
+        const total = comidasSelecionadas.reduce((acc, comida) => {
+            const quantidade = orcamento?.comidas.find(c => c.id === comida.comida_id)?.quantidade || comida.quantidade_minima;
+            return acc + comida.valor * quantidade;
+        }, 0);
+        setValorComidaTotal(total);
+    }, [orcamento, comidasSelecionadas]);
 
     async function getLogisticaCidade() {
         if (evento && evento.local && evento.local.cidade !== null) {
@@ -228,34 +242,19 @@ export default function Orcamento({orcamentoState, eventoState: eventoId}) {
         }
     };
 
-    const handleToggleCliente = (cliente: Cliente) => {
-        if (clientesSelecionados.includes(cliente)) {
-            // Cliente desmarcado: remover da lista de selecionados e adicionar de volta à lista de clientes do evento
-            setClientesSelecionados(clientesSelecionados.filter(c => c !== cliente));
+   const handleToggleCliente = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedId = parseInt(e.target.value);
+    const selectedItem = evento.clientes.find(cliente => cliente.id_cliente === selectedId);
 
-            if (orcamento) {
-                const updatedClientes = orcamento.clientes.filter(id => id !== cliente.id_cliente);
-                setOrcamento({...orcamento, clientes: updatedClientes});
-            }
+    if (selectedItem) {
+        setClientesSelecionados(selectedItem);
 
-            setEvento(prevEvento => ({
-                ...prevEvento,
-                clientes: [...prevEvento.clientes, cliente]
-            }));
-        } else {
-            // Cliente marcado: adicionar à lista de selecionados e remover da lista de clientes do evento
-            setClientesSelecionados([...clientesSelecionados, cliente]);
-
-            if (orcamento) {
-                setOrcamento({...orcamento, clientes: [...orcamento.clientes, cliente.id_cliente]});
-            }
-
-            setEvento(prevEvento => ({
-                ...prevEvento,
-                clientes: prevEvento.clientes.filter(c => c.id_cliente !== cliente.id_cliente)
-            }));
-        }
-    };
+        setOrcamento(prevOrcamento => ({
+            ...prevOrcamento,
+            cliente: selectedItem.id_cliente
+        }));
+    }
+};
 
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -333,7 +332,7 @@ export default function Orcamento({orcamentoState, eventoState: eventoId}) {
                                          style={{display: 'flex', alignItems: 'center', marginBottom: '10px'}}>
                                         <Form.Check
                                             type="checkbox"
-                                            label={comida.nome}
+                                            label={`${comida.nome}-R$${comida.valor}`}
                                             value={comida.comida_id}
                                             checked={true}
                                             onChange={() => handleToggleComida(comida)}
@@ -349,13 +348,11 @@ export default function Orcamento({orcamentoState, eventoState: eventoId}) {
                             </div>
                         </Form.Group>
                         <Form.Group as={Col} controlId="formGridNome">
-                            <Form.Label>Observações</Form.Label>
+                            <Form.Label>Total R$ comidas</Form.Label>
                             <Form.Control
-                                name="observacoes"
-                                disabled={true}
-                                value={orcamento.}
-                                onChange={handleChange}
                                 type="number"
+                                value={valorComidaTotal || 0}
+                                disabled={true}
                             />
                         </Form.Group>
                     </Col>
@@ -409,46 +406,16 @@ export default function Orcamento({orcamentoState, eventoState: eventoId}) {
                 <Row>
                     <Col>
                         <Form.Group className="mb-3" controlId="formGridClientes">
-                            <Form.Label>Clientes do Evento para Orçamento</Form.Label>
-                            <div style={{
-                                maxHeight: '150px',
-                                overflowY: 'scroll',
-                                border: '1px solid #ced4da',
-                                padding: '10px'
-                            }}>
+                            <Form.Label>Cliente do Evento para Orçamento</Form.Label>
+                            <Form.Select
+                                name="cliente"
+                                value={orcamento.cliente}
+                                onChange={handleToggleCliente}
+                            >
                                 {evento.clientes.map((cliente) => (
-                                    <Form.Check
-                                        key={cliente.id_cliente}
-                                        type="checkbox"
-                                        label={cliente.nome}
-                                        value={cliente.id_cliente}
-                                        checked={clientesSelecionados.includes(cliente)}
-                                        onChange={() => handleToggleCliente(cliente)}
-                                    />
+                                    <option key={cliente.id_cliente} value={cliente.id_cliente}>{cliente.nome}</option>
                                 ))}
-                            </div>
-                        </Form.Group>
-                    </Col>
-                    <Col>
-                        <Form.Group className="mb-3" controlId="formGridClientesSelecionados">
-                            <Form.Label>Clientes Selecionados</Form.Label>
-                            <div style={{
-                                maxHeight: '150px',
-                                overflowY: 'scroll',
-                                border: '1px solid #ced4da',
-                                padding: '10px'
-                            }}>
-                                {clientesSelecionados.map((cliente) => (
-                                    <Form.Check
-                                        key={cliente.id_cliente}
-                                        type="checkbox"
-                                        label={cliente.nome}
-                                        value={cliente.id_cliente}
-                                        checked={true}
-                                        onChange={() => handleToggleCliente(cliente)}
-                                    />
-                                ))}
-                            </div>
+                            </Form.Select>
                         </Form.Group>
                     </Col>
                 </Row>
