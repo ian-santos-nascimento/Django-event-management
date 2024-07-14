@@ -32,6 +32,12 @@ class OrcamentoAnnotatedViewSet(ModelViewSet):
     serializer_class = OrcamentoSerializer
     authentication_classes = [SessionAuthentication]
 
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        print(serializer.data)
+        print(request.data)
+        print(serializer)
+
 
 class CidadeAnnotatedViewSet(ModelViewSet):
     queryset = Cidade.objects.all().order_by('nome').filter(excluida=False)

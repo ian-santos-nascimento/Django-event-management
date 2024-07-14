@@ -173,19 +173,19 @@ export default function Orcamento({orcamentoState, eventoState: eventoId}) {
     }
 
     const handleToggleComida = (comida: Comida) => {
-        if (comidasSelecionadas.includes(comida)) {
-            // Remover da lista de selecionados e adicionar de volta à lista de disponíveis
-            setComidasSelecionadas(comidasSelecionadas.filter(c => c !== comida));
-            setComidas([...comidas, comida]);
+        if (comidasSelecionadas.some(c => c.comida_id === comida.comida_id)) {
+            // Remover da lista de selecionados
+            const updatedComidasSelecionadas = comidasSelecionadas.filter(c => c.comida_id !== comida.comida_id);
+            setComidasSelecionadas(updatedComidasSelecionadas);
 
             if (orcamento) {
                 const updatedComidas = orcamento.comidas.filter(c => c.id !== comida.comida_id);
                 setOrcamento({ ...orcamento, comidas: updatedComidas });
             }
         } else {
-            // Adicionar à lista de selecionados e remover da lista de disponíveis
-            setComidasSelecionadas([...comidasSelecionadas, comida]);
-            setComidas(comidas.filter(c => c !== comida));
+            // Adicionar à lista de selecionados com quantidade mínima inicial
+            const updatedComida = { ...comida, quantidade: comida.quantidade_minima };
+            setComidasSelecionadas([...comidasSelecionadas, updatedComida]);
 
             if (orcamento) {
                 setOrcamento({
@@ -194,6 +194,16 @@ export default function Orcamento({orcamentoState, eventoState: eventoId}) {
                 });
             }
         }
+    };
+
+    const handleQuantityChange = (comida_id: number, quantidade: number) => {
+        setOrcamento(prevOrcamento => {
+            if (!prevOrcamento) return prevOrcamento;
+            const updatedComidas = prevOrcamento.comidas.map(comida =>
+                comida.id === comida_id ? { ...comida, quantidade } : comida
+            );
+            return { ...prevOrcamento, comidas: updatedComidas };
+        });
     };
 
     const handleToggleLogistica = (logistica: Logistica) => {
@@ -288,47 +298,44 @@ export default function Orcamento({orcamentoState, eventoState: eventoId}) {
                 <Row>
                     <Col>
                         <Form.Group className="mb-3" controlId="formGridComidas">
-                            <Form.Label>Comidas do Orçamento</Form.Label>
-                            <div style={{
-                                maxHeight: '150px',
-                                overflowY: 'scroll',
-                                border: '1px solid #ced4da',
-                                padding: '10px'
-                            }}>
-                                {comidas.map((comida) => (
-                                    <Form.Check
-                                        key={comida.comida_id}
-                                        type="checkbox"
-                                        label={comida.nome}
-                                        value={comida.comida_id}
-                                        checked={comidasSelecionadas.includes(comida)}
-                                        onChange={() => handleToggleComida(comida)}
-                                    />
-                                ))}
-                            </div>
-                        </Form.Group>
+                        <Form.Label>Comidas do Orçamento</Form.Label>
+                        <div style={{ maxHeight: '150px', overflowY: 'scroll', border: '1px solid #ced4da', padding: '10px' }}>
+                            {comidas.map((comida) => (
+                                <Form.Check
+                                    key={comida.comida_id}
+                                    type="checkbox"
+                                    label={comida.nome}
+                                    value={comida.comida_id}
+                                    checked={comidasSelecionadas.some(c => c.comida_id === comida.comida_id)}
+                                    onChange={() => handleToggleComida(comida)}
+                                />
+                            ))}
+                        </div>
+                    </Form.Group>
                     </Col>
                     <Col>
-                        <Form.Group className="mb-3" controlId="formGridComidasSelecionadas">
-                            <Form.Label>Comidas Selecionadas</Form.Label>
-                            <div style={{
-                                maxHeight: '150px',
-                                overflowY: 'scroll',
-                                border: '1px solid #ced4da',
-                                padding: '10px'
-                            }}>
-                                {comidasSelecionadas.map((comida) => (
+                         <Form.Group className="mb-3" controlId="formGridComidasSelecionadas">
+                        <Form.Label>Comidas Selecionadas</Form.Label>
+                        <div style={{ maxHeight: '150px', overflowY: 'scroll', border: '1px solid #ced4da', padding: '10px' }}>
+                            {comidasSelecionadas.map((comida) => (
+                                <div key={comida.comida_id} style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
                                     <Form.Check
-                                        key={comida.comida_id}
                                         type="checkbox"
                                         label={comida.nome}
                                         value={comida.comida_id}
                                         checked={true}
                                         onChange={() => handleToggleComida(comida)}
                                     />
-                                ))}
-                            </div>
-                        </Form.Group>
+                                    <Form.Control
+                                        type="number"
+                                        value={orcamento?.comidas.find(c => c.id === comida.comida_id)?.quantidade || comida.quantidade_minima}
+                                        onChange={(e) => handleQuantityChange(comida.comida_id, parseInt(e.target.value))}
+                                        style={{ width: '75px', marginLeft: '5px' }}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    </Form.Group>
                     </Col>
                 </Row>
                 <Row>
