@@ -151,14 +151,11 @@ export default function Orcamento({orcamentoState, eventoState: eventoId}) {
     }, [evento]);
 
     useEffect(() => {
-        // Calculando o valor total das comidas selecionadas
-        console.log("EventoClientes" + evento.clientes)
         const cliente = evento.clientes.find(cliente => cliente.id_cliente === orcamento.cliente)
-        console.log("CLIENTE" + cliente)
         const total = comidasSelecionadas.reduce((acc, comida) => {
             const quantidade = orcamento?.comidas.find(c => c.id === comida.comida_id)?.quantidade || comida.quantidade_minima;
             const total_comida_evento = (acc + comida.valor * quantidade) * evento.qtd_dias_evento;
-            return total_comida_evento + (total_comida_evento * parseFloat(cliente?.taxa_financeira));
+            return total_comida_evento + (total_comida_evento * parseFloat(cliente?.taxa_financeira || evento.clientes[0].taxa_financeira));
         }, 0);
         setValorComidaTotal(total);
     }, [orcamento, comidasSelecionadas, evento]);
