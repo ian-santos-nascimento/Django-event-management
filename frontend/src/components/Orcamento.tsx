@@ -4,17 +4,21 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
+import {parse} from "@fortawesome/fontawesome-svg-core";
 
 interface Orcamento {
     id_orcamento: number,
     nome: string,
     evento: number,
     cliente: number,
-    logisticas: number[],
+    logisticas: [{
+        id: number,
+        quantidade: number
+    }],
     comidas: [{
         id: number,
         quantidade: number
-    }]
+    }],
     observacoes: string,
     valor_total_comidas: number,
     desconto_total_comidas: number,
@@ -97,8 +101,8 @@ export default function Orcamento({orcamentoState, eventoState: eventoId}) {
     const [comidasSelecionadas, setComidasSelecionadas] = useState<Comida[]>([]);
     const [logisticas, setLogisticas] = useState<Logistica[]>([])
     const [logisticaCidade, setLogisticaCidade] = useState<LogisticaCidade>()
-    const [logisticaSelecionada, setLogisticaSelecionada] = useState<Logistica[]>([])
-    const [clientesSelecionados, setClientesSelecionados] = useState<Cliente>([])
+    const [logisticasSelecionadas, setLogisticasSelecionadas] = useState<Logistica[]>([])
+    const [clientesSelecionados, setClientesSelecionados] = useState<Cliente>()
     const [evento, setEvento] = useState<Evento>({
         id_evento: 0,
         codigo_evento: 0,
@@ -122,6 +126,7 @@ export default function Orcamento({orcamentoState, eventoState: eventoId}) {
         clientes: []
     })
     const [valorComidaTotal, setValorComidaTotal] = useState(0.0)
+    const [valorLogisticaTotal, setValorLogisticaTotal] = useState(0.0)
 
     useEffect(() => {
         getModels();
@@ -147,12 +152,25 @@ export default function Orcamento({orcamentoState, eventoState: eventoId}) {
 
     useEffect(() => {
         // Calculando o valor total das comidas selecionadas
+        console.log("EventoClientes" + evento.clientes)
+        const cliente = evento.clientes.find(cliente => cliente.id_cliente === orcamento.cliente)
+        console.log("CLIENTE" + cliente)
         const total = comidasSelecionadas.reduce((acc, comida) => {
             const quantidade = orcamento?.comidas.find(c => c.id === comida.comida_id)?.quantidade || comida.quantidade_minima;
-            return acc + comida.valor * quantidade;
+            const total_comida_evento = (acc + comida.valor * quantidade) * evento.qtd_dias_evento;
+            return total_comida_evento + (total_comida_evento * parseFloat(cliente?.taxa_financeira));
         }, 0);
         setValorComidaTotal(total);
-    }, [orcamento, comidasSelecionadas]);
+    }, [orcamento, comidasSelecionadas, evento]);
+
+    useEffect(() => {
+        // Calculando o valor total das logisticas selecionadas
+        const total = logisticasSelecionadas.reduce((acc, logistica) => {
+            const quantidade = orcamento?.logisticas.find(l => l.id === logistica.id_logistica)?.quantidade || 1;
+            return (acc + logistica.valor * quantidade + (logisticaCidade.alimentacao * quantidade)) * evento.qtd_dias_evento;
+        }, 0);
+        setValorLogisticaTotal(total);
+    }, [orcamento, logisticasSelecionadas]);
 
     async function getLogisticaCidade() {
         if (evento && evento.local && evento.local.cidade !== null) {
@@ -177,6 +195,7 @@ export default function Orcamento({orcamentoState, eventoState: eventoId}) {
 
             const eventoResponse = await axios.get(`${API_URL}eventos/${eventoId}`);
             setEvento(eventoResponse.data as Evento);
+            setOrcamento({...orcamento, cliente: evento.clientes[0].id_cliente})
             console.log("EVENTOSET", evento)
         } catch (error) {
             if (axios.isAxiosError(error) && error.response?.status === 403) {
@@ -221,40 +240,54 @@ export default function Orcamento({orcamentoState, eventoState: eventoId}) {
         });
     };
 
+
+    const handleQuantityLogisticaChange = (logistica_id: number, quantidade: number) => {
+        setOrcamento(prevOrcamento => {
+            if (!prevOrcamento) return prevOrcamento;
+            const updatedLogistica = prevOrcamento.logisticas.map(logistica =>
+                logistica.id === logistica_id ? {...logistica, quantidade} : logistica
+            );
+            return {...prevOrcamento, logisticas: updatedLogistica};
+        });
+    }
+
     const handleToggleLogistica = (logistica: Logistica) => {
-        if (logisticaSelecionada.includes(logistica)) {
+        if (logisticasSelecionadas.includes(logistica)) {
             // Remover da lista de selecionados e adicionar de volta à lista de disponíveis
-            setLogisticaSelecionada(logisticaSelecionada.filter(l => l !== logistica));
+            setLogisticasSelecionadas(logisticasSelecionadas.filter(l => l !== logistica));
             setLogisticas([...logisticas, logistica]);
 
             if (orcamento) {
-                const updatedLogisticas = orcamento.logisticas.filter(id => id !== logistica.id_logistica);
+                const updatedLogisticas = orcamento.logisticas.filter(log => log.id !== logistica.id_logistica);
                 setOrcamento({...orcamento, logisticas: updatedLogisticas});
             }
         } else {
             // Adicionar à lista de selecionados e remover da lista de disponíveis
-            setLogisticaSelecionada([...logisticaSelecionada, logistica]);
+            setLogisticasSelecionadas([...logisticasSelecionadas, logistica]);
             setLogisticas(logisticas.filter(l => l !== logistica));
 
             if (orcamento) {
-                setOrcamento({...orcamento, logisticas: [...orcamento.logisticas, logistica.id_logistica]});
+                setOrcamento({
+                    ...orcamento,
+                    logisticas: [...orcamento.logisticas, {id: logistica.id_logistica, quantidade: 1}]
+                });
             }
         }
     };
 
-   const handleToggleCliente = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedId = parseInt(e.target.value);
-    const selectedItem = evento.clientes.find(cliente => cliente.id_cliente === selectedId);
+    const handleToggleCliente = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const selectedId = parseInt(e.target.value);
+        const selectedItem = evento.clientes.find(cliente => cliente.id_cliente === selectedId);
 
-    if (selectedItem) {
-        setClientesSelecionados(selectedItem);
+        if (selectedItem) {
+            setClientesSelecionados(selectedItem);
 
-        setOrcamento(prevOrcamento => ({
-            ...prevOrcamento,
-            cliente: selectedItem.id_cliente
-        }));
-    }
-};
+            setOrcamento(prevOrcamento => ({
+                ...prevOrcamento,
+                cliente: selectedItem.id_cliente
+            }));
+        }
+    };
 
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -350,8 +383,8 @@ export default function Orcamento({orcamentoState, eventoState: eventoId}) {
                         <Form.Group as={Col} controlId="formGridNome">
                             <Form.Label>Total R$ comidas</Form.Label>
                             <Form.Control
-                                type="number"
-                                value={valorComidaTotal || 0}
+                                type="text"
+                                value={`R$${valorComidaTotal}| total * dias_evento (${evento.qtd_dias_evento || 0})` || 0}
                                 disabled={true}
                             />
                         </Form.Group>
@@ -373,7 +406,7 @@ export default function Orcamento({orcamentoState, eventoState: eventoId}) {
                                         type="checkbox"
                                         label={logistica.nome}
                                         value={logistica.id_logistica}
-                                        checked={logisticaSelecionada.includes(logistica)}
+                                        checked={logisticasSelecionadas.includes(logistica)}
                                         onChange={() => handleToggleLogistica(logistica)}
                                     />
                                 ))}
@@ -389,17 +422,34 @@ export default function Orcamento({orcamentoState, eventoState: eventoId}) {
                                 border: '1px solid #ced4da',
                                 padding: '10px'
                             }}>
-                                {logisticaSelecionada.map((logistica) => (
-                                    <Form.Check
-                                        key={logistica.id_logistica}
-                                        type="checkbox"
-                                        label={logistica.nome}
-                                        value={logistica.id_logistica}
-                                        checked={true}
-                                        onChange={() => handleToggleLogistica(logistica)}
-                                    />
+                                {logisticasSelecionadas.map((logistica) => (
+                                    <div key={logistica.id_logistica}
+                                         style={{display: 'flex', alignItems: 'center', marginBottom: '10px'}}>
+                                        <Form.Check
+                                            key={logistica.id_logistica}
+                                            type="checkbox"
+                                            label={`${logistica.nome}-R$${logistica.valor}`}
+                                            value={logistica.id_logistica}
+                                            checked={true}
+                                            onChange={() => handleToggleLogistica(logistica)}
+                                        />
+                                        <Form.Control
+                                            type="number"
+                                            value={orcamento?.logisticas.find(l => l.id === logistica.id_logistica)?.quantidade || 1}
+                                            onChange={(e) => handleQuantityLogisticaChange(logistica.id_logistica, parseInt(e.target.value))}
+                                            style={{width: '75px', marginLeft: '5px'}}
+                                        />
+                                    </div>
                                 ))}
                             </div>
+                        </Form.Group>
+                        <Form.Group as={Col} controlId="formGridNome">
+                            <Form.Label>Total R$ Logistica</Form.Label>
+                            <Form.Control
+                                type="text"
+                                value={`R$${valorLogisticaTotal} | valor * alimentação(${logisticaCidade?.alimentacao}) * dias(${evento?.qtd_dias_evento})` || 0}
+                                disabled={true}
+                            />
                         </Form.Group>
                     </Col>
                 </Row>
@@ -413,7 +463,7 @@ export default function Orcamento({orcamentoState, eventoState: eventoId}) {
                                 onChange={handleToggleCliente}
                             >
                                 {evento.clientes.map((cliente) => (
-                                    <option key={cliente.id_cliente} value={cliente.id_cliente}>{cliente.nome}</option>
+                                    <option key={cliente.id_cliente} value={cliente.id_cliente}>{cliente.nome}{`-Taxa(${cliente.taxa_financeira * 100}%)`}</option>
                                 ))}
                             </Form.Select>
                         </Form.Group>
