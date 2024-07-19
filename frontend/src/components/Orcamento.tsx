@@ -4,7 +4,7 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
-import {parse} from "@fortawesome/fontawesome-svg-core";
+import {NumericFormat} from 'react-number-format';
 
 interface Orcamento {
     id_orcamento: number,
@@ -95,36 +95,33 @@ interface LogisticaCidade {
 
 const API_URL = process.env.REACT_APP_API_URL;
 
-export default function Orcamento({orcamentoState, eventoState: eventoId}) {
-    const [orcamento, setOrcamento] = useState<Orcamento>(orcamentoState)
+export default function Orcamento({eventoState: eventoState}) {
+    const [orcamento, setOrcamento] = useState<Orcamento>({
+        id_orcamento: 0,
+        nome: '',
+        cliente: 0,
+        evento: 0,
+        logisticas: [{
+            id: 0,
+            quantidade: 1
+        }],
+        comidas: [{
+            id: 0,
+            quantidade: 1
+        }],
+        observacoes: '',
+        valor_total_comidas: 0,
+        desconto_total_comidas: 0,
+        valor_total_logisticas: 0,
+        desconto_total_logisticas: 0,
+    })
     const [comidas, setComidas] = useState<Comida[]>([])
     const [comidasSelecionadas, setComidasSelecionadas] = useState<Comida[]>([]);
     const [logisticas, setLogisticas] = useState<Logistica[]>([])
     const [logisticaCidade, setLogisticaCidade] = useState<LogisticaCidade>()
     const [logisticasSelecionadas, setLogisticasSelecionadas] = useState<Logistica[]>([])
     const [clientesSelecionados, setClientesSelecionados] = useState<Cliente>()
-    const [evento, setEvento] = useState<Evento>({
-        id_evento: 0,
-        codigo_evento: 0,
-        nome: '',
-        descricao: '',
-        observacao: '',
-        qtd_dias_evento: 0,
-        qtd_pessoas: 0,
-        data_inicio: '',
-        data_fim: '',
-        local: {
-            id_local: 0,
-            nome: "",
-            endereco: "",
-            telefone: "",
-            email: "",
-            observacoes: "",
-            excluida: false,
-            cidade: null
-        },
-        clientes: []
-    })
+    const [evento, setEvento] = useState<Evento>(eventoState)
     const [valorComidaTotal, setValorComidaTotal] = useState(0.0)
     const [valorLogisticaTotal, setValorLogisticaTotal] = useState(0)
 
@@ -134,9 +131,9 @@ export default function Orcamento({orcamentoState, eventoState: eventoId}) {
 
     useEffect(() => {
         if (!evento.clientes || evento) {
-            const eventoResponse = axios.get(`${API_URL}eventos/${eventoId}`).then(response => {
+            const eventoResponse = axios.get(`${API_URL}eventos/${eventoState.id_evento}`).then(response => {
                 setEvento(response.data as Evento)
-                setOrcamento({...orcamento, evento: eventoId})
+                setOrcamento({...orcamento, evento: eventoState.id_evento})
             });
         }
     }, []);
@@ -159,7 +156,7 @@ export default function Orcamento({orcamentoState, eventoState: eventoId}) {
             const total_comida_evento = (acc + comida.valor * quantidade);
             return total_comida_evento + (total_comida_evento * parseFloat(cliente?.taxa_financeira || evento.clientes[0].taxa_financeira));
         }, 0);
-        setValorComidaTotal(total);
+        setValorComidaTotal(total - orcamento.desconto_total_comidas);
     }, [orcamento, comidasSelecionadas, evento]);
 
     //Calculo Logistica
@@ -184,7 +181,7 @@ export default function Orcamento({orcamentoState, eventoState: eventoId}) {
         if (isNaN(total)) {
             console.error('Total is NaN');
         } else {
-            setValorLogisticaTotal(total);
+            setValorLogisticaTotal(total - orcamento.desconto_total_logisticas);
         }
     }, [orcamento, logisticasSelecionadas, evento, logisticaCidade]);
 
@@ -301,7 +298,7 @@ export default function Orcamento({orcamentoState, eventoState: eventoId}) {
     };
 
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const handleChange = (e: { target: { name: string; value: number } }) => {
         const {name, value} = e.target;
         setOrcamento((prevOrcamento) => prevOrcamento ? {...prevOrcamento, [name]: value} : null);
     };
@@ -396,6 +393,7 @@ export default function Orcamento({orcamentoState, eventoState: eventoId}) {
                                     />
                                     <Form.Control
                                         type="number"
+                                        min={comida.quantidade_minima}
                                         value={orcamento?.comidas.find(c => c.id === comida.comida_id)?.quantidade || comida.quantidade_minima}
                                         onChange={(e) => handleQuantityChange(comida.comida_id, parseInt(e.target.value))}
                                         style={{width: '75px', marginLeft: '5px'}}
@@ -406,14 +404,36 @@ export default function Orcamento({orcamentoState, eventoState: eventoId}) {
                     </Form.Group>
 
                 </Row>
-                <Form.Group as={Col} controlId="formGridNome">
-                    <Form.Label>Total R$ comidas</Form.Label>
-                    <Form.Control
-                        type="text"
-                        value={`R$${valorComidaTotal.toFixed(2)}` || 0}
-                        disabled={true}
-                    />
-                </Form.Group>
+                <Row>
+                    <Form.Group as={Col} controlId="formGridNome">
+                        <Form.Label>Total R$ comidas</Form.Label>
+                        <Form.Control
+                            type="text"
+                            value={`R$${valorComidaTotal.toFixed(2)}` || 0}
+                            disabled={true}
+                        />
+                    </Form.Group>
+                    <Form.Group as={Col} controlId="formGridNome">
+                        <Form.Label>Desconto para Cardápio</Form.Label>
+                        <NumericFormat
+                            name="desconto_total_comidas"
+                            value={orcamento.desconto_total_comidas}
+                            onValueChange={(values) => {
+                                const {floatValue} = values;
+                                handleChange({target: {name: 'desconto_total_comidas', value: floatValue || 0}});
+                            }}
+                            thousandSeparator="."
+                            decimalSeparator=","
+                            prefix="R$ "
+                            decimalScale={2}
+                            fixedDecimalScale={true}
+                            allowNegative={false}
+                            placeholder="Desconto Comida"
+                            customInput={Form.Control}
+                        />
+                    </Form.Group>
+                </Row>
+
                 <Row>
                     <Form.Group as={Col} className="mb-3" controlId="formGridLogisticas">
                         <Form.Label>Logisticas do Orçamento</Form.Label>
@@ -466,23 +486,43 @@ export default function Orcamento({orcamentoState, eventoState: eventoId}) {
                     </Form.Group>
                 </Row>
 
-                <Form.Group as={Col} controlId="formGridNome">
-                    <Form.Label>Total R$ Logistica</Form.Label>
-                    <Form.Control
-                        type="text"
-                        value={`R$${valorLogisticaTotal.toFixed(2)} | valor * alimentação(${logisticaCidade?.alimentacao}) * dias(${evento?.qtd_dias_evento})`}
-                        disabled={true}
-                    />
-                    {logisticasSelecionadas.map((logistica) => (
-                        (!logistica.in_sp) && (
-                            <p>+{logistica.nome}(Hospedagem:R${logisticaCidade?.hospedagem}, passagem:
-                                R${logisticaCidade?.passagem})</p>
-                        )
+                <Row>
 
-                    ))}
-                </Form.Group>
+                    <Form.Group as={Col} controlId="formGridNome">
+                        <Form.Label>Total R$ Logistica</Form.Label>
+                        <Form.Control
+                            type="text"
+                            value={`R$${valorLogisticaTotal.toFixed(2)} | valor * alimentação(${logisticaCidade?.alimentacao}) * dias(${evento?.qtd_dias_evento})`}
+                            disabled={true}
+                        />
+                        {logisticasSelecionadas.map((logistica) => (
+                            (!logistica.in_sp) && (
+                                <p>+{logistica.nome}(Hospedagem:R${logisticaCidade?.hospedagem}, passagem:
+                                    R${logisticaCidade?.passagem})</p>
+                            )
 
-
+                        ))}
+                    </Form.Group>
+                    <Form.Group as={Col} controlId="formGridNome">
+                        <Form.Label>Desconto para Logistica</Form.Label>
+                        <NumericFormat
+                            name="desconto_total_logisticas"
+                            value={orcamento.desconto_total_logisticas}
+                            onValueChange={(values) => {
+                                const {floatValue} = values;
+                                handleChange({target: {name: 'desconto_total_logisticas', value: floatValue || 0}});
+                            }}
+                            thousandSeparator="."
+                            decimalSeparator=","
+                            prefix="R$ "
+                            decimalScale={2}
+                            fixedDecimalScale={true}
+                            allowNegative={false}
+                            placeholder="Desconto Logistica"
+                            customInput={Form.Control}
+                        />
+                    </Form.Group>
+                </Row>
                 <Button variant="primary" type="submit" onClick={handleSubmit}>
                     {orcamento !== null && orcamento.id_orcamento === null ? 'Criar' : 'Editar'}
                 </Button>

@@ -124,7 +124,7 @@ export default function EventoList({sessionId}) {
     };
 
     if (showOrcamento)
-        return <Orcamento orcamentoState={selectedOrcamento} eventoState={selectedEvento.id_evento}/>
+        return <Orcamento eventoState={selectedEvento}/>
 
 
     return (
