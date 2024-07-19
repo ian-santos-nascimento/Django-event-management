@@ -35,7 +35,7 @@ interface Orcamento {
     id_orcamento: number,
     nome: string,
     evento: number,
-    clientes: number[],
+    cliente: number,
     comidas: number[],
     logisticas: number[],
     valor_total: number,

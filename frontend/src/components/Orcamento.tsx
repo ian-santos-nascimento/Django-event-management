@@ -9,8 +9,8 @@ import {parse} from "@fortawesome/fontawesome-svg-core";
 interface Orcamento {
     id_orcamento: number,
     nome: string,
-    evento: number,
     cliente: number,
+    evento: number,
     logisticas: [{
         id: number,
         quantidade: number
@@ -126,7 +126,7 @@ export default function Orcamento({orcamentoState, eventoState: eventoId}) {
         clientes: []
     })
     const [valorComidaTotal, setValorComidaTotal] = useState(0.0)
-    const [valorLogisticaTotal, setValorLogisticaTotal] = useState(0.0)
+    const [valorLogisticaTotal, setValorLogisticaTotal] = useState(0)
 
     useEffect(() => {
         getModels();
@@ -144,38 +144,56 @@ export default function Orcamento({orcamentoState, eventoState: eventoId}) {
     useEffect(() => {
         if (evento && evento.local && evento.local.cidade) {
             console.log("Calling getLogisticaCidade with evento:", evento);
-            getLogisticaCidade();
+            getLogisticaCidade()
+            setOrcamento({...orcamento, cliente: evento.clientes[0].id_cliente})
         } else {
             console.log("Evento not ready yet:", evento);
         }
     }, [evento]);
 
+    //Calculo Comida
     useEffect(() => {
         const cliente = evento.clientes.find(cliente => cliente.id_cliente === orcamento.cliente)
         const total = comidasSelecionadas.reduce((acc, comida) => {
             const quantidade = orcamento?.comidas.find(c => c.id === comida.comida_id)?.quantidade || comida.quantidade_minima;
-            const total_comida_evento = (acc + comida.valor * quantidade) * evento.qtd_dias_evento;
+            const total_comida_evento = (acc + comida.valor * quantidade);
             return total_comida_evento + (total_comida_evento * parseFloat(cliente?.taxa_financeira || evento.clientes[0].taxa_financeira));
         }, 0);
         setValorComidaTotal(total);
     }, [orcamento, comidasSelecionadas, evento]);
 
+    //Calculo Logistica
     useEffect(() => {
-        // Calculando o valor total das logisticas selecionadas
+        if (!orcamento || !logisticasSelecionadas.length || !evento || !logisticaCidade) {
+            return;
+        }
         const total = logisticasSelecionadas.reduce((acc, logistica) => {
+            const valorLogistica = parseFloat(logistica.valor);
+            if (isNaN(valorLogistica)) {
+                console.error(`Logistica valor is NaN for logistica id ${logistica.id_logistica}`);
+                return acc;
+            }
+            const alimentacao = !isNaN(parseFloat(logisticaCidade.alimentacao)) ? parseFloat(logisticaCidade.alimentacao) : 70;
+            const dias_evento = evento.qtd_dias_evento || 1;
             const quantidade = orcamento?.logisticas.find(l => l.id === logistica.id_logistica)?.quantidade || 1;
-            return (acc + logistica.valor * quantidade + (logisticaCidade.alimentacao * quantidade)) * evento.qtd_dias_evento;
+            const total_basico = (valorLogistica + alimentacao) * dias_evento * quantidade;
+            const total_logistica_fora_sp = !logistica.in_sp ? (parseFloat(logisticaCidade.passagem) || 0) + ((parseFloat(logisticaCidade.hospedagem) || 0) * (dias_evento + 2)) : 0;
+            return acc + total_basico + total_logistica_fora_sp;
         }, 0);
-        setValorLogisticaTotal(total);
-    }, [orcamento, logisticasSelecionadas]);
+
+        if (isNaN(total)) {
+            console.error('Total is NaN');
+        } else {
+            setValorLogisticaTotal(total);
+        }
+    }, [orcamento, logisticasSelecionadas, evento, logisticaCidade]);
+
 
     async function getLogisticaCidade() {
         if (evento && evento.local && evento.local.cidade !== null) {
             try {
-                console.log("Fetching LogisticaCidade for cidade:", evento.local.cidade);
                 const response = await axios.get(`${API_URL}logistica-cidade/${evento.local.cidade}`);
                 setLogisticaCidade(response.data as LogisticaCidade);
-                console.log("Fetched LogisticaCidade:", response.data);
             } catch (e) {
                 console.error('Error fetching LogisticaCidade:', e);
             }
@@ -190,10 +208,6 @@ export default function Orcamento({orcamentoState, eventoState: eventoId}) {
             const comidasResponse = await axios.get(`${API_URL}comidas/`);
             setComidas(comidasResponse.data as Comida[]);
 
-            const eventoResponse = await axios.get(`${API_URL}eventos/${eventoId}`);
-            setEvento(eventoResponse.data as Evento);
-            setOrcamento({...orcamento, cliente: evento.clientes[0].id_cliente})
-            console.log("EVENTOSET", evento)
         } catch (error) {
             if (axios.isAxiosError(error) && error.response?.status === 403) {
                 window.location.href = '/login';
@@ -295,6 +309,7 @@ export default function Orcamento({orcamentoState, eventoState: eventoId}) {
 
     const handleSubmit = (e) => {
         e.preventDefault()
+        setOrcamento({...orcamento, valor_total_comidas: valorComidaTotal, valor_total_logisticas: valorLogisticaTotal})
         console.log("SUBMIT", orcamento)
     }
 
@@ -326,146 +341,148 @@ export default function Orcamento({orcamentoState, eventoState: eventoId}) {
                     </Form.Group>
                 </Row>
                 <Row>
-                    <Col>
-                        <Form.Group className="mb-3" controlId="formGridComidas">
-                            <Form.Label>Comidas do Orçamento</Form.Label>
-                            <div style={{
-                                maxHeight: '150px',
-                                overflowY: 'scroll',
-                                border: '1px solid #ced4da',
-                                padding: '10px'
-                            }}>
-                                {comidas.map((comida) => (
-                                    <Form.Check
-                                        key={comida.comida_id}
-                                        type="checkbox"
-                                        label={comida.nome}
-                                        value={comida.comida_id}
-                                        checked={comidasSelecionadas.some(c => c.comida_id === comida.comida_id)}
-                                        onChange={() => handleToggleComida(comida)}
-                                    />
-                                ))}
-                            </div>
-                        </Form.Group>
-                    </Col>
-                    <Col>
-                        <Form.Group className="mb-3" controlId="formGridComidasSelecionadas">
-                            <Form.Label>Comidas Selecionadas</Form.Label>
-                            <div style={{
-                                maxHeight: '150px',
-                                overflowY: 'scroll',
-                                border: '1px solid #ced4da',
-                                padding: '10px'
-                            }}>
-                                {comidasSelecionadas.map((comida) => (
-                                    <div key={comida.comida_id}
-                                         style={{display: 'flex', alignItems: 'center', marginBottom: '10px'}}>
-                                        <Form.Check
-                                            type="checkbox"
-                                            label={`${comida.nome}-R$${comida.valor}`}
-                                            value={comida.comida_id}
-                                            checked={true}
-                                            onChange={() => handleToggleComida(comida)}
-                                        />
-                                        <Form.Control
-                                            type="number"
-                                            value={orcamento?.comidas.find(c => c.id === comida.comida_id)?.quantidade || comida.quantidade_minima}
-                                            onChange={(e) => handleQuantityChange(comida.comida_id, parseInt(e.target.value))}
-                                            style={{width: '75px', marginLeft: '5px'}}
-                                        />
-                                    </div>
-                                ))}
-                            </div>
-                        </Form.Group>
-                        <Form.Group as={Col} controlId="formGridNome">
-                            <Form.Label>Total R$ comidas</Form.Label>
-                            <Form.Control
-                                type="text"
-                                value={`R$${valorComidaTotal}| total * dias_evento (${evento.qtd_dias_evento || 0})` || 0}
-                                disabled={true}
-                            />
-                        </Form.Group>
-                    </Col>
+                    <Form.Group className="mb-3" as={Col} controlId="formGridClientes">
+                        <Form.Label>Cliente do Evento para Orçamento</Form.Label>
+                        <Form.Select
+                            name="cliente"
+                            value={orcamento.cliente}
+                            onChange={handleToggleCliente}
+                        >
+                            {evento.clientes.map((cliente) => (
+                                <option key={cliente.id_cliente}
+                                        value={cliente.id_cliente}>{cliente.nome}{`-Taxa(${cliente.taxa_financeira * 100}%)`}</option>
+                            ))}
+                        </Form.Select>
+                    </Form.Group>
                 </Row>
                 <Row>
-                    <Col>
-                        <Form.Group className="mb-3" controlId="formGridLogisticas">
-                            <Form.Label>Logisticas do Orçamento</Form.Label>
-                            <div style={{
-                                maxHeight: '150px',
-                                overflowY: 'scroll',
-                                border: '1px solid #ced4da',
-                                padding: '10px'
-                            }}>
-                                {logisticas.map((logistica) => (
+                    <Form.Group as={Col} controlId="formGridComidas">
+                        <Form.Label>Comidas do Orçamento</Form.Label>
+                        <div style={{
+                            maxHeight: '150px',
+                            overflowY: 'scroll',
+                            border: '1px solid #ced4da',
+                            padding: '10px'
+                        }}>
+                            {comidas.map((comida) => (
+                                <Form.Check
+                                    key={comida.comida_id}
+                                    type="checkbox"
+                                    label={comida.nome}
+                                    value={comida.comida_id}
+                                    checked={comidasSelecionadas.some(c => c.comida_id === comida.comida_id)}
+                                    onChange={() => handleToggleComida(comida)}
+                                />
+                            ))}
+                        </div>
+                    </Form.Group>
+                    <Form.Group as={Col} controlId="formGridComidasSelecionadas">
+                        <Form.Label>Comidas Selecionadas</Form.Label>
+                        <div style={{
+                            maxHeight: '150px',
+                            overflowY: 'scroll',
+                            border: '1px solid #ced4da',
+                            padding: '10px'
+                        }}>
+                            {comidasSelecionadas.map((comida) => (
+                                <div key={comida.comida_id}
+                                     style={{display: 'flex', alignItems: 'center', marginBottom: '10px'}}>
+                                    <Form.Check
+                                        type="checkbox"
+                                        label={`${comida.nome}-R$${comida.valor}`}
+                                        value={comida.comida_id}
+                                        checked={true}
+                                        onChange={() => handleToggleComida(comida)}
+                                    />
+                                    <Form.Control
+                                        type="number"
+                                        value={orcamento?.comidas.find(c => c.id === comida.comida_id)?.quantidade || comida.quantidade_minima}
+                                        onChange={(e) => handleQuantityChange(comida.comida_id, parseInt(e.target.value))}
+                                        style={{width: '75px', marginLeft: '5px'}}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    </Form.Group>
+
+                </Row>
+                <Form.Group as={Col} controlId="formGridNome">
+                    <Form.Label>Total R$ comidas</Form.Label>
+                    <Form.Control
+                        type="text"
+                        value={`R$${valorComidaTotal.toFixed(2)}` || 0}
+                        disabled={true}
+                    />
+                </Form.Group>
+                <Row>
+                    <Form.Group as={Col} className="mb-3" controlId="formGridLogisticas">
+                        <Form.Label>Logisticas do Orçamento</Form.Label>
+                        <div style={{
+                            maxHeight: '150px',
+                            overflowY: 'scroll',
+                            border: '1px solid #ced4da',
+                            padding: '10px'
+                        }}>
+                            {logisticas.map((logistica) => (
+                                <Form.Check
+                                    key={logistica.id_logistica}
+                                    type="checkbox"
+                                    label={logistica.nome}
+                                    value={logistica.id_logistica}
+                                    checked={logisticasSelecionadas.includes(logistica)}
+                                    onChange={() => handleToggleLogistica(logistica)}
+                                />
+                            ))}
+                        </div>
+                    </Form.Group>
+                    <Form.Group className="mb-3" as={Col} controlId="formGridLogisticasSelecionadas">
+                        <Form.Label>Logisticas Selecionadas</Form.Label>
+                        <div style={{
+                            maxHeight: '150px',
+                            overflowY: 'scroll',
+                            border: '1px solid #ced4da',
+                            padding: '10px'
+                        }}>
+                            {logisticasSelecionadas.map((logistica) => (
+                                <div key={logistica.id_logistica}
+                                     style={{display: 'flex', alignItems: 'center', marginBottom: '10px'}}>
                                     <Form.Check
                                         key={logistica.id_logistica}
                                         type="checkbox"
-                                        label={logistica.nome}
+                                        label={`${logistica.nome}-R$${logistica.valor}`}
                                         value={logistica.id_logistica}
-                                        checked={logisticasSelecionadas.includes(logistica)}
+                                        checked={true}
                                         onChange={() => handleToggleLogistica(logistica)}
                                     />
-                                ))}
-                            </div>
-                        </Form.Group>
-                    </Col>
-                    <Col>
-                        <Form.Group className="mb-3" controlId="formGridLogisticasSelecionadas">
-                            <Form.Label>Logisticas Selecionadas</Form.Label>
-                            <div style={{
-                                maxHeight: '150px',
-                                overflowY: 'scroll',
-                                border: '1px solid #ced4da',
-                                padding: '10px'
-                            }}>
-                                {logisticasSelecionadas.map((logistica) => (
-                                    <div key={logistica.id_logistica}
-                                         style={{display: 'flex', alignItems: 'center', marginBottom: '10px'}}>
-                                        <Form.Check
-                                            key={logistica.id_logistica}
-                                            type="checkbox"
-                                            label={`${logistica.nome}-R$${logistica.valor}`}
-                                            value={logistica.id_logistica}
-                                            checked={true}
-                                            onChange={() => handleToggleLogistica(logistica)}
-                                        />
-                                        <Form.Control
-                                            type="number"
-                                            value={orcamento?.logisticas.find(l => l.id === logistica.id_logistica)?.quantidade || 1}
-                                            onChange={(e) => handleQuantityLogisticaChange(logistica.id_logistica, parseInt(e.target.value))}
-                                            style={{width: '75px', marginLeft: '5px'}}
-                                        />
-                                    </div>
-                                ))}
-                            </div>
-                        </Form.Group>
-                        <Form.Group as={Col} controlId="formGridNome">
-                            <Form.Label>Total R$ Logistica</Form.Label>
-                            <Form.Control
-                                type="text"
-                                value={`R$${valorLogisticaTotal} | valor * alimentação(${logisticaCidade?.alimentacao}) * dias(${evento?.qtd_dias_evento})` || 0}
-                                disabled={true}
-                            />
-                        </Form.Group>
-                    </Col>
+                                    <Form.Control
+                                        type="number"
+                                        value={orcamento?.logisticas.find(l => l.id === logistica.id_logistica)?.quantidade || 1}
+                                        onChange={(e) => handleQuantityLogisticaChange(logistica.id_logistica, parseInt(e.target.value))}
+                                        style={{width: '75px', marginLeft: '5px'}}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    </Form.Group>
                 </Row>
-                <Row>
-                    <Col>
-                        <Form.Group className="mb-3" controlId="formGridClientes">
-                            <Form.Label>Cliente do Evento para Orçamento</Form.Label>
-                            <Form.Select
-                                name="cliente"
-                                value={orcamento.cliente}
-                                onChange={handleToggleCliente}
-                            >
-                                {evento.clientes.map((cliente) => (
-                                    <option key={cliente.id_cliente} value={cliente.id_cliente}>{cliente.nome}{`-Taxa(${cliente.taxa_financeira * 100}%)`}</option>
-                                ))}
-                            </Form.Select>
-                        </Form.Group>
-                    </Col>
-                </Row>
+
+                <Form.Group as={Col} controlId="formGridNome">
+                    <Form.Label>Total R$ Logistica</Form.Label>
+                    <Form.Control
+                        type="text"
+                        value={`R$${valorLogisticaTotal.toFixed(2)} | valor * alimentação(${logisticaCidade?.alimentacao}) * dias(${evento?.qtd_dias_evento})`}
+                        disabled={true}
+                    />
+                    {logisticasSelecionadas.map((logistica) => (
+                        (!logistica.in_sp) && (
+                            <p>+{logistica.nome}(Hospedagem:R${logisticaCidade?.hospedagem}, passagem:
+                                R${logisticaCidade?.passagem})</p>
+                        )
+
+                    ))}
+                </Form.Group>
+
+
                 <Button variant="primary" type="submit" onClick={handleSubmit}>
                     {orcamento !== null && orcamento.id_orcamento === null ? 'Criar' : 'Editar'}
                 </Button>
