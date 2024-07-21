@@ -140,11 +140,8 @@ export default function Orcamento({eventoState: eventoState}) {
 
     useEffect(() => {
         if (evento && evento.local && evento.local.cidade) {
-            console.log("Calling getLogisticaCidade with evento:", evento);
             getLogisticaCidade()
             setOrcamento({...orcamento, cliente: evento.clientes[0].id_cliente})
-        } else {
-            console.log("Evento not ready yet:", evento);
         }
     }, [evento]);
 
@@ -177,12 +174,7 @@ export default function Orcamento({eventoState: eventoState}) {
             const total_logistica_fora_sp = !logistica.in_sp ? (parseFloat(logisticaCidade.passagem) || 0) + ((parseFloat(logisticaCidade.hospedagem) || 0) * (dias_evento + 2)) : 0;
             return acc + total_basico + total_logistica_fora_sp;
         }, 0);
-
-        if (isNaN(total)) {
-            console.error('Total is NaN');
-        } else {
-            setValorLogisticaTotal(total - orcamento.desconto_total_logisticas);
-        }
+        setValorLogisticaTotal(total - orcamento.desconto_total_logisticas);
     }, [orcamento, logisticasSelecionadas, evento, logisticaCidade]);
 
 
@@ -307,7 +299,6 @@ export default function Orcamento({eventoState: eventoState}) {
     const handleSubmit = (e) => {
         e.preventDefault()
         setOrcamento({...orcamento, valor_total_comidas: valorComidaTotal, valor_total_logisticas: valorLogisticaTotal})
-        console.log("SUBMIT", orcamento)
     }
 
     return (
