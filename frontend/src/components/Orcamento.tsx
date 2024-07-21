@@ -5,6 +5,7 @@ import Col from "react-bootstrap/Col";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import {NumericFormat} from 'react-number-format';
+import csrfToken from '../ApiCall/CsrfToken'
 
 interface Orcamento {
     id_orcamento: number,
@@ -95,19 +96,19 @@ interface LogisticaCidade {
 
 const API_URL = process.env.REACT_APP_API_URL;
 
-export default function Orcamento({eventoState: eventoState}) {
+export default function Orcamento({eventoState: eventoState, sessionId: sessionId}) {
     const [orcamento, setOrcamento] = useState<Orcamento>({
-        id_orcamento: 0,
+        id_orcamento: null,
         nome: '',
         cliente: 0,
         evento: 0,
         logisticas: [{
-            id: 0,
-            quantidade: 1
+            id: null,
+            quantidade: null
         }],
         comidas: [{
-            id: 0,
-            quantidade: 1
+            id: null,
+            quantidade: null
         }],
         observacoes: '',
         valor_total_comidas: 0,
@@ -176,6 +177,10 @@ export default function Orcamento({eventoState: eventoState}) {
         }, 0);
         setValorLogisticaTotal(total - orcamento.desconto_total_logisticas);
     }, [orcamento, logisticasSelecionadas, evento, logisticaCidade]);
+
+    useEffect(() => {
+        setOrcamento({...orcamento, valor_total_comidas: valorComidaTotal, valor_total_logisticas: valorLogisticaTotal})
+    }, [valorComidaTotal, valorLogisticaTotal])
 
 
     async function getLogisticaCidade() {
@@ -296,9 +301,24 @@ export default function Orcamento({eventoState: eventoState}) {
     };
 
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault()
-        setOrcamento({...orcamento, valor_total_comidas: valorComidaTotal, valor_total_logisticas: valorLogisticaTotal})
+        try {
+            await axios.post(`${API_URL}orcamentos-create/`, orcamento, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                    'sessionId': sessionId
+                },
+                withCredentials: true,
+            })
+            alert('Orcamento created successfully!');
+        } catch (exception) {
+            console.log("Error tentando salvar orcamento", orcamento,
+                '\n erro:', exception)
+            alert('Não foi possível salvar o Orçamento')
+        }
+        window.location.reload()
     }
 
     return (

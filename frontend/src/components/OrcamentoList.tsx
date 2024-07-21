@@ -39,6 +39,10 @@ interface Orcamento {
     comidas: number[],
     logisticas: number[],
     valor_total: number,
+    valor_total_logisticas: number,
+    valor_total_comidas: number,
+    valor_desconto_logisticas: number,
+    valor_desconto_comidas: number,
 }
 
 export default function EventoList({sessionId}) {
@@ -90,7 +94,7 @@ export default function EventoList({sessionId}) {
             id_orcamento: null,
             nome: '',
             evento: null,
-            clientes: [],
+            cliente: null,
             comidas: [],
             logisticas: [],
             valor_total: 0,
@@ -124,12 +128,12 @@ export default function EventoList({sessionId}) {
     };
 
     if (showOrcamento)
-        return <Orcamento eventoState={selectedEvento}/>
+        return <Orcamento eventoState={selectedEvento} sessionId={sessionId}/>
 
 
     return (
         <div className="container">
-            <h2 className="text-center">Controle de Eventos</h2>
+            <h2 className="text-center">Controle de Orçamentos</h2>
             <Button variant='primary' className='mb-3' onClick={handleCreateOrcamento}>Novo Orcamento</Button>
             <table className="table table-success">
                 <thead>
@@ -137,6 +141,8 @@ export default function EventoList({sessionId}) {
                     <th scope="col">ID</th>
                     <th scope="col">Nome</th>
                     <th scope="col">Valor</th>
+                    <th scope="col">Desconto Cardápio</th>
+                    <th scope="col">Desconto Logist.</th>
                     <th scope="col">Visualizar</th>
                     <th scope="col">Editar</th>
                 </tr>
@@ -147,24 +153,8 @@ export default function EventoList({sessionId}) {
                         <td>{item.id_orcamento}</td>
                         <td>{item.nome}</td>
                         <td>R${item.valor_total}</td>
-                        <td>
-                            <button
-                                onClick={() => handleViewOrcamento(item)}
-                                type="button"
-                                className="btn btn-sm btn-outline-primary"
-                            >
-                                <FontAwesomeIcon icon="search"/>
-                            </button>
-                        </td>
-                        <td>
-                            <button
-                                onClick={() => handleEditOrcamento(item)}
-                                type="button"
-                                className="btn btn-sm btn-outline-primary"
-                            >
-                                <FontAwesomeIcon icon="edit"/>
-                            </button>
-                        </td>
+                        <td>R${item.valor_desconto_comidas}</td>
+                        <td>R${item.valor_desconto_logisticas}</td>
                     </tr>
                 )}
                 </tbody>

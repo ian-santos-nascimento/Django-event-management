@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import  logout_view, UserLogin
+from .views import  logout_view, UserLogin, saveOrcamento
 from . import viewset
 
 router = DefaultRouter()
@@ -15,5 +15,6 @@ urlpatterns = [
     path('', include(router.urls)),
     path('login/', UserLogin.as_view(), name='login'),
     path('logout/', logout_view, name='logout'),
+    path('orcamentos-create/', saveOrcamento, name='save_orcamento'),
     path('logistica-cidade/<int:cidade_id>/', viewset.LogisticaCidadeByCidadeView.as_view(), name='logistica-cidade-by-cidade'),
 ]
