@@ -171,7 +171,7 @@ export default function EventoList({sessionId}) {
                                     <Form.Label>Evento</Form.Label>
                                     <Form.Select
                                         name="nome"
-                                        value={selectedEvento.id_evento}
+                                        value={selectedEvento?.id_evento}
                                         onChange={handleSelectEvento}
                                     >
                                         {eventos.map((evento) => (

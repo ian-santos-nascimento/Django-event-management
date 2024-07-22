@@ -125,6 +125,8 @@ export default function Orcamento({eventoState: eventoState, sessionId: sessionI
     const [evento, setEvento] = useState<Evento>(eventoState)
     const [valorComidaTotal, setValorComidaTotal] = useState(0.0)
     const [valorLogisticaTotal, setValorLogisticaTotal] = useState(0)
+    const [filter, setFilter] = useState('');
+    const [filterLogistica, setFilterLogistica] = useState('');
 
     useEffect(() => {
         getModels();
@@ -182,6 +184,15 @@ export default function Orcamento({eventoState: eventoState, sessionId: sessionI
         setOrcamento({...orcamento, valor_total_comidas: valorComidaTotal, valor_total_logisticas: valorLogisticaTotal})
     }, [valorComidaTotal, valorLogisticaTotal])
 
+    const filteredComidas = comidas.filter(comida =>
+        comida.nome.toLowerCase().includes(filter.toLowerCase())
+    );
+
+     const filteredLogisticas = logisticas.filter(logistica =>
+        logistica.nome.toLowerCase().includes(filterLogistica.toLowerCase())
+    );
+
+
 
     async function getLogisticaCidade() {
         if (evento && evento.local && evento.local.cidade !== null) {
@@ -213,19 +224,15 @@ export default function Orcamento({eventoState: eventoState, sessionId: sessionI
 
     const handleToggleComida = (comida: Comida) => {
         if (comidasSelecionadas.some(c => c.comida_id === comida.comida_id)) {
-            // Remover da lista de selecionados
             const updatedComidasSelecionadas = comidasSelecionadas.filter(c => c.comida_id !== comida.comida_id);
             setComidasSelecionadas(updatedComidasSelecionadas);
-
             if (orcamento) {
                 const updatedComidas = orcamento.comidas.filter(c => c.id !== comida.comida_id);
                 setOrcamento({...orcamento, comidas: updatedComidas});
             }
         } else {
-            // Adicionar à lista de selecionados com quantidade mínima inicial
             const updatedComida = {...comida, quantidade: comida.quantidade_minima};
             setComidasSelecionadas([...comidasSelecionadas, updatedComida]);
-
             if (orcamento) {
                 setOrcamento({
                     ...orcamento,
@@ -363,16 +370,23 @@ export default function Orcamento({eventoState: eventoState, sessionId: sessionI
                         </Form.Select>
                     </Form.Group>
                 </Row>
-                <Row>
+                <Row className='mb-3'>
                     <Form.Group as={Col} controlId="formGridComidas">
                         <Form.Label>Comidas do Orçamento</Form.Label>
+                        <Form.Control
+                            type="text"
+                            placeholder="Buscar comida..."
+                            value={filter}
+                            onChange={(e) => setFilter(e.target.value)}
+                            style={{marginBottom: '10px'}}
+                        />
                         <div style={{
                             maxHeight: '150px',
                             overflowY: 'scroll',
                             border: '1px solid #ced4da',
                             padding: '10px'
                         }}>
-                            {comidas.map((comida) => (
+                            {filteredComidas.map((comida) => (
                                 <Form.Check
                                     key={comida.comida_id}
                                     type="checkbox"
@@ -415,7 +429,7 @@ export default function Orcamento({eventoState: eventoState, sessionId: sessionI
                     </Form.Group>
 
                 </Row>
-                <Row>
+                <Row className='mb-3'>
                     <Form.Group as={Col} controlId="formGridNome">
                         <Form.Label>Total R$ comidas</Form.Label>
                         <Form.Control
@@ -448,13 +462,20 @@ export default function Orcamento({eventoState: eventoState, sessionId: sessionI
                 <Row>
                     <Form.Group as={Col} className="mb-3" controlId="formGridLogisticas">
                         <Form.Label>Logisticas do Orçamento</Form.Label>
+                        <Form.Control
+                            type="text"
+                            placeholder="Buscar Logistica..."
+                            value={filterLogistica}
+                            onChange={(e) => setFilterLogistica(e.target.value)}
+                            style={{marginBottom: '10px'}}
+                        />
                         <div style={{
                             maxHeight: '150px',
                             overflowY: 'scroll',
                             border: '1px solid #ced4da',
                             padding: '10px'
                         }}>
-                            {logisticas.map((logistica) => (
+                            {filteredLogisticas.map((logistica) => (
                                 <Form.Check
                                     key={logistica.id_logistica}
                                     type="checkbox"
