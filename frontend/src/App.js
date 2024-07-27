@@ -7,6 +7,8 @@ import {faSearch, faEdit} from '@fortawesome/free-solid-svg-icons'
 import Login from './components/Login';
 import NavBar from "./components/NavBar";
 import sessionId from "./ApiCall/SessionId";
+import Modal from "react-bootstrap/Modal";
+
 library.add(fab, faSearch, faEdit)
 
 const auth = sessionId
@@ -14,16 +16,38 @@ const auth = sessionId
 
 const App = () => {
     const [authenticated, setAuthenticated] = useState(false);
-    const [sessionId, setSessionId] = useState(auth);
+    const [sessionId, setSessionId] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        console.log("AUTH", auth)
-        if (auth !== null) {
-            console.log("AUTENTICADA" + auth)
-            setSessionId(auth)
-            setAuthenticated(true);
-        }
+        const checkAuth = async () => {
+            console.log("AUTH", auth)
+            if (auth !== null) {
+                setSessionId(auth)
+                setAuthenticated(true);
+            }
+            setLoading(false);
+        };
+
+        checkAuth();
     }, []);
+
+    const handleClose = () => {
+        setLoading(false)
+    }
+
+    if (loading) {
+        return (
+            <div>
+                <Modal
+                        size="lg"
+                        aria-labelledby="contained-modal-title-vcenter"
+                        centered show={loading} onHide={handleClose}>
+                    <Modal.Body>Carregando...</Modal.Body>
+                </Modal>
+            </div>
+        )
+    }
 
     if (!authenticated) {
         return <Login setAuthenticated={setAuthenticated} setSessionId={setSessionId}/>
@@ -33,8 +57,7 @@ const App = () => {
         <div>
             <NavBar setAuthenticated={setAuthenticated} isAuthenticated={authenticated}/>
         </div>
-    )
-
+    );
 };
 
 export default App;
