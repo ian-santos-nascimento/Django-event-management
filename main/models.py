@@ -1,6 +1,4 @@
 from django.db import models
-
-from .service import incluiAgravoRegiao
 from .utils import listSelect
 
 
