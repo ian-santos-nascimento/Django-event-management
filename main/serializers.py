@@ -50,10 +50,16 @@ class CidadeSerializer(serializers.ModelSerializer):
 
 class ComidaOrcamentoSerializer(serializers.ModelSerializer):
     comida = serializers.StringRelatedField()
-
     class Meta:
         model = ComidaOrcamento
         fields = ['comida', 'quantidade', 'valor']
+
+
+class LogisticaOrcamentoSerializer(serializers.ModelSerializer):
+    logistica = serializers.StringRelatedField()
+    class Meta:
+        model = LogisticaOrcamento
+        fields = ['logistica', 'quantidade', 'valor']
 
 
 class OrcamentoSerializer(serializers.ModelSerializer):
@@ -136,7 +142,7 @@ class EventoClienteSerializer(serializers.ModelSerializer):
 
 
 class OrcamentoUnicoSerializer(serializers.ModelSerializer):
-    logisticas = LogisticaSerializar(many=True)
+    logisticas = serializers.SerializerMethodField()
     comidas = serializers.SerializerMethodField()
     cliente = ClienteSerializer()
     evento = EventoSerializer()
@@ -148,3 +154,7 @@ class OrcamentoUnicoSerializer(serializers.ModelSerializer):
     def get_comidas(self, obj):
         comidas_orcamento = ComidaOrcamento.objects.filter(orcamento=obj)
         return ComidaOrcamentoSerializer(comidas_orcamento, many=True).data
+
+    def get_logisticas(self, obj):
+        logisticas_orcamento = LogisticaOrcamento.objects.filter(orcamento=obj)
+        return LogisticaOrcamentoSerializer(logisticas_orcamento, many=True).data

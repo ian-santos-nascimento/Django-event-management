@@ -6,6 +6,7 @@ import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import {NumericFormat} from 'react-number-format';
 import csrfToken from '../ApiCall/CsrfToken'
+import {Badge} from "react-bootstrap";
 
 interface Orcamento {
     id_orcamento: number,
@@ -188,10 +189,9 @@ export default function Orcamento({eventoState: eventoState, sessionId: sessionI
         comida.nome.toLowerCase().includes(filter.toLowerCase())
     );
 
-     const filteredLogisticas = logisticas.filter(logistica =>
+    const filteredLogisticas = logisticas.filter(logistica =>
         logistica.nome.toLowerCase().includes(filterLogistica.toLowerCase())
     );
-
 
 
     async function getLogisticaCidade() {
@@ -528,9 +528,10 @@ export default function Orcamento({eventoState: eventoState, sessionId: sessionI
                             disabled={true}
                         />
                         {logisticasSelecionadas.map((logistica) => (
-                            (!logistica.in_sp) && (
-                                <p>+{logistica.nome}(Hospedagem:R${logisticaCidade?.hospedagem}, passagem:
-                                    R${logisticaCidade?.passagem})</p>
+                            (!logistica.in_sp && logistica.tipo === 'Pessoa') && (
+                                <Badge bg="secondary">{logistica.nome}(Hospedagem:R${logisticaCidade?.hospedagem},
+                                    passagem:
+                                    R${logisticaCidade?.passagem})</Badge>
                             )
 
                         ))}

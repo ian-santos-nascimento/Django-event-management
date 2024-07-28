@@ -9,7 +9,10 @@ import Form from "react-bootstrap/Form";
 import Col from "react-bootstrap/Col";
 // @ts-ignore
 import Evento from "./Evento.tsx"
+// @ts-ignore
 import Orcamento from './Orcamento.tsx'
+// @ts-ignore
+import OrcamentoView from "./OrcamentoView.tsx";
 
 const API_URL = process.env.REACT_APP_API_URL;
 axios.defaults.xsrfCookieName = 'csrftoken';
@@ -45,13 +48,14 @@ interface Orcamento {
     valor_desconto_comidas: number,
 }
 
-export default function EventoList({sessionId}) {
+export default function OrcamentoList({sessionId}) {
     const [orcamentos, setOrcamentos] = useState<Orcamento[]>([])
     const [selectedOrcamento, setSelectedOrcamento] = useState<Orcamento>(null)
     const [eventos, setEventos] = useState<Evento[]>([])
     const [selectedEvento, setSelectedEvento] = useState<Evento>(null)
     const [showModal, setShowModal] = useState(false)
     const [showOrcamento, setShowOrcamento] = useState(false)
+    const [viewOrcamento, setViewOrcamento] = useState(false)
 
 
     useEffect(() => {
@@ -98,12 +102,16 @@ export default function EventoList({sessionId}) {
             comidas: [],
             logisticas: [],
             valor_total: 0,
+            valor_desconto_logisticas:0,
+            valor_total_comidas: 0,
+            valor_desconto_comidas:0,
+            valor_total_logisticas:0,
         })
     }
 
     const handleViewOrcamento = (orcamento) => {
         setSelectedOrcamento(orcamento)
-        setShowModal(true)
+        setViewOrcamento(true)
 
     }
 
@@ -130,6 +138,8 @@ export default function EventoList({sessionId}) {
     if (showOrcamento)
         return <Orcamento eventoState={selectedEvento} sessionId={sessionId}/>
 
+    if(viewOrcamento)
+        return <OrcamentoView orcamentoId={selectedOrcamento.id_orcamento} sessionId={sessionId}/>
 
     return (
         <div className="container">
@@ -155,6 +165,24 @@ export default function EventoList({sessionId}) {
                         <td>R${item.valor_total}</td>
                         <td>R${item.valor_desconto_comidas}</td>
                         <td>R${item.valor_desconto_logisticas}</td>
+                        <td>
+                            <button
+                                onClick={() => handleViewOrcamento(item)}
+                                type="button"
+                                className="btn btn-sm btn-outline-primary"
+                            >
+                                <FontAwesomeIcon icon="search"/>
+                            </button>
+                        </td>
+                        <td>
+                            <button
+                                onClick={() => handleEditOrcamento(item)}
+                                type="button"
+                                className="btn btn-sm btn-outline-primary"
+                            >
+                                <FontAwesomeIcon icon="edit"/>
+                            </button>
+                        </td>
                     </tr>
                 )}
                 </tbody>
@@ -166,7 +194,7 @@ export default function EventoList({sessionId}) {
                 <Modal.Body>
                     {selectedOrcamento && (
                         <div>
-                            <Row className="mb-3">
+                        <Row className="mb-3">
                                 <Form.Group as={Col} controlId="formGridNome">
                                     <Form.Label>Evento</Form.Label>
                                     <Form.Select
