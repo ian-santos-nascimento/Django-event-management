@@ -13,7 +13,6 @@ class EventoAnnotatedViewSet(ModelViewSet):
     serializer_class = EventoSerializer
 
     def retrieve(self, request, pk=None):
-        print("AQUI REQUEST GET")
         evento = Evento.objects.get(pk=pk)
         serializer = EventoClienteSerializer(evento)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -32,11 +31,10 @@ class OrcamentoAnnotatedViewSet(ModelViewSet):
     serializer_class = OrcamentoSerializer
     authentication_classes = [SessionAuthentication]
 
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        print(serializer.data)
-        print(request.data)
-        print(serializer)
+    def retrieve(self, request, pk=None):
+        orcamento = Orcamento.objects.get(pk=pk)
+        serializer = OrcamentoUnicoSerializer(orcamento)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class CidadeAnnotatedViewSet(ModelViewSet):
@@ -64,11 +62,10 @@ class LogisticaCidadeByCidadeView(generics.GenericAPIView):
             return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
 
 
-
 class LogisticaAnnotatedViewSet(ModelViewSet):
     queryset = Logistica.objects.all().filter(excluida=False)
     permission_classes = [IsAuthenticated]
-    serializer_class = LogissticaSerializar
+    serializer_class = LogisticaSerializar
     authentication_classes = [SessionAuthentication]
 
     def destroy(self, request, *args, **kwargs):

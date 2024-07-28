@@ -36,7 +36,7 @@ class EventoSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class LogissticaSerializar(serializers.ModelSerializer):
+class LogisticaSerializar(serializers.ModelSerializer):
     class Meta:
         model = Logistica
         fields = '__all__'
@@ -46,6 +46,14 @@ class CidadeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Cidade
         fields = '__all__'
+
+
+class ComidaOrcamentoSerializer(serializers.ModelSerializer):
+    comida = serializers.StringRelatedField()
+
+    class Meta:
+        model = ComidaOrcamento
+        fields = ['comida', 'quantidade', 'valor']
 
 
 class OrcamentoSerializer(serializers.ModelSerializer):
@@ -121,6 +129,22 @@ class ClienteSerializer(serializers.ModelSerializer):
 class EventoClienteSerializer(serializers.ModelSerializer):
     clientes = ClienteSerializer(many=True)
     local = LocalEventoSerializer()
+
     class Meta:
         model = Evento
         fields = '__all__'
+
+
+class OrcamentoUnicoSerializer(serializers.ModelSerializer):
+    logisticas = LogisticaSerializar(many=True)
+    comidas = serializers.SerializerMethodField()
+    cliente = ClienteSerializer()
+    evento = EventoSerializer()
+
+    class Meta:
+        model = Orcamento
+        fields = '__all__'
+
+    def get_comidas(self, obj):
+        comidas_orcamento = ComidaOrcamento.objects.filter(orcamento=obj)
+        return ComidaOrcamentoSerializer(comidas_orcamento, many=True).data
