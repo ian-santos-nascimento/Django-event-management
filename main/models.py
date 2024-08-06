@@ -130,6 +130,14 @@ class LogisticaCidade(models.Model):
     hospedagem = models.DecimalField(decimal_places=2, max_digits=8)
     passagem = models.DecimalField(decimal_places=2, max_digits=8)
     alimentacao = models.DecimalField(decimal_places=2, max_digits=8)
+    frete_terceiros = models.DecimalField(decimal_places=2, max_digits=8, default=0.0)
+    frete_proprio = models.DecimalField(decimal_places=2, max_digits=8, default=0.0)
+    frete_proprio_intervalo = models.DecimalField(decimal_places=2, max_digits=8, default=0.0)
+    frete_proprio_completo = models.DecimalField(decimal_places=2, max_digits=8, default=0.0)
+    diaria_completo = models.DecimalField(decimal_places=2, max_digits=8, default=0.0)
+    diaria_simples = models.DecimalField(decimal_places=2, max_digits=8, default=0.0)
+    logistica_lanches = models.DecimalField(decimal_places=2, max_digits=8, default=0.0)
+    logistica_lanches_grande = models.DecimalField(decimal_places=2, max_digits=8, default=0.0)
 
 
 class Logistica(models.Model):
