@@ -5,8 +5,11 @@ import Col from "react-bootstrap/Col";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import {NumericFormat} from 'react-number-format';
-import csrfToken from '../ApiCall/CsrfToken'
 import {Badge} from "react-bootstrap";
+import Modal from 'react-bootstrap/Modal';
+
+import csrfToken from '../ApiCall/CsrfToken'
+import LogisticaOrcamentoComp from "./LogisticaOrcamentoComp.tsx";
 
 interface Orcamento {
     id_orcamento: number,
@@ -75,7 +78,14 @@ interface LogisticaCidade {
     hospedagem: number,
     passagem: number,
     alimentacao: number,
-
+    frete_terceiros: number,
+    frete_proprio: number,
+    frete_proprio_intervalo: number,
+    frete_proprio_completo: number,
+    diaria_completo: number,
+    diaria_simples: number,
+    logistica_lanches: number,
+    logistica_lanches_grande: number,
 }
 
 interface Logistica {
@@ -128,6 +138,10 @@ export default function Orcamento({eventoState: eventoState, sessionId: sessionI
     const [valorLogisticaTotal, setValorLogisticaTotal] = useState(0)
     const [filter, setFilter] = useState('');
     const [filterLogistica, setFilterLogistica] = useState('');
+    const [showModal, setShowModal] = useState(false);
+    const [selectedLogistica, setSelectedLogistica] = useState(null);
+    const [selectedOption, setSelectedOption] = useState('');
+
 
     useEffect(() => {
         getModels();
@@ -262,6 +276,14 @@ export default function Orcamento({eventoState: eventoState, sessionId: sessionI
             return {...prevOrcamento, logisticas: updatedLogistica};
         });
     }
+
+    const handleModalSave = () => {
+        if (selectedLogistica) {
+            // Aqui você pode adicionar a lógica para armazenar a opção selecionada, se necessário
+            handleToggleLogistica({...selectedLogistica, selectedOption});
+        }
+        setShowModal(false);
+    };
 
     const handleToggleLogistica = (logistica: Logistica) => {
         if (logisticasSelecionadas.includes(logistica)) {
@@ -459,103 +481,13 @@ export default function Orcamento({eventoState: eventoState, sessionId: sessionI
                     </Form.Group>
                 </Row>
 
-                <Row>
-                    <Form.Group as={Col} className="mb-3" controlId="formGridLogisticas">
-                        <Form.Label>Logisticas do Orçamento</Form.Label>
-                        <Form.Control
-                            type="text"
-                            placeholder="Buscar Logistica..."
-                            value={filterLogistica}
-                            onChange={(e) => setFilterLogistica(e.target.value)}
-                            style={{marginBottom: '10px'}}
-                        />
-                        <div style={{
-                            maxHeight: '150px',
-                            overflowY: 'scroll',
-                            border: '1px solid #ced4da',
-                            padding: '10px'
-                        }}>
-                            {filteredLogisticas.map((logistica) => (
-                                <Form.Check
-                                    key={logistica.id_logistica}
-                                    type="checkbox"
-                                    label={logistica.nome}
-                                    value={logistica.id_logistica}
-                                    checked={logisticasSelecionadas.includes(logistica)}
-                                    onChange={() => handleToggleLogistica(logistica)}
-                                />
-                            ))}
-                        </div>
-                    </Form.Group>
-                    <Form.Group className="mb-3" as={Col} controlId="formGridLogisticasSelecionadas">
-                        <Form.Label>Logisticas Selecionadas</Form.Label>
-                        <div style={{
-                            maxHeight: '150px',
-                            overflowY: 'scroll',
-                            border: '1px solid #ced4da',
-                            padding: '10px'
-                        }}>
-                            {logisticasSelecionadas.map((logistica) => (
-                                <div key={logistica.id_logistica}
-                                     style={{display: 'flex', alignItems: 'center', marginBottom: '10px'}}>
-                                    <Form.Check
-                                        key={logistica.id_logistica}
-                                        type="checkbox"
-                                        label={`${logistica.nome}-R$${logistica.valor}`}
-                                        value={logistica.id_logistica}
-                                        checked={true}
-                                        onChange={() => handleToggleLogistica(logistica)}
-                                    />
-                                    <Form.Control
-                                        type="number"
-                                        value={orcamento?.logisticas.find(l => l.id === logistica.id_logistica)?.quantidade || 1}
-                                        onChange={(e) => handleQuantityLogisticaChange(logistica.id_logistica, parseInt(e.target.value))}
-                                        style={{width: '75px', marginLeft: '5px'}}
-                                    />
-                                </div>
-                            ))}
-                        </div>
-                    </Form.Group>
-                </Row>
+                <LogisticaOrcamentoComp orcamento={orcamento} logisticaCidade={logisticaCidade}
+                                        setFilterLogistica={setFilterLogistica} filteredLogisticas={filteredLogisticas}
+                                        handleChange={handleChange} evento={evento}
+                                        valorLogisticaTotal={valorLogisticaTotal} filterLogistica={filterLogistica}
+                                        logisticasSelecionadas={logisticasSelecionadas} handleToggleLogistica={handleToggleLogistica}
+                                        handleQuantityLogisticaChange={handleQuantityLogisticaChange}/>
 
-                <Row>
-
-                    <Form.Group as={Col} controlId="formGridNome">
-                        <Form.Label>Total R$ Logistica</Form.Label>
-                        <Form.Control
-                            type="text"
-                            value={`R$${valorLogisticaTotal.toFixed(2)} | valor * alimentação(${logisticaCidade?.alimentacao}) * dias(${evento?.qtd_dias_evento})`}
-                            disabled={true}
-                        />
-                        {logisticasSelecionadas.map((logistica) => (
-                            (!logistica.in_sp && logistica.tipo === 'Pessoa') && (
-                                <Badge bg="secondary">{logistica.nome}(Hospedagem:R${logisticaCidade?.hospedagem},
-                                    passagem:
-                                    R${logisticaCidade?.passagem})</Badge>
-                            )
-
-                        ))}
-                    </Form.Group>
-                    <Form.Group as={Col} controlId="formGridNome">
-                        <Form.Label>Desconto para Logistica</Form.Label>
-                        <NumericFormat
-                            name="desconto_total_logisticas"
-                            value={orcamento.desconto_total_logisticas}
-                            onValueChange={(values) => {
-                                const {floatValue} = values;
-                                handleChange({target: {name: 'desconto_total_logisticas', value: floatValue || 0}});
-                            }}
-                            thousandSeparator="."
-                            decimalSeparator=","
-                            prefix="R$ "
-                            decimalScale={2}
-                            fixedDecimalScale={true}
-                            allowNegative={false}
-                            placeholder="Desconto Logistica"
-                            customInput={Form.Control}
-                        />
-                    </Form.Group>
-                </Row>
                 <Button variant="primary" type="submit" onClick={handleSubmit}>
                     {orcamento !== null && orcamento.id_orcamento === null ? 'Criar' : 'Editar'}
                 </Button>

@@ -160,7 +160,7 @@ export default function EventoList({sessionId}) {
             </table>
             <Modal show={showModal} size="lg" onHide={handleCloseModal}>
                 <Modal.Header closeButton>
-                    <Modal.Title>Detalhes do cliente</Modal.Title>
+                    <Modal.Title>Detalhes do Evento</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     {selectedEvento && (
@@ -249,7 +249,7 @@ export default function EventoList({sessionId}) {
                                     name="data_inicio"
                                     value={selectedEvento.data_inicio}
                                     disabled={true}
-                                    type="date"
+                                    type="text"
                                 />
                             </Form.Group>
                             <Form.Group as={Col} controlId="formGridInscricaoEstadual">
@@ -258,7 +258,7 @@ export default function EventoList({sessionId}) {
                                     name="data_fim"
                                     value={selectedEvento.data_fim}
                                     disabled={true}
-                                    type="date"
+                                    type="text"
                                 />
                             </Form.Group>
                             <Modal.Footer className="modal-footer-custom">

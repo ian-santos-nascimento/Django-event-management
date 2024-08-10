@@ -31,6 +31,8 @@ class ComidaSerializer(serializers.ModelSerializer):
 
 
 class EventoSerializer(serializers.ModelSerializer):
+    data_inicio = serializers.DateField(format='%d-%m-%Y', read_only=True)
+    data_fim = serializers.DateField(format='%d-%m-%Y', read_only=True)
     class Meta:
         model = Evento
         fields = '__all__'
@@ -92,6 +94,8 @@ class EnderecoSerializer(serializers.ModelSerializer):
 
 
 class ClienteEnderecoSerializer(serializers.ModelSerializer):
+    inicio_contrato = serializers.DateField(format='%d-%m-%Y', read_only=True)
+    fim_contrato = serializers.DateField(format='%d-%m-%Y', read_only=True)
     endereco = EnderecoSerializer()
 
     class Meta:
@@ -127,12 +131,16 @@ class ClienteEnderecoSerializer(serializers.ModelSerializer):
 
 
 class ClienteSerializer(serializers.ModelSerializer):
+    inicio_contrato = serializers.DateField(format='%d-%m-%Y', read_only=True)
+    fim_contrato = serializers.DateField(format='%d-%m-%Y', read_only=True)
     class Meta:
         model = Cliente
         exclude = ['endereco']  # Exclua o campo 'endereco'
 
 
 class EventoClienteSerializer(serializers.ModelSerializer):
+    data_inicio = serializers.DateField(format='%d-%m-%Y', read_only=True)
+    data_fim = serializers.DateField(format='%d-%m-%Y', read_only=True)
     clientes = ClienteSerializer(many=True)
     local = LocalEventoSerializer()
 

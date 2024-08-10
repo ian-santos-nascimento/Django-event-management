@@ -13,6 +13,7 @@ interface Cliente {
     cnpj: string,
     inscricao_estadual: string,
     nome: string,
+    observacao: string,
     telefone: string,
     endereco: {
         "id_endereco": number,
@@ -28,6 +29,8 @@ interface Cliente {
     taxa_financeira: number,
     inicio_contrato: string,
     fim_contrato: string,
+    email: string,
+
 }
 
 const API_URL = process.env.REACT_APP_API_URL;
@@ -37,9 +40,21 @@ export default function Cliente({cliente, csrfToken, sessionId, setSelectedClien
     const [validated, setValidated] = useState(false);
 
 
+    function cnpjMask(value) {
+        return value
+            .replace(/\D+/g, '') // Remove tudo que não é dígito
+            .replace(/(\d{2})(\d)/, '$1.$2') // Captura os primeiros 2 dígitos e os separa com um ponto
+            .replace(/(\d{3})(\d)/, '$1.$2') // Captura os próximos 3 dígitos e os separa com um ponto
+            .replace(/(\d{3})(\d)/, '$1/$2') // Captura os próximos 3 dígitos e os separa com uma barra
+            .replace(/(\d{4})(\d)/, '$1-$2') // Captura os próximos 4 dígitos e os separa com um hífen
+            .replace(/(-\d{2})\d+?$/, '$1'); // Captura os dois últimos dígitos após o hífen e remove qualquer coisa após eles
+    }
+
+
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const form = e.currentTarget;
+        console.log(selectedCliente)
         if (form.checkValidity() === false) {
             e.stopPropagation();
             setValidated(true);
@@ -134,39 +149,17 @@ export default function Cliente({cliente, csrfToken, sessionId, setSelectedClien
 
                     <Form.Group as={Col} controlId="formGridCNPJ">
                         <Form.Label>CNPJ</Form.Label>
-                        <InputMask
-                            mask="99.999.999/9999-99"
-                            value={selectedCliente.cnpj}
+                        <Form.Control
+                            required
+                            name="cnpj"
+                            value={cnpjMask(selectedCliente.cnpj)}
                             onChange={handleChange}
-                        >
-                            {() => <Form.Control
-                                required
-                                name="cnpj"
-                                placeholder='XX.XXX.XXX/0001-XX'
-                                maxLength={18}
-                                type="text"
-                            />}
-                        </InputMask>
+                            type="text"
+                            placeholder="XX.XXX.XXX/XXXX-XX"
+                            maxLength={18}
+                        />
                         <Form.Control.Feedback type="invalid">
                             Insira um CNPJ válido!
-                        </Form.Control.Feedback>
-                    </Form.Group>
-                    <Form.Group as={Col} controlId="formGridTelefone">
-                        <Form.Label>Telefone de contato</Form.Label>
-                        <InputMask
-                            mask="(99) 99999-9999"
-                            value={selectedCliente.telefone}
-                            onChange={handleChange}
-                        >
-                            {() => <Form.Control
-                                required
-                                name="telefone"
-                                placeholder='(XX) XXXXX-XXXX'
-                                type="text"
-                            />}
-                        </InputMask>
-                        <Form.Control.Feedback type="invalid">
-                            Informe um número para contato!
                         </Form.Control.Feedback>
                     </Form.Group>
                 </Row>
@@ -297,8 +290,8 @@ export default function Cliente({cliente, csrfToken, sessionId, setSelectedClien
                         >
                             {() =>
                                 <Form.Control required
-                                             name="endereco_cep"
-                                             type="text"/>
+                                              name="endereco_cep"
+                                              type="text"/>
                             }
                         </InputMask>
                         <Form.Control.Feedback type="invalid">
@@ -352,21 +345,78 @@ export default function Cliente({cliente, csrfToken, sessionId, setSelectedClien
                     </Form.Group>
                 </Row>
 
-                <Form.Group as={Col} controlId="formGridComplemento">
-                    <Form.Label>Complemento</Form.Label>
-                    <Form.Control
-                        required
-                        maxLength={150}
-                        name="endereco_complemento"
-                        value={selectedCliente.endereco.complemento}
-                        onChange={handleChangeEndereco}
-                        type="text"
-                    />
-                    <Form.Control.Feedback type="invalid">
-                        Insira o estado!
-                    </Form.Control.Feedback>
-                </Form.Group>
+                <Row className='mb-3'>
+                    <Form.Group as={Col} controlId="formGridComplemento">
+                        <Form.Label>Complemento</Form.Label>
+                        <Form.Control
+                            maxLength={150}
+                            name="endereco_complemento"
+                            value={selectedCliente.endereco.complemento}
+                            onChange={handleChangeEndereco}
+                            type="text"
+                        />
+                    </Form.Group>
+                </Row>
 
+                <h3 className='text-center'>Dados de Faturamento</h3>
+                <Row>
+                    <Form.Group as={Col} controlId="formGridNome">
+                        <Form.Label>Nome</Form.Label>
+                        <Form.Control
+                            disabled
+                            name="nome"
+                            value={selectedCliente.nome}
+                            type="text"
+                            placeholder="Nome"
+                        />
+                        <Form.Control.Feedback type="invalid">
+                            Insira um nome!
+                        </Form.Control.Feedback>
+                    </Form.Group>
+                    <Form.Group as={Col} controlId="formGridTelefone">
+                        <Form.Label>Telefone de contato</Form.Label>
+                        <InputMask
+                            mask="(99) 99999-9999"
+                            value={selectedCliente.telefone}
+                            onChange={handleChange}
+                        >
+                            {() => <Form.Control
+                                required
+                                name="telefone"
+                                placeholder='(XX) XXXXX-XXXX'
+                                type="text"
+                            />}
+                        </InputMask>
+                        <Form.Control.Feedback type="invalid">
+                            Informe um número para contato!
+                        </Form.Control.Feedback>
+                    </Form.Group>
+                    <Form.Group as={Col} controlId="formGridNome">
+                        <Form.Label>Email</Form.Label>
+                        <Form.Control
+                            required
+                            name="email"
+                            value={selectedCliente.email}
+                            type="email"
+                            onChange={handleChange}
+                            placeholder="Email"
+                        />
+                        <Form.Control.Feedback type="invalid">
+                            Insira um email!
+                        </Form.Control.Feedback>
+                    </Form.Group>
+                </Row>
+                <Row>
+                    <Form.Group as={Col} controlId="formGridComplemento">
+                        <Form.Label>Observação</Form.Label>
+                        <Form.Control
+                            name="observacao"
+                            value={selectedCliente.observacao}
+                            onChange={handleChange}
+                            as="textarea"
+                        />
+                    </Form.Group>
+                </Row>
 
                 <div className=" mt-3 d-flex justify-content-between w-100">
                     <Button variant="secondary" onClick={handleBack}

@@ -61,10 +61,10 @@ export default function NavBar({setAuthenticated, isAuthenticated}) {
                             <Link className="nav-link" to="/clientes">Clientes</Link>
                         </Nav.Link>
                         <Nav.Link>
-                            <Link className="nav-link" to="/comidas">Comidas</Link>
+                            <Link className="nav-link" to="/cardapio">Cardápio</Link>
                         </Nav.Link>
                         <Nav.Link>
-                            <Link className="nav-link" to="/logisticas">Logisticas</Link>
+                            <Link className="nav-link" to="/logisticas">Logistica</Link>
                         </Nav.Link>
                         <Nav.Link>
                             <Link className="nav-link" to="/orcamentos">Orçamentos</Link>
@@ -93,7 +93,7 @@ export default function NavBar({setAuthenticated, isAuthenticated}) {
                     element={<ClienteList/>}
                 ></Route>
                 <Route
-                    path="/comidas"
+                    path="/cardapio"
                     element={<ComidaList/>}
                 ></Route>
                 <Route

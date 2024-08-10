@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.db import models
 from .utils import listSelect
 
@@ -79,6 +81,8 @@ class Cliente(models.Model):
     cnpj = models.CharField(max_length=200)
     inscricao_estadual = models.CharField(max_length=200)
     nome = models.CharField(max_length=200)
+    observacao = models.TextField()
+    email = models.EmailField(max_length=200)
     telefone = models.CharField(max_length=100)
     endereco = models.OneToOneField(Endereco, on_delete=models.SET_NULL, blank=True, null=True)
     prazo_pagamento = models.CharField()
@@ -114,6 +118,7 @@ class Evento(models.Model):
     id_evento = models.AutoField(primary_key=True)
     codigo_evento = models.IntegerField(null=False, unique=True)
     nome = models.CharField(max_length=100)
+    tipo = models.CharField(max_length=100)
     descricao = models.TextField()
     observacao = models.TextField()
     clientes = models.ManyToManyField(Cliente)
@@ -184,4 +189,3 @@ class LogisticaOrcamento(models.Model):
     orcamento = models.ForeignKey(Orcamento, on_delete=models.DO_NOTHING, )
     valor = models.DecimalField(decimal_places=2, max_digits=8)
     quantidade = models.IntegerField(default=1)
-
