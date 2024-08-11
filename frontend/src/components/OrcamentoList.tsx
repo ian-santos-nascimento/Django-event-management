@@ -13,11 +13,8 @@ import Evento from "./Evento.tsx"
 import Orcamento from './Orcamento.tsx'
 // @ts-ignore
 import OrcamentoView from "./OrcamentoView.tsx";
+import {fetchData} from "../ApiCall/ApiCall";
 
-const API_URL = process.env.REACT_APP_API_URL;
-axios.defaults.xsrfCookieName = 'csrftoken';
-axios.defaults.xsrfHeaderName = 'X-CSRFToken';
-axios.defaults.withCredentials = true;
 
 interface Evento {
     id_evento: number,
@@ -56,41 +53,35 @@ export default function OrcamentoList({sessionId}) {
     const [showModal, setShowModal] = useState(false)
     const [showOrcamento, setShowOrcamento] = useState(false)
     const [viewOrcamento, setViewOrcamento] = useState(false)
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
 
 
     useEffect(() => {
         const fetchOrcamentos = async () => {
-            const response = await axios.get(`${API_URL}orcamentos/`, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken,
-                    'sessionId': sessionId
-                },
-                // @ts-ignore
-                credentials: 'include',
-            });
-
+            const response = await fetchData('orcamentos', currentPage, csrfToken, sessionId)
             const orcamentos = response.data as Orcamento[];
             setOrcamentos(orcamentos);
-        };
-        const fetchEventos = async () => {
-            const response = await axios.get(`${API_URL}eventos/`, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken,
-                    'sessionId': sessionId
-                },
-                // @ts-ignore
-                credentials: 'include',
-            });
+            setTotalPages(Math.ceil(response.count / 10));
 
+        };
+        fetchOrcamentos();
+    }, [sessionId, currentPage]);
+
+
+    useEffect(() => {
+        const fetchEventos = async () => {
+            const response = await fetchData('eventos', currentPage, csrfToken, sessionId)
             const eventos = response.data as Evento[];
             setEventos(eventos);
             setSelectedEvento(eventos[0])
         };
         fetchEventos();
-        fetchOrcamentos();
-    }, [sessionId]);
+    }, [sessionId, currentPage])
+
+       const handlePageChange = (newPage) => {
+        setCurrentPage(newPage);
+    };
 
     const handleCreateOrcamento = () => {
         setShowModal(true)
@@ -102,10 +93,10 @@ export default function OrcamentoList({sessionId}) {
             comidas: [],
             logisticas: [],
             valor_total: 0,
-            valor_desconto_logisticas:0,
+            valor_desconto_logisticas: 0,
             valor_total_comidas: 0,
-            valor_desconto_comidas:0,
-            valor_total_logisticas:0,
+            valor_desconto_comidas: 0,
+            valor_total_logisticas: 0,
         })
     }
 
@@ -128,7 +119,6 @@ export default function OrcamentoList({sessionId}) {
         setShowOrcamento(true)
     }
 
-
     const handleSelectEvento = (e) => {
         const eventoId = e.target.value;
         const selectedEvento = eventos.find(evento => evento.id_evento === parseInt(eventoId));
@@ -138,7 +128,7 @@ export default function OrcamentoList({sessionId}) {
     if (showOrcamento)
         return <Orcamento eventoState={selectedEvento} sessionId={sessionId}/>
 
-    if(viewOrcamento)
+    if (viewOrcamento)
         return <OrcamentoView orcamentoId={selectedOrcamento.id_orcamento} sessionId={sessionId}/>
 
     return (
@@ -187,6 +177,15 @@ export default function OrcamentoList({sessionId}) {
                 )}
                 </tbody>
             </table>
+            <div className="pagination">
+                <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>
+                    Anterior
+                </button>
+                <span> Página {currentPage} de {totalPages} </span>
+                <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>
+                    Próxima
+                </button>
+            </div>
             <Modal show={showModal} size="lg" onHide={handleCloseModalEvento}>
                 <Modal.Header closeButton>
                     <Modal.Title>Escolha o Evento</Modal.Title>
@@ -194,7 +193,7 @@ export default function OrcamentoList({sessionId}) {
                 <Modal.Body>
                     {selectedOrcamento && (
                         <div>
-                        <Row className="mb-3">
+                            <Row className="mb-3">
                                 <Form.Group as={Col} controlId="formGridNome">
                                     <Form.Label>Evento</Form.Label>
                                     <Form.Select

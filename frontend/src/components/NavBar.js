@@ -10,7 +10,7 @@ import './NavBar.css'
 import LocalList from "./LocalList.tsx";
 import CidadeList from "./CidadeList.tsx";
 import ClienteList from "./ClienteList.tsx"
-import ComidaList from "./ComidaList.tsx"
+import ComidaList from "./CardapioList.tsx"
 import LogisticaList from "./LogisticaList.tsx"
 import EventoList from "./EventoList.tsx";
 import OrcamentoList from "./OrcamentoList.tsx";

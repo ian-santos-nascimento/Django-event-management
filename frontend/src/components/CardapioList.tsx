@@ -8,6 +8,7 @@ import csrfToken from "../ApiCall/CsrfToken";
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
+import {fetchData,} from '../ApiCall/ApiCall.jsx'
 
 const API_URL = process.env.REACT_APP_API_URL;
 axios.defaults.xsrfCookieName = 'csrftoken';
@@ -28,24 +29,21 @@ export default function CidadeList({sessionId}) {
     const [comidas, setCidades] = useState<Comida[]>([]);
     const [selectedComida, setSelectedComida] = useState<Comida | null>(null);
     const [showModal, setShowModal] = useState(false);
-
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
     useEffect(() => {
         const fetchCidades = async () => {
-            const response = await axios.get(`${API_URL}comidas/`, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken,
-                    'sessionId': sessionId
-                },
-                // @ts-ignore
-                credentials: 'include',
-            });
-
+            const response = await fetchData('comidas', currentPage, csrfToken, sessionId)
             const comidas = response.data as Comida[];
             setCidades(comidas);
+            setTotalPages(Math.ceil(response.count / 10));
         };
         fetchCidades();
-    }, [sessionId]);
+    }, [sessionId, currentPage]);
+
+    const handlePageChange = (newPage) => {
+        setCurrentPage(newPage);
+    };
 
     const handleEditComida = (comida: Comida) => {
         setSelectedComida(comida);
@@ -148,7 +146,7 @@ export default function CidadeList({sessionId}) {
                     <tr key={item.comida_id}>
                         <td>{item.comida_id}</td>
                         <td>{item.nome}</td>
-                        <td>{item.descricao.slice(0,50)}</td>
+                        <td>{item.descricao.slice(0, 50)}</td>
                         <td>{item.quantidade_minima}</td>
                         <td>{item.tipo}</td>
                         <td>R${item.valor}</td>
@@ -165,6 +163,15 @@ export default function CidadeList({sessionId}) {
                 )}
                 </tbody>
             </table>
+            <div className="pagination">
+                <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>
+                    Anterior
+                </button>
+                <span> Página {currentPage} de {totalPages} </span>
+                <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>
+                    Próxima
+                </button>
+            </div>
 
             <Modal show={showModal} onHide={handleCloseModal}>
                 <Modal.Header closeButton>

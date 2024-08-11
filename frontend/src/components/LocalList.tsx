@@ -6,11 +6,8 @@ import Button from 'react-bootstrap/Button';
 import Local from './Local.tsx';
 import csrftoken from "../ApiCall/CsrfToken";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {fetchData,} from '../ApiCall/ApiCall.jsx'
 
-const API_URL = process.env.REACT_APP_API_URL;
-axios.defaults.xsrfCookieName = 'csrftoken';
-axios.defaults.xsrfHeaderName = 'X-CSRFToken';
-axios.defaults.withCredentials = true;
 
 interface Local {
     id_local: string,
@@ -26,37 +23,35 @@ export default function LocalList({sessionId}) {
     const [locais, setLocais] = useState<Local[]>([]);
     const [selectedLocal, setSelectedLocal] = useState<Local | null>(null);
     const [showModal, setShowModal] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
 
     useEffect(() => {
         const fetchLocais = async () => {
-            const response = await axios.get(`${API_URL}locais/`, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrftoken,
-                    'sessionId': sessionId
-                },
-                // @ts-ignore
-                credentials: 'include',
-            });
-
+            const response = await fetchData('locais', currentPage, csrftoken, sessionId);
             const locais = response.data as Local[];
             setLocais(locais);
+            setTotalPages(Math.ceil(response.count / 10));
         };
         fetchLocais();
-    }, [sessionId]);
+    }, [sessionId, currentPage]);
 
     const handleEditLocal = (local: Local) => {
         setSelectedLocal(local);
     };
+      const handlePageChange = (newPage) => {
+        setCurrentPage(newPage);
+    };
 
-    const handleCreateLocal = () =>{
+
+    const handleCreateLocal = () => {
         setSelectedLocal({
             id_local: null,
             nome: '',
             endereco: '',
-            observacoes:'',
-            cidade:null,
-            email:'',
+            observacoes: '',
+            cidade: null,
+            email: '',
             telefone: ''
         })
     }
@@ -120,7 +115,15 @@ export default function LocalList({sessionId}) {
                 )}
                 </tbody>
             </table>
-
+            <div className="pagination">
+                <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>
+                    Anterior
+                </button>
+                <span> Página {currentPage} de {totalPages} </span>
+                <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>
+                    Próxima
+                </button>
+            </div>
             <Modal show={showModal} onHide={handleCloseModal}>
                 <Modal.Header closeButton>
                     <Modal.Title>Detalhes do Local</Modal.Title>

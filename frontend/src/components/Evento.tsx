@@ -4,9 +4,8 @@ import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Button from "react-bootstrap/Button";
-import InputMask from 'react-input-mask';
-import {FormControl} from "react-bootstrap";
 
+import {eventoPost, fetchData,} from '../ApiCall/ApiCall.jsx'
 import csrfToken from "../ApiCall/CsrfToken"
 
 interface Evento {
@@ -47,35 +46,16 @@ export default function Evento({evento, sessionId}) {
 
 
     useEffect(() => {
-            axios.get(`${API_URL}locais/`, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken,
-                    'sessionId': sessionId
-                },
-                withCredentials: true,
-            }).then(response => {
-                const locais = response.data as Local[];
-                setLocais(locais);
-                evento.local = evento.local === null ? locais[0] :evento.local
-            }).catch(error => {
-                console.error('Error fetching locais:', error);
-            });
-
-            axios.get(`${API_URL}clientes/`, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken,
-                    'sessionId': sessionId
-                },
-                withCredentials: true,
-            }).then(response => {
-                const clientes = response.data as Cliente[];
-                setClientes(clientes);
-            }).catch(error => {
-                console.error('Error fetching clientes:', error);
-            });
-
+            const fetchLocalApi = async () => {
+                const response = await fetchData('locais',null, csrfToken, sessionId)
+                setLocais(response.data)
+            };
+            const fetchClienteApi = async () => {
+                const response = await fetchData('clientes',null, csrfToken, sessionId)
+                setClientes(response.data)
+            }
+            fetchLocalApi()
+            fetchClienteApi()
         }, [sessionId]
     );
 
@@ -93,33 +73,7 @@ export default function Evento({evento, sessionId}) {
 
 
     const handleEventoSent = async () => {
-        try {
-            if (selectedEvento.id_evento !== null) {
-                await axios.put(`${API_URL}eventos/${selectedEvento.id_evento}/`, selectedEvento, {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': csrfToken,
-                        'sessionId': sessionId
-                    },
-                    withCredentials: true,
-                });
-                alert('Evento updated successfully!');
-            } else {
-                await axios.post(`${API_URL}eventos/`, selectedEvento, {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': csrfToken,
-                        'sessionId': sessionId
-                    },
-                    withCredentials: true,
-                });
-                alert('Evento created successfully!');
-            }
-            window.location.reload();
-        } catch (error) {
-            console.error('Error updating Evento:', error);
-            alert('Failed to update Evento.');
-        }
+       await eventoPost(selectedEvento, csrfToken, sessionId)
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {

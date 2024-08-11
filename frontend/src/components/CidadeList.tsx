@@ -6,8 +6,9 @@ import Button from 'react-bootstrap/Button';
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
+import {fetchData,} from '../ApiCall/ApiCall.jsx'
 import {ESTADOS_BRASILEIROS} from '../util/OptionList'
-import csrftoken from "../ApiCall/CsrfToken"
+import csrfToken from "../ApiCall/CsrfToken"
 
 const API_URL = process.env.REACT_APP_API_URL;
 axios.defaults.xsrfCookieName = 'csrftoken';
@@ -26,24 +27,23 @@ export default function CidadeList({sessionId}) {
     const [cidades, setCidades] = useState<Cidade[]>([]);
     const [selectedCidade, setSelectedCidade] = useState<Cidade | null>(null);
     const [showModal, setShowModal] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+
 
     useEffect(() => {
         const fetchCidades = async () => {
-            const response = await axios.get(`${API_URL}cidades/`, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrftoken,
-                    'sessionId': sessionId
-                },
-                // @ts-ignore
-                credentials: 'include',
-            });
-
+            const response = await fetchData('cidades', currentPage, csrfToken, sessionId);
             const cidades = response.data as Cidade[];
             setCidades(cidades);
+            setTotalPages(Math.ceil(response.count / 10));
         };
         fetchCidades();
-    }, [sessionId]);
+    }, [sessionId, currentPage]);
+
+    const handlePageChange = (newPage) => {
+        setCurrentPage(newPage);
+    };
 
     const handleEditCidade = (cidade: Cidade) => {
         setSelectedCidade(cidade);
@@ -54,7 +54,7 @@ export default function CidadeList({sessionId}) {
         setSelectedCidade({
             id_cidade: null,
             nome: '',
-            estado: '',
+            estado: 'SP',
             taxa_deslocamento: 0.0
         })
         setShowModal(true)
@@ -91,8 +91,8 @@ export default function CidadeList({sessionId}) {
             }
             window.location.reload()
         } catch (error) {
-            console.error('Error updating local:', error);
-            alert('Failed to update local.');
+            console.error('Error updating Cidade:', error);
+            alert('Failed to update cidade.');
         }
 
     }
@@ -157,6 +157,15 @@ export default function CidadeList({sessionId}) {
                 )}
                 </tbody>
             </table>
+            <div className="pagination">
+                <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>
+                    Anterior
+                </button>
+                <span> Página {currentPage} de {totalPages} </span>
+                <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>
+                    Próxima
+                </button>
+            </div>
 
             <Modal show={showModal} onHide={handleCloseModal}>
                 <Modal.Header closeButton>

@@ -2,14 +2,14 @@ from rest_framework import status
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework import generics
 from .models import *
 from .serializers import *
 
 
 class EventoAnnotatedViewSet(ModelViewSet):
-    queryset = Evento.objects.all()
+    queryset = Evento.objects.all().order_by('codigo_evento')
     serializer_class = EventoSerializer
 
     def retrieve(self, request, pk=None):
@@ -26,7 +26,7 @@ class EventoAnnotatedViewSet(ModelViewSet):
 
 
 class OrcamentoAnnotatedViewSet(ModelViewSet):
-    queryset = Orcamento.objects.all()
+    queryset = Orcamento.objects.all().order_by('id_orcamento')
     permission_classes = [IsAuthenticated]
     serializer_class = OrcamentoSerializer
     authentication_classes = [SessionAuthentication]
@@ -48,6 +48,15 @@ class CidadeAnnotatedViewSet(ModelViewSet):
         instance.excluida = True
         instance.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class CidadeWithoutPaginationAnnotatedViewSet(ReadOnlyModelViewSet):
+    queryset = Cidade.objects.all().order_by('nome').filter(excluida=False)
+    permission_classes = [IsAuthenticated]
+    serializer_class = CidadeSerializer
+    authentication_classes = [SessionAuthentication]
+    pagination_class = None
+
 
 
 class LogisticaCidadeByCidadeView(generics.GenericAPIView):
@@ -74,6 +83,21 @@ class LogisticaAnnotatedViewSet(ModelViewSet):
         instance.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+class LogisticaAnnotatedViewSetWithoutPagination(ReadOnlyModelViewSet):
+    queryset = Logistica.objects.all().filter(excluida=False)
+    permission_classes = [IsAuthenticated]
+    serializer_class = LogisticaSerializar
+    authentication_classes = [SessionAuthentication]
+    pagination_class = None
+
+
+class LocalEventoWithoutPaginationAnnotatedViewSet(ReadOnlyModelViewSet):
+    queryset = LocalEvento.objects.all().order_by('nome').filter(excluida=False)
+    permission_classes = [IsAuthenticated]
+    serializer_class = LocalEventoSerializer
+    authentication_classes = [SessionAuthentication]
+    pagination_class = None
+
 
 class LocalEventoAnnotatedViewSet(ModelViewSet):
     queryset = LocalEvento.objects.all().order_by('nome').filter(excluida=False)
@@ -95,8 +119,24 @@ class ClienteAnnotatedViewSet(ModelViewSet):
     authentication_classes = [SessionAuthentication]
 
 
+class ClienteWithoutPaginationAnnotatedViewSet(ReadOnlyModelViewSet):
+    queryset = Cliente.objects.all().order_by('nome')
+    permission_classes = [IsAuthenticated]
+    serializer_class = ClienteEnderecoSerializer
+    authentication_classes = [SessionAuthentication]
+    pagination_class = None
+
+
 class ComidaViewSet(ModelViewSet):
     queryset = Comida.objects.all().order_by('nome')
     permission_classes = [IsAuthenticated]
     serializer_class = ComidaSerializer
     authentication_classes = [SessionAuthentication]
+
+
+class ComidaWithoutPaginationViewSet(ReadOnlyModelViewSet):
+    queryset = Comida.objects.all().order_by('nome')
+    permission_classes = [IsAuthenticated]
+    serializer_class = ComidaSerializer
+    authentication_classes = [SessionAuthentication]
+    pagination_class = None

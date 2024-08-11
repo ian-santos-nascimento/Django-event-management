@@ -1,14 +1,12 @@
-
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-insecure-#9_owqwd8a0#os0qqav)+hnlh^rltb1i0cd&#t@=i6$5@+p)g6'
 
-DEBUG = True #TODO CHANGE TO FALSE IN PROD
+DEBUG = True  # TODO CHANGE TO FALSE IN PROD
 
-ALLOWED_HOSTS = ['*'] ##TODO CHANGE TO INSTANCE IP e DOMAIN.COM.BR
-
+ALLOWED_HOSTS = ['*']  ##TODO CHANGE TO INSTANCE IP e DOMAIN.COM.BR
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -38,9 +36,9 @@ MIDDLEWARE = [
 ]
 
 CORS_ORIGIN_WHITELIST = [
-    'http://localhost:3000',  #TODO replace with the URL of your ReactJS application
+    'http://localhost:3000',  # TODO replace with the URL of your ReactJS application
 ]
-CORS_ALLOWED_ORIGINS = [ #TODO replacte with actual URL
+CORS_ALLOWED_ORIGINS = [  # TODO replacte with actual URL
     'http://localhost',
     'http://127.0.0.1',
     'http://0.0.0.0',
@@ -71,7 +69,7 @@ WSGI_APPLICATION = 'BoutiqueGourmet.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-DATABASES = { ##TODO change to RDS
+DATABASES = {  ##TODO change to RDS
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'controle_buffet',
@@ -106,6 +104,8 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.SessionAuthentication',
     ),
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10
 }
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
@@ -131,6 +131,6 @@ LOGIN_URL = 'login'
 DJANGO_LOG_LEVEL = DEBUG
 CORS_ORIGIN_ALLOW_ALL = True
 
-SESSION_COOKIE_HTTPONLY = False #TODO change to TRUE to security
+SESSION_COOKIE_HTTPONLY = False  # TODO change to TRUE to security
 SESSION_COOKIE_SECURE = False  # Defina como True em produção
 SESSION_COOKIE_SAMESITE = 'Lax'  # Pode ser 'Strict' ou 'None' conforme suas necessidades

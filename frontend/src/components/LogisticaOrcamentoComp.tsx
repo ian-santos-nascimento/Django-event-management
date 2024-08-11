@@ -1,5 +1,5 @@
 import {useState} from 'react';
-import { Fragment } from 'react';
+import {Fragment} from 'react';
 import {Row, Col, Form, Badge, Modal, Button} from 'react-bootstrap';
 import {NumericFormat} from 'react-number-format';
 
@@ -23,9 +23,11 @@ const LogisticaOrcamentoComp = ({
                                     setFilterLogistica,
                                     filteredLogisticas,
                                     logisticasSelecionadas,
-                                    handleToggleLogistica,
+                                    setLogisticas,
+                                    setLogisticasSelecionadas,
                                     orcamento,
-                                    handleQuantityLogisticaChange,
+                                    logisticas,
+                                    setOrcamento,
                                     valorLogisticaTotal,
                                     logisticaCidade,
                                     evento,
@@ -40,7 +42,6 @@ const LogisticaOrcamentoComp = ({
     });
 
     const handleLogisticaChange = (logistica) => {
-        console.log("LOGISTICA TIPO" + logistica.tipo)
         if (logistica.tipo === 'Material') {
             setSelectedLogistica(logistica);
             setShowModal(true);
@@ -56,6 +57,41 @@ const LogisticaOrcamentoComp = ({
             diaria: '',
             lanches: ''
         });
+    };
+
+    const handleQuantityLogisticaChange = (logistica_id: number, quantidade: number) => {
+        setOrcamento(prevOrcamento => {
+            if (!prevOrcamento) return prevOrcamento;
+            const updatedLogistica = prevOrcamento.logisticas.map(logistica =>
+                logistica.id === logistica_id ? {...logistica, quantidade} : logistica
+            );
+            return {...prevOrcamento, logisticas: updatedLogistica};
+        });
+    }
+
+
+    const handleToggleLogistica = (logistica) => {
+        if (logisticasSelecionadas.includes(logistica)) {
+            // Remover da lista de selecionados e adicionar de volta à lista de disponíveis
+            setLogisticasSelecionadas(logisticasSelecionadas.filter(l => l !== logistica));
+            setLogisticas([...logisticas, logistica]);
+
+            if (orcamento) {
+                const updatedLogisticas = orcamento.logisticas.filter(log => log.id !== logistica.id_logistica);
+                setOrcamento({...orcamento, logisticas: updatedLogisticas});
+            }
+        } else {
+            // Adicionar à lista de selecionados e remover da lista de disponíveis
+            setLogisticasSelecionadas([...logisticasSelecionadas, logistica]);
+            setLogisticas(logisticas.filter(l => l !== logistica));
+
+            if (orcamento) {
+                setOrcamento({
+                    ...orcamento,
+                    logisticas: [...orcamento.logisticas, {id: logistica.id_logistica, quantidade: 1}]
+                });
+            }
+        }
     };
 
     const handleModalSave = () => {

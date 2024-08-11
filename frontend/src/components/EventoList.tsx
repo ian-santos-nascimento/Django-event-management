@@ -9,6 +9,7 @@ import Form from "react-bootstrap/Form";
 import Col from "react-bootstrap/Col";
 // @ts-ignore
 import Evento from "./Evento.tsx"
+import {fetchData} from "../ApiCall/ApiCall";
 
 const API_URL = process.env.REACT_APP_API_URL;
 axios.defaults.xsrfCookieName = 'csrftoken';
@@ -35,25 +36,23 @@ export default function EventoList({sessionId}) {
     const [eventos, setEventos] = useState<Evento[]>([])
     const [selectedEvento, setSelectedEvento] = useState<Evento>(null)
     const [showModal, setShowModal] = useState(false)
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
 
 
     useEffect(() => {
         const fetchEventos = async () => {
-            const response = await axios.get(`${API_URL}eventos/`, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken,
-                    'sessionId': sessionId
-                },
-                // @ts-ignore
-                credentials: 'include',
-            });
-
+            const response = await fetchData('eventos', currentPage, csrfToken, sessionId)
             const eventos = response.data as Evento[];
             setEventos(eventos);
+            setTotalPages(Math.ceil(response.count / 10));  // Ajuste o divisor de acordo com PAGE_SIZE do Django
         };
         fetchEventos();
-    }, [sessionId]);
+    }, [sessionId, currentPage]);
+
+    const handlePageChange = (newPage) => {
+        setCurrentPage(newPage);
+    };
 
     const handleCreateEvento = () => {
         setSelectedEvento({
@@ -87,8 +86,8 @@ export default function EventoList({sessionId}) {
         setSelectedEvento(evento)
     }
 
-    const handleExcluirEvento = async() => {
-        try{
+    const handleExcluirEvento = async () => {
+        try {
             await axios.delete(`${API_URL}eventos/${selectedEvento.id_evento}`, {
                 headers: {
                     'Content-Type': 'application/json',
@@ -100,7 +99,7 @@ export default function EventoList({sessionId}) {
             });
             alert(`Evento ${selectedEvento.nome} excluído com sucesso`)
             window.location.reload()
-        }catch (e){
+        } catch (e) {
             console.log("exception", e)
             alert("Não foi possível excluir este evento")
         }
@@ -158,6 +157,15 @@ export default function EventoList({sessionId}) {
                 )}
                 </tbody>
             </table>
+            <div className="pagination">
+                <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>
+                    Anterior
+                </button>
+                <span> Página {currentPage} de {totalPages} </span>
+                <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>
+                    Próxima
+                </button>
+            </div>
             <Modal show={showModal} size="lg" onHide={handleCloseModal}>
                 <Modal.Header closeButton>
                     <Modal.Title>Detalhes do Evento</Modal.Title>

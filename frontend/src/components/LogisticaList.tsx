@@ -9,6 +9,7 @@ import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {fetchData,} from '../ApiCall/ApiCall.jsx'
 
 
 interface Logistica {
@@ -30,30 +31,28 @@ export default function LogisticaList({sessionId, csrfToken}) {
     const [logisticas, setLogisticas] = useState<Logistica[]>([])
     const [selectedLogistica, setSelectedLogistica] = useState<Logistica>(null)
     const [showModal, setShowModal] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
 
     useEffect(() => {
         const fetchLogisticas = async () => {
-            const response = await axios.get(`${API_URL}logisticas/`, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken,
-                    'sessionId': sessionId
-                },
-                // @ts-ignore
-                credentials: 'include',
-            });
+            const response = await fetchData('logisticas', currentPage, csrfToken, sessionId)
 
             const comidas = response.data as Logistica[];
             setLogisticas(comidas);
+            setTotalPages(Math.ceil(response.count / 10));
+
         };
         fetchLogisticas();
-    }, [sessionId]);
+    }, [sessionId, currentPage]);
 
     const handleEditLogistica = (logistica: Logistica) => {
         setSelectedLogistica(logistica);
         setShowModal(true);
     };
-
+    const handlePageChange = (newPage) => {
+        setCurrentPage(newPage);
+    };
     const handleCreateLogistica = () => {
         setSelectedLogistica({
             id_logistica: null,
@@ -168,7 +167,15 @@ export default function LogisticaList({sessionId, csrfToken}) {
                 )}
                 </tbody>
             </table>
-
+            <div className="pagination">
+                <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>
+                    Anterior
+                </button>
+                <span> Página {currentPage} de {totalPages} </span>
+                <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>
+                    Próxima
+                </button>
+            </div>
             <Modal show={showModal} onHide={handleCloseModal}>
                 <Modal.Header closeButton>
                     <Modal.Title>Detalhes da Logistica</Modal.Title>

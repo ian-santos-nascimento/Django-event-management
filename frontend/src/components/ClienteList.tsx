@@ -7,6 +7,7 @@ import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Cliente from "./Cliente.tsx";
+import {fetchData,} from '../ApiCall/ApiCall.jsx'
 
 interface Cliente {
     id_cliente: string,
@@ -37,26 +38,25 @@ export default function CidadeList({sessionId, csrfToken}) {
     const [clientes, setClientes] = useState<Cliente[]>([]);
     const [selectedCliente, setSelectedCliente] = useState<Cliente>(null);
     const [showModal, setShowModal] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+
 
     useEffect(() => {
         const fetchClientes = async () => {
-            const response = await axios.get(`${API_URL}clientes/`, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken,
-                    'sessionId': sessionId
-                },
-                // @ts-ignore
-                credentials: 'include',
-            });
+            const response = await fetchData('clientes', currentPage, csrfToken, sessionId);
             const clientes = response.data as Cliente[];
             setClientes(clientes);
+            setTotalPages(Math.ceil(response.count / 10));
         };
         fetchClientes();
-    }, [sessionId]);
+    }, [sessionId, currentPage]);
 
     const handleEditCliente = (cliente: Cliente) => {
         setSelectedCliente(cliente);
+    };
+    const handlePageChange = (newPage) => {
+        setCurrentPage(newPage);
     };
 
     const handleCreateCliente = () => {
@@ -165,7 +165,15 @@ export default function CidadeList({sessionId, csrfToken}) {
                 )}
                 </tbody>
             </table>
-
+            <div className="pagination">
+                <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>
+                    Anterior
+                </button>
+                <span> Página {currentPage} de {totalPages} </span>
+                <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>
+                    Próxima
+                </button>
+            </div>
             <Modal show={showModal} size="lg" onHide={handleCloseModal}>
                 <Modal.Header closeButton>
                     <Modal.Title>Detalhes do cliente</Modal.Title>

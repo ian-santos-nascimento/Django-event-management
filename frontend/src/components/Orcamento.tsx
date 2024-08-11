@@ -5,8 +5,7 @@ import Col from "react-bootstrap/Col";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import {NumericFormat} from 'react-number-format';
-import {Badge} from "react-bootstrap";
-import Modal from 'react-bootstrap/Modal';
+import {fetchData, fetchDataWithId, fetchDataWithoutPagination} from "../ApiCall/ApiCall";
 
 import csrfToken from '../ApiCall/CsrfToken'
 import LogisticaOrcamentoComp from "./LogisticaOrcamentoComp.tsx";
@@ -149,10 +148,12 @@ export default function Orcamento({eventoState: eventoState, sessionId: sessionI
 
     useEffect(() => {
         if (!evento.clientes || evento) {
-            const eventoResponse = axios.get(`${API_URL}eventos/${eventoState.id_evento}`).then(response => {
+            const eventoResponse = async () => {
+                const response = await fetchDataWithId('eventos', eventoState.id_evento)
                 setEvento(response.data as Evento)
                 setOrcamento({...orcamento, evento: eventoState.id_evento})
-            });
+            }
+            eventoResponse()
         }
     }, []);
 
@@ -211,7 +212,7 @@ export default function Orcamento({eventoState: eventoState, sessionId: sessionI
     async function getLogisticaCidade() {
         if (evento && evento.local && evento.local.cidade !== null) {
             try {
-                const response = await axios.get(`${API_URL}logistica-cidade/${evento.local.cidade}`);
+                const response = await fetchDataWithId('logistica-cidade', evento.local.cidade);
                 setLogisticaCidade(response.data as LogisticaCidade);
             } catch (e) {
                 console.error('Error fetching LogisticaCidade:', e);
@@ -220,20 +221,12 @@ export default function Orcamento({eventoState: eventoState, sessionId: sessionI
     }
 
     async function getModels() {
-        try {
-            const logisticasResponse = await axios.get(`${API_URL}logisticas/`);
-            setLogisticas(logisticasResponse.data as Logistica[]);
+        const logisticasResponse = await fetchDataWithoutPagination('logisticasWP', csrfToken, sessionId);
+        setLogisticas(logisticasResponse.data as Logistica[]);
 
-            const comidasResponse = await axios.get(`${API_URL}comidas/`);
-            setComidas(comidasResponse.data as Comida[]);
+        const comidasResponse = await fetchDataWithoutPagination('comidasWP', csrfToken, sessionId);
+        setComidas(comidasResponse.data as Comida[]);
 
-        } catch (error) {
-            if (axios.isAxiosError(error) && error.response?.status === 403) {
-                window.location.href = '/login';
-            } else {
-                console.error('Error fetching data:', error);
-            }
-        }
     }
 
     const handleToggleComida = (comida: Comida) => {
@@ -266,48 +259,6 @@ export default function Orcamento({eventoState: eventoState, sessionId: sessionI
         });
     };
 
-
-    const handleQuantityLogisticaChange = (logistica_id: number, quantidade: number) => {
-        setOrcamento(prevOrcamento => {
-            if (!prevOrcamento) return prevOrcamento;
-            const updatedLogistica = prevOrcamento.logisticas.map(logistica =>
-                logistica.id === logistica_id ? {...logistica, quantidade} : logistica
-            );
-            return {...prevOrcamento, logisticas: updatedLogistica};
-        });
-    }
-
-    const handleModalSave = () => {
-        if (selectedLogistica) {
-            // Aqui você pode adicionar a lógica para armazenar a opção selecionada, se necessário
-            handleToggleLogistica({...selectedLogistica, selectedOption});
-        }
-        setShowModal(false);
-    };
-
-    const handleToggleLogistica = (logistica: Logistica) => {
-        if (logisticasSelecionadas.includes(logistica)) {
-            // Remover da lista de selecionados e adicionar de volta à lista de disponíveis
-            setLogisticasSelecionadas(logisticasSelecionadas.filter(l => l !== logistica));
-            setLogisticas([...logisticas, logistica]);
-
-            if (orcamento) {
-                const updatedLogisticas = orcamento.logisticas.filter(log => log.id !== logistica.id_logistica);
-                setOrcamento({...orcamento, logisticas: updatedLogisticas});
-            }
-        } else {
-            // Adicionar à lista de selecionados e remover da lista de disponíveis
-            setLogisticasSelecionadas([...logisticasSelecionadas, logistica]);
-            setLogisticas(logisticas.filter(l => l !== logistica));
-
-            if (orcamento) {
-                setOrcamento({
-                    ...orcamento,
-                    logisticas: [...orcamento.logisticas, {id: logistica.id_logistica, quantidade: 1}]
-                });
-            }
-        }
-    };
 
     const handleToggleCliente = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const selectedId = parseInt(e.target.value);
@@ -481,12 +432,14 @@ export default function Orcamento({eventoState: eventoState, sessionId: sessionI
                     </Form.Group>
                 </Row>
 
-                <LogisticaOrcamentoComp orcamento={orcamento} logisticaCidade={logisticaCidade}
+                <LogisticaOrcamentoComp orcamento={orcamento} setOrcamento={setOrcamento}
+                                        logisticaCidade={logisticaCidade}
                                         setFilterLogistica={setFilterLogistica} filteredLogisticas={filteredLogisticas}
-                                        handleChange={handleChange} evento={evento}
+                                        handleChange={handleChange} evento={evento} logisticas={logisticas}
                                         valorLogisticaTotal={valorLogisticaTotal} filterLogistica={filterLogistica}
-                                        logisticasSelecionadas={logisticasSelecionadas} handleToggleLogistica={handleToggleLogistica}
-                                        handleQuantityLogisticaChange={handleQuantityLogisticaChange}/>
+                                        logisticasSelecionadas={logisticasSelecionadas} setLogisticas={setLogisticas}
+                                        setLogisticasSelecionadas={setLogisticasSelecionadas}
+                />
 
                 <Button variant="primary" type="submit" onClick={handleSubmit}>
                     {orcamento !== null && orcamento.id_orcamento === null ? 'Criar' : 'Editar'}

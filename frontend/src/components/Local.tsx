@@ -5,6 +5,7 @@ import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
 import Button from 'react-bootstrap/Button';
 import csrfToken from "../ApiCall/CsrfToken";
+import {fetchData, fetchDataWithoutPagination,} from '../ApiCall/ApiCall.jsx'
 
 const API_URL = process.env.REACT_APP_API_URL;
 
@@ -30,27 +31,13 @@ export default function Local({local, sessionId}) {
     const [cidades, setCidades] = useState<Cidade[]>([]);
 
     useEffect(() => {
-        const fetchCidades = async () => {
-            try {
-                const response = await axios.get(`${API_URL}cidades/`, {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': csrfToken,
-                        'sessionId': sessionId
-                    },
-                    withCredentials: true,
-                });
-
-                const cidadesData = response.data as Cidade[];
-                setCidades(cidadesData);
-                localState.cidade = local.cidade === null ? Number(cidadesData[0].id_cidade) : local.cidade
-            } catch (error) {
-                console.error('Error fetching cidades:', error);
+            const fetchCidades = async () => {
+                const response = await fetchDataWithoutPagination('cidadesWP', csrfToken, sessionId)
+                setCidades(response.data)
             }
-        };
-
-        fetchCidades();
-    }, [sessionId]);
+            fetchCidades()
+        }, [sessionId]
+    );
 
     const handleChange = (e) => {
         const {name, value} = e.target;
