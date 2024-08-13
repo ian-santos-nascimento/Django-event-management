@@ -1,5 +1,4 @@
 import {useEffect, useState} from 'react';
-import axios from 'axios';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 // @ts-ignore
@@ -7,6 +6,9 @@ import Local from './Local.tsx';
 import csrftoken from "../ApiCall/CsrfToken";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {fetchData,} from '../ApiCall/ApiCall.jsx'
+import {InputGroup} from "react-bootstrap";
+import Form from "react-bootstrap/Form";
+import {faSearch, faTimes} from "@fortawesome/free-solid-svg-icons";
 
 
 interface Local {
@@ -25,21 +27,24 @@ export default function LocalList({sessionId}) {
     const [showModal, setShowModal] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [searchQuery, setSearchQuery] = useState('');
+
 
     useEffect(() => {
         const fetchLocais = async () => {
-            const response = await fetchData('locais', currentPage, csrftoken, sessionId);
+            const response = await fetchData('locais', currentPage, searchQuery, csrftoken, sessionId);
             const locais = response.data as Local[];
             setLocais(locais);
             setTotalPages(Math.ceil(response.count / 10));
         };
         fetchLocais();
-    }, [sessionId, currentPage]);
+    }, [sessionId, currentPage, searchQuery]);
 
     const handleEditLocal = (local: Local) => {
         setSelectedLocal(local);
     };
-      const handlePageChange = (newPage) => {
+    const handlePageChange = (newPage) => {
         setCurrentPage(newPage);
     };
 
@@ -66,6 +71,20 @@ export default function LocalList({sessionId}) {
         setSelectedLocal(null);
     };
 
+    const handleSearchChange = (event) => {
+        setSearchTerm(event.target.value);
+    };
+
+    const handleSearchClick = () => {
+        setSearchQuery(searchTerm);
+    };
+
+    const handleClearSearch = () => {
+        setSearchQuery('')
+        setSearchTerm('')
+
+    }
+
     if (selectedLocal && !showModal) {
         return <Local sessionId={sessionId} local={selectedLocal}/>;
     }
@@ -73,7 +92,31 @@ export default function LocalList({sessionId}) {
     return (
         <div className="container">
             <h2 className="text-center">Controle de Locais Evento</h2>
-            <Button variant='primary' className='mb-3' onClick={handleCreateLocal}>Novo Local</Button>
+            <div className=" justify-content-between w-100">
+                <Button variant='primary' className='mb-3' onClick={handleCreateLocal}>Novo Local</Button>
+                <InputGroup className="mb-3">
+                    <Form.Control
+                        type="text"
+                        placeholder="Buscar nome/cidade..."
+                        value={searchTerm}
+                        onChange={handleSearchChange}
+                    />
+                    <Button
+                        type='button'
+                        variant="outline-primary" title='Buscar'
+                        onClick={handleSearchClick}>
+                        <FontAwesomeIcon icon={faSearch}/>
+                    </Button>
+                    {searchTerm && (
+                        <Button
+                            type='button'
+                            variant="outline-danger" title='Limpar filtro'
+                            onClick={handleClearSearch}>
+                            <FontAwesomeIcon icon={faTimes}/>
+                        </Button>
+                    )}
+                </InputGroup>
+            </div>
 
             <table className="table table-success">
                 <thead>

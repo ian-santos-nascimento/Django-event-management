@@ -14,6 +14,8 @@ import Orcamento from './Orcamento.tsx'
 // @ts-ignore
 import OrcamentoView from "./OrcamentoView.tsx";
 import {fetchData} from "../ApiCall/ApiCall";
+import {InputGroup} from "react-bootstrap";
+import {faSearch, faTimes} from "@fortawesome/free-solid-svg-icons";
 
 
 interface Evento {
@@ -55,18 +57,20 @@ export default function OrcamentoList({sessionId}) {
     const [viewOrcamento, setViewOrcamento] = useState(false)
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [searchQuery, setSearchQuery] = useState('');
 
 
     useEffect(() => {
         const fetchOrcamentos = async () => {
-            const response = await fetchData('orcamentos', currentPage, csrfToken, sessionId)
+            const response = await fetchData('orcamentos', currentPage,searchQuery,  csrfToken, sessionId)
             const orcamentos = response.data as Orcamento[];
             setOrcamentos(orcamentos);
             setTotalPages(Math.ceil(response.count / 10));
 
         };
         fetchOrcamentos();
-    }, [sessionId, currentPage]);
+    }, [sessionId, currentPage, searchQuery]);
 
 
     useEffect(() => {
@@ -79,7 +83,7 @@ export default function OrcamentoList({sessionId}) {
         fetchEventos();
     }, [sessionId, currentPage])
 
-       const handlePageChange = (newPage) => {
+    const handlePageChange = (newPage) => {
         setCurrentPage(newPage);
     };
 
@@ -131,10 +135,48 @@ export default function OrcamentoList({sessionId}) {
     if (viewOrcamento)
         return <OrcamentoView orcamentoId={selectedOrcamento.id_orcamento} sessionId={sessionId}/>
 
+    const handleSearchChange = (event) => {
+        setSearchTerm(event.target.value);
+    };
+
+    const handleSearchClick = () => {
+        setSearchQuery(searchTerm);
+    };
+
+    const handleClearSearch = () => {
+        setSearchQuery('')
+        setSearchTerm('')
+
+    }
+
     return (
         <div className="container">
             <h2 className="text-center">Controle de Orçamentos</h2>
-            <Button variant='primary' className='mb-3' onClick={handleCreateOrcamento}>Novo Orcamento</Button>
+            <div className=" justify-content-between w-100">
+                <Button variant='primary' className='mb-3' onClick={handleCreateOrcamento}>Novo Orcamento</Button>
+                <InputGroup className="mb-3">
+                    <Form.Control
+                        type="text"
+                        placeholder="Buscar nome/nome do evento/nome do cliente..."
+                        value={searchTerm}
+                        onChange={handleSearchChange}
+                    />
+                    <Button
+                        type='button'
+                        variant="outline-primary" title='Buscar'
+                        onClick={handleSearchClick}>
+                        <FontAwesomeIcon icon={faSearch}/>
+                    </Button>
+                    {searchTerm && (
+                        <Button
+                            type='button'
+                            variant="outline-danger" title='Limpar filtro'
+                            onClick={handleClearSearch}>
+                            <FontAwesomeIcon icon={faTimes}/>
+                        </Button>
+                    )}
+                </InputGroup>
+            </div>
             <table className="table table-success">
                 <thead>
                 <tr>

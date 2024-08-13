@@ -4,6 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework import generics
+from rest_framework import filters
 from .models import *
 from .serializers import *
 
@@ -11,6 +12,8 @@ from .serializers import *
 class EventoAnnotatedViewSet(ModelViewSet):
     queryset = Evento.objects.all().order_by('codigo_evento')
     serializer_class = EventoSerializer
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['nome', 'codigo_evento', 'local__nome']
 
     def retrieve(self, request, pk=None):
         evento = Evento.objects.get(pk=pk)
@@ -30,6 +33,9 @@ class OrcamentoAnnotatedViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
     serializer_class = OrcamentoSerializer
     authentication_classes = [SessionAuthentication]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['nome', 'cliente__nome', 'evento__nome']
+
 
     def retrieve(self, request, pk=None):
         orcamento = Orcamento.objects.get(pk=pk)
@@ -42,6 +48,8 @@ class CidadeAnnotatedViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
     serializer_class = CidadeSerializer
     authentication_classes = [SessionAuthentication]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['nome',]
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -76,6 +84,8 @@ class LogisticaAnnotatedViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
     serializer_class = LogisticaSerializar
     authentication_classes = [SessionAuthentication]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['nome',]
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -104,6 +114,8 @@ class LocalEventoAnnotatedViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
     serializer_class = LocalEventoSerializer
     authentication_classes = [SessionAuthentication]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['nome', 'cidade__nome']
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -117,6 +129,8 @@ class ClienteAnnotatedViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
     serializer_class = ClienteEnderecoSerializer
     authentication_classes = [SessionAuthentication]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['nome', 'cnpj']
 
 
 class ClienteWithoutPaginationAnnotatedViewSet(ReadOnlyModelViewSet):
@@ -132,6 +146,8 @@ class ComidaViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
     serializer_class = ComidaSerializer
     authentication_classes = [SessionAuthentication]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['nome']
 
 
 class ComidaWithoutPaginationViewSet(ReadOnlyModelViewSet):

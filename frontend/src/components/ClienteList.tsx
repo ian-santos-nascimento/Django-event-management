@@ -8,6 +8,8 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Cliente from "./Cliente.tsx";
 import {fetchData,} from '../ApiCall/ApiCall.jsx'
+import {InputGroup} from "react-bootstrap";
+import {faSearch, faTimes} from "@fortawesome/free-solid-svg-icons";
 
 interface Cliente {
     id_cliente: string,
@@ -40,17 +42,19 @@ export default function CidadeList({sessionId, csrfToken}) {
     const [showModal, setShowModal] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [searchQuery, setSearchQuery] = useState('');
 
 
     useEffect(() => {
         const fetchClientes = async () => {
-            const response = await fetchData('clientes', currentPage, csrfToken, sessionId);
+            const response = await fetchData('clientes', currentPage, searchQuery, csrfToken, sessionId);
             const clientes = response.data as Cliente[];
             setClientes(clientes);
             setTotalPages(Math.ceil(response.count / 10));
         };
         fetchClientes();
-    }, [sessionId, currentPage]);
+    }, [sessionId, currentPage, searchQuery]);
 
     const handleEditCliente = (cliente: Cliente) => {
         setSelectedCliente(cliente);
@@ -114,6 +118,20 @@ export default function CidadeList({sessionId, csrfToken}) {
         handleCloseModal();
     };
 
+    const handleSearchChange = (event) => {
+        setSearchTerm(event.target.value);
+    };
+
+    const handleSearchClick = () => {
+        setSearchQuery(searchTerm);
+    };
+
+    const handleClearSearch = () => {
+        setSearchQuery('')
+        setSearchTerm('')
+
+    }
+
     if (selectedCliente && !showModal) {
         return <Cliente sessionId={sessionId} cliente={selectedCliente} csrfToken={csrfToken}
                         setSelectedClienteList={setSelectedCliente}/>
@@ -122,7 +140,32 @@ export default function CidadeList({sessionId, csrfToken}) {
     return (
         <div className="container">
             <h2 className="text-center">Controle de Clientes</h2>
-            <Button variant='primary' className='mb-3' onClick={handleCreateCliente}>Novo Cliente</Button>
+            <div className=" justify-content-between w-100">
+                <Button variant='primary' className='mb-3' onClick={handleCreateCliente}>Novo Cliente</Button>
+                <InputGroup className="mb-3">
+                    <Form.Control
+                        type="text"
+                        placeholder="Buscar..."
+                        value={searchTerm}
+                        onChange={handleSearchChange}
+                    />
+                    <Button
+                        type='button'
+                        variant="outline-primary" title='Buscar'
+                        onClick={handleSearchClick}>
+                        <FontAwesomeIcon icon={faSearch}/>
+                    </Button>
+                    {searchTerm && (
+                        <Button
+                            type='button'
+                            variant="outline-danger" title='Limpar filtro'
+                            onClick={handleClearSearch}>
+                            <FontAwesomeIcon icon={faTimes}/>
+                        </Button>
+                    )}
+                </InputGroup>
+            </div>
+
             <table className="table table-success">
                 <thead>
                 <tr>

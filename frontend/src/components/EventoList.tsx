@@ -10,6 +10,8 @@ import Col from "react-bootstrap/Col";
 // @ts-ignore
 import Evento from "./Evento.tsx"
 import {fetchData} from "../ApiCall/ApiCall";
+import {InputGroup} from "react-bootstrap";
+import {faSearch, faTimes} from "@fortawesome/free-solid-svg-icons";
 
 const API_URL = process.env.REACT_APP_API_URL;
 axios.defaults.xsrfCookieName = 'csrftoken';
@@ -38,17 +40,18 @@ export default function EventoList({sessionId}) {
     const [showModal, setShowModal] = useState(false)
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
-
+    const [searchTerm, setSearchTerm] = useState('');
+    const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
         const fetchEventos = async () => {
-            const response = await fetchData('eventos', currentPage, csrfToken, sessionId)
+            const response = await fetchData('eventos', currentPage, searchQuery, csrfToken, sessionId)
             const eventos = response.data as Evento[];
             setEventos(eventos);
             setTotalPages(Math.ceil(response.count / 10));  // Ajuste o divisor de acordo com PAGE_SIZE do Django
         };
         fetchEventos();
-    }, [sessionId, currentPage]);
+    }, [sessionId, currentPage, searchQuery]);
 
     const handlePageChange = (newPage) => {
         setCurrentPage(newPage);
@@ -105,6 +108,20 @@ export default function EventoList({sessionId}) {
         }
     }
 
+    const handleSearchChange = (event) => {
+        setSearchTerm(event.target.value);
+    };
+
+    const handleSearchClick = () => {
+        setSearchQuery(searchTerm);
+    };
+
+    const handleClearSearch = () => {
+        setSearchQuery('')
+        setSearchTerm('')
+
+    }
+
     if (selectedEvento !== null && !showModal) {
         return <Evento evento={selectedEvento} sessionId={sessionId}/>
     }
@@ -112,7 +129,32 @@ export default function EventoList({sessionId}) {
     return (
         <div className="container">
             <h2 className="text-center">Controle de Eventos</h2>
-            <Button variant='primary' className='mb-3' onClick={handleCreateEvento}>Novo Evento</Button>
+            <div className=" justify-content-between w-100">
+                <Button variant='primary' className='mb-3' onClick={handleCreateEvento}>Novo Evento</Button>
+                <InputGroup className="mb-3">
+                    <Form.Control
+                        type="text"
+                        placeholder="Buscar nome/nome do evento/nome do cliente..."
+                        value={searchTerm}
+                        onChange={handleSearchChange}
+                    />
+                    <Button
+                        type='button'
+                        variant="outline-primary" title='Buscar'
+                        onClick={handleSearchClick}>
+                        <FontAwesomeIcon icon={faSearch}/>
+                    </Button>
+                    {searchTerm && (
+                        <Button
+                            type='button'
+                            variant="outline-danger" title='Limpar filtro'
+                            onClick={handleClearSearch}>
+                            <FontAwesomeIcon icon={faTimes}/>
+                        </Button>
+                    )}
+                </InputGroup>
+            </div>
+
             <table className="table table-success">
                 <thead>
                 <tr>

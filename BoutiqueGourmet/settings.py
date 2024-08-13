@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     'main.apps.MainConfig',
     'rest_framework',
     'corsheaders',
+    'django_filters',
 ]
 
 MIDDLEWARE = [
@@ -105,7 +106,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10
+    'PAGE_SIZE': 10,
 }
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/

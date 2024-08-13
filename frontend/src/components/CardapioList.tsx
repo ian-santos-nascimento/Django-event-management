@@ -8,7 +8,9 @@ import csrfToken from "../ApiCall/CsrfToken";
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
-import {fetchData,} from '../ApiCall/ApiCall.jsx'
+import {fetchData, searchData,} from '../ApiCall/ApiCall.jsx'
+import {InputGroup} from "react-bootstrap";
+import {faSearch, faTimes} from "@fortawesome/free-solid-svg-icons";
 
 const API_URL = process.env.REACT_APP_API_URL;
 axios.defaults.xsrfCookieName = 'csrftoken';
@@ -31,15 +33,19 @@ export default function CidadeList({sessionId}) {
     const [showModal, setShowModal] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [searchQuery, setSearchQuery] = useState('');
+
     useEffect(() => {
         const fetchCidades = async () => {
-            const response = await fetchData('comidas', currentPage, csrfToken, sessionId)
+            const response = await fetchData('comidas', currentPage, searchQuery, csrfToken, sessionId)
             const comidas = response.data as Comida[];
+            console.log("BUSCANDO COMIDA")
             setCidades(comidas);
             setTotalPages(Math.ceil(response.count / 10));
         };
         fetchCidades();
-    }, [sessionId, currentPage]);
+    }, [sessionId, currentPage, searchQuery]);
 
     const handlePageChange = (newPage) => {
         setCurrentPage(newPage);
@@ -124,11 +130,49 @@ export default function CidadeList({sessionId}) {
 
     }
 
+    const handleSearchChange = (event) => {
+        setSearchTerm(event.target.value);
+    };
+
+    const handleSearchClick = () => {
+        setSearchQuery(searchTerm);
+    };
+
+    const handleClearSearch = () =>{
+        setSearchQuery('')
+        setSearchTerm('')
+
+    }
+
 
     return (
         <div className="container">
             <h2 className="text-center">Controle das comidas</h2>
-            <Button variant='primary' className='mb-3' onClick={handleCreateCidade}>Nova Comida</Button>
+            <div className=" justify-content-between w-100">
+                <Button variant='primary' className='mb-3' onClick={handleCreateCidade}>Nova Comida</Button>
+                <InputGroup className="mb-3">
+                    <Form.Control
+                        type="text"
+                        placeholder="Buscar..."
+                        value={searchTerm}
+                        onChange={handleSearchChange}
+                    />
+                    <Button
+                        type='button'
+                        variant="outline-primary" title='Buscar'
+                        onClick={handleSearchClick}>
+                        <FontAwesomeIcon icon={faSearch}/>
+                    </Button>
+                    {searchTerm && (
+                        <Button
+                            type='button'
+                            variant="outline-danger" title='Limpar filtro'
+                            onClick={handleClearSearch}>
+                            <FontAwesomeIcon icon={faTimes}/>
+                        </Button>
+                    )}
+                </InputGroup>
+            </div>
             <table className="table table-success">
                 <thead>
                 <tr>
