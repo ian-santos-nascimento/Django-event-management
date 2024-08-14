@@ -3,7 +3,7 @@ import axios from 'axios';
 const API_URL = process.env.REACT_APP_API_URL;
 
 
-export const fetchData = async (data, page,search='' , csrfToken, sessionId) => {
+export const fetchData = async (data, page ,search='' , csrfToken, sessionId) => {
     page = page !== null ? '?page=' + page : '';
     try {
         const response = await axios.get(`${API_URL}${data}/${page}&search=${search}`, {
@@ -14,7 +14,6 @@ export const fetchData = async (data, page,search='' , csrfToken, sessionId) => 
             },
             withCredentials: true,
         });
-        console.log("API CHAMADA", response.data.results)
         return {
             data: response.data.results,
             count: response.data.count

@@ -127,6 +127,11 @@ class Evento(models.Model):
     data_inicio = models.DateField(null=True, blank=True)
     data_fim = models.DateField(null=True, blank=True)
 
+    def save(self, *args, **kwargs):
+        self.qtd_dias_evento = abs((self.data_fim- self.data_inicio).days) + 1
+        super().save(*args, **kwargs)
+
+
 
 class LogisticaCidade(models.Model):
     id_logistica_cidade = models.AutoField(primary_key=True)

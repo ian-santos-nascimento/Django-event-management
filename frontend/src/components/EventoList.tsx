@@ -12,6 +12,7 @@ import Evento from "./Evento.tsx"
 import {fetchData} from "../ApiCall/ApiCall";
 import {InputGroup} from "react-bootstrap";
 import {faSearch, faTimes} from "@fortawesome/free-solid-svg-icons";
+import {TIPO_EVENTO} from "../util/OptionList"
 
 const API_URL = process.env.REACT_APP_API_URL;
 axios.defaults.xsrfCookieName = 'csrftoken';
@@ -22,6 +23,7 @@ interface Evento {
     id_evento: number,
     codigo_evento: number,
     nome: string,
+    tipo: string,
     descricao: string,
     observacao: string,
     qtd_dias_evento: number,
@@ -69,6 +71,7 @@ export default function EventoList({sessionId}) {
             data_inicio: '',
             data_fim: '',
             local: null,
+            tipo: TIPO_EVENTO[0],
             clientes: null
 
         })

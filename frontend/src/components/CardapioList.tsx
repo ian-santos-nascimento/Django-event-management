@@ -8,10 +8,10 @@ import csrfToken from "../ApiCall/CsrfToken";
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
-import {fetchData, searchData,} from '../ApiCall/ApiCall.jsx'
+import {fetchData, } from '../ApiCall/ApiCall.jsx'
 import {InputGroup} from "react-bootstrap";
 import {faSearch, faTimes} from "@fortawesome/free-solid-svg-icons";
-
+import {TIPO_COMIDA} from "../util/OptionList"
 const API_URL = process.env.REACT_APP_API_URL;
 axios.defaults.xsrfCookieName = 'csrftoken';
 axios.defaults.xsrfHeaderName = 'X-CSRFToken';
@@ -147,9 +147,9 @@ export default function CidadeList({sessionId}) {
 
     return (
         <div className="container">
-            <h2 className="text-center">Controle das comidas</h2>
+            <h2 className="text-center">Controle do Cardápio</h2>
             <div className=" justify-content-between w-100">
-                <Button variant='primary' className='mb-3' onClick={handleCreateCidade}>Nova Comida</Button>
+                <Button variant='primary' className='mb-3' onClick={handleCreateCidade}>Nova Item do Cardápio</Button>
                 <InputGroup className="mb-3">
                     <Form.Control
                         type="text"
@@ -219,7 +219,7 @@ export default function CidadeList({sessionId}) {
 
             <Modal show={showModal} onHide={handleCloseModal}>
                 <Modal.Header closeButton>
-                    <Modal.Title>Detalhes do Comida</Modal.Title>
+                    <Modal.Title>Detalhes do Item do Cardápio</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     {selectedComida && (
@@ -273,20 +273,15 @@ export default function CidadeList({sessionId}) {
                             </Form.Group>
 
                             <Form.Group as={Col} controlId="formGriPrazoPagamento">
-                                <Form.Label>Tipo de comida</Form.Label>
+                                <Form.Label>Categoria</Form.Label>
                                 <Form.Select
                                     required
                                     name="tipo"
                                     value={selectedComida.tipo}
                                     onChange={handleChange}>
-                                    <option value="Doces">Doces</option>
-                                    <option value="Acompanhamentos">Acompanhamentos</option>
-                                    <option value="Bebidas">Bebidas</option>
-                                    <option value="Salgados">Salgados</option>
-                                    <option value="Almoço">Almoço</option>
-                                    <option value="Embalagem">Embalagem</option>
-                                    <option value="Lanches">Lanches</option>
-                                    <option value="Terceirizado">Terceirizado</option>
+                                    {TIPO_COMIDA.map((tipo, index) =>(
+                                        <option value={tipo} key={index}> {tipo}</option>
+                                    ))}
                                 </Form.Select>
                                 <Form.Control.Feedback type="invalid">
                                     Escolha o tipo da comida

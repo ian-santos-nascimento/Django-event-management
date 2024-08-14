@@ -31,11 +31,16 @@ class ComidaSerializer(serializers.ModelSerializer):
 
 
 class EventoSerializer(serializers.ModelSerializer):
-    data_inicio = serializers.DateField(format='%d-%m-%Y', read_only=True)
-    data_fim = serializers.DateField(format='%d-%m-%Y', read_only=True)
+    data_inicio = serializers.DateField(format='%d-%m-%Y', )
+    data_fim = serializers.DateField(format='%d-%m-%Y', )
+    qtd_dias_evento = serializers.SerializerMethodField()
+
     class Meta:
         model = Evento
         fields = '__all__'
+
+    def get_qtd_dias_evento(self, obj):
+        return (obj.data_fim - obj.data_inicio).days + 1 if obj.data_inicio and obj.data_fim else 0
 
 
 class LogisticaSerializar(serializers.ModelSerializer):
@@ -52,6 +57,7 @@ class CidadeSerializer(serializers.ModelSerializer):
 
 class ComidaOrcamentoSerializer(serializers.ModelSerializer):
     comida = serializers.StringRelatedField()
+
     class Meta:
         model = ComidaOrcamento
         fields = ['comida', 'quantidade', 'valor']
@@ -59,6 +65,7 @@ class ComidaOrcamentoSerializer(serializers.ModelSerializer):
 
 class LogisticaOrcamentoSerializer(serializers.ModelSerializer):
     logistica = serializers.StringRelatedField()
+
     class Meta:
         model = LogisticaOrcamento
         fields = ['logistica', 'quantidade', 'valor']
@@ -133,6 +140,7 @@ class ClienteEnderecoSerializer(serializers.ModelSerializer):
 class ClienteSerializer(serializers.ModelSerializer):
     inicio_contrato = serializers.DateField(format='%d-%m-%Y', read_only=True)
     fim_contrato = serializers.DateField(format='%d-%m-%Y', read_only=True)
+
     class Meta:
         model = Cliente
         exclude = ['endereco']  # Exclua o campo 'endereco'

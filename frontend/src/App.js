@@ -21,7 +21,6 @@ const App = () => {
 
     useEffect(() => {
         const checkAuth = async () => {
-            console.log("AUTH", auth)
             if (auth !== null) {
                 setSessionId(auth)
                 setAuthenticated(true);

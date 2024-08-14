@@ -32,3 +32,10 @@ export const TIPO_LOGISTICA = [
     'Pessoa', 'Material', 'Outros'
 ]
 
+export const TIPO_EVENTO = [
+    'Almoços e Coffees', 'Box, Cestas e Encomendas', 'Congressos', 'Feiras', 'Sociais'
+]
+
+export const TIPO_COMIDA = [
+    'Doces', 'Acompanhamentos', 'Bebidas', 'Salgados', 'Almoço', 'Embalagem', 'Lanches', 'Terceirizado'
+]

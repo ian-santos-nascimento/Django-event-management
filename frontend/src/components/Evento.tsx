@@ -1,5 +1,4 @@
 import {useEffect, useState} from "react";
-import axios from "axios";
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
@@ -7,11 +6,13 @@ import Button from "react-bootstrap/Button";
 
 import {eventoPost, fetchData,} from '../ApiCall/ApiCall.jsx'
 import csrfToken from "../ApiCall/CsrfToken"
+import {TIPO_EVENTO} from "../util/OptionList"
 
 interface Evento {
     id_evento: number,
     codigo_evento: number,
     nome: string,
+    tipo: string,
     descricao: string,
     observacao: string,
     qtd_dias_evento: number,
@@ -24,7 +25,7 @@ interface Evento {
 }
 
 interface Local {
-    id_local: string,
+    id_local: number,
     nome: string,
     cidade: number
 }
@@ -36,8 +37,6 @@ interface Cliente {
 }
 
 
-const API_URL = process.env.REACT_APP_API_URL;
-
 export default function Evento({evento, sessionId}) {
     const [locais, setLocais] = useState<Local[]>([]);
     const [clientes, setClientes] = useState<Cliente[]>([]);
@@ -47,17 +46,24 @@ export default function Evento({evento, sessionId}) {
 
     useEffect(() => {
             const fetchLocalApi = async () => {
-                const response = await fetchData('locais',null, csrfToken, sessionId)
+                const response = await fetchData('locais', '', '', csrfToken, sessionId)
                 setLocais(response.data)
             };
             const fetchClienteApi = async () => {
-                const response = await fetchData('clientes',null, csrfToken, sessionId)
+                const response = await fetchData('clientes', '', '', csrfToken, sessionId)
                 setClientes(response.data)
             }
             fetchLocalApi()
             fetchClienteApi()
         }, [sessionId]
     );
+
+    useEffect(() => {
+        if (selectedEvento.local === null && locais[0] !== undefined ) {
+            setSelectedEvento(({...selectedEvento, local: locais[0].id_local}))
+
+        }
+    }, [locais]);
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -73,7 +79,7 @@ export default function Evento({evento, sessionId}) {
 
 
     const handleEventoSent = async () => {
-       await eventoPost(selectedEvento, csrfToken, sessionId)
+        await eventoPost(selectedEvento, csrfToken, sessionId)
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -185,16 +191,6 @@ export default function Evento({evento, sessionId}) {
                             Insira um número!
                         </Form.Control.Feedback>
                     </Form.Group>
-                    <Form.Group as={Col} controlId="formGridEndereco">
-                        <Form.Label>Dias totais</Form.Label>
-                        <Form.Control
-                            name="qtd_dias_evento"
-                            type='number'
-                            onChange={handleChange}
-                            value={selectedEvento.qtd_dias_evento}
-                        />
-                    </Form.Group>
-
 
                 </Row>
                 <Row>
@@ -217,7 +213,20 @@ export default function Evento({evento, sessionId}) {
                             type="date"
                         />
                     </Form.Group>
-
+                    <Form.Group as={Col} controlId="formGridQtdMinima">
+                        <Form.Label>Tipo de Evento </Form.Label>
+                        <Form.Select
+                            name="tipo"
+                            value={selectedEvento.tipo}
+                            onChange={handleChange}
+                        >
+                            {TIPO_EVENTO.map((tipo, index) => (
+                                <option key={index} value={tipo}>
+                                    {tipo}
+                                </option>
+                            ))}
+                        </Form.Select>
+                    </Form.Group>
                 </Row>
                 <Form.Group as={Col} controlId="formGriPrazoPagamento">
                     <Form.Label>Clientes</Form.Label>
