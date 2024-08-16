@@ -6,6 +6,7 @@ import Modal from "react-bootstrap/Modal";
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
+// @ts-ignore
 import Cliente from "./Cliente.tsx";
 import {fetchData,} from '../ApiCall/ApiCall.jsx'
 import {InputGroup} from "react-bootstrap";

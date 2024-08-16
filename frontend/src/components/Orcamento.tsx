@@ -4,143 +4,34 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
-import {NumericFormat} from 'react-number-format';
 import {fetchData, fetchDataWithId, fetchDataWithoutPagination} from "../ApiCall/ApiCall";
-
+import {STATUS_ORCAMENTO} from "../util/OptionList"
 import csrfToken from '../ApiCall/CsrfToken'
+// @ts-ignore
 import LogisticaOrcamentoComp from "./LogisticaOrcamentoComp.tsx";
+// @ts-ignore
+import CardapioOrcamentoComp from "./CardapioOrcamentoComp.tsx"
+import type {OrcamentoType, EventoType, LogisticaCidadeType, LogisticaType, ComidaType} from '../types';
 
-interface Orcamento {
-    id_orcamento: number,
-    nome: string,
-    cliente: number,
-    evento: number,
-    logisticas: [{
-        id: number,
-        quantidade: number
-    }],
-    comidas: [{
-        id: number,
-        quantidade: number
-    }],
-    observacoes: string,
-    valor_total_comidas: number,
-    desconto_total_comidas: number,
-    valor_total_logisticas: number,
-    desconto_total_logisticas: number,
-
-}
-
-interface Evento {
-    id_evento: number;
-    codigo_evento: number;
-    nome: string;
-    descricao: string;
-    observacao: string;
-    qtd_dias_evento: number;
-    qtd_pessoas: number;
-    data_inicio: string;
-    data_fim: string;
-    local: Local;
-    clientes: Cliente[];
-}
-
-interface Comida {
-    comida_id: number,
-    nome: string,
-    descricao: string
-    valor: number,
-    quantidade_minima: number
-    tipo: string
-}
-
-interface Cliente {
-    id_cliente: number,
-    cnpj: string,
-    nome: string,
-    taxa_financeira: string,
-}
-
-interface Local {
-    "id_local": number,
-    "nome": string,
-    "endereco": string,
-    "telefone": string,
-    "email": string,
-    "observacoes": string,
-    "excluida": boolean,
-    "cidade": number
-}
-
-interface LogisticaCidade {
-    cidade: number,
-    hospedagem: number,
-    passagem: number,
-    alimentacao: number,
-    frete_terceiros: number,
-    frete_proprio: number,
-    frete_proprio_intervalo: number,
-    frete_proprio_completo: number,
-    diaria_completo: number,
-    diaria_simples: number,
-    logistica_lanches: number,
-    logistica_lanches_grande: number,
-}
-
-interface Logistica {
-    id_logistica: number,
-    nome: string,
-    descricao: string,
-    valor: number,
-    tipo: string,
-    in_sp: boolean,
-}
-
-interface LogisticaCidade {
-    id_logistica_cidade: number
-    cidade: number
-    hospedagem: number
-    passagem: number
-    alimentacao: number
-}
 
 const API_URL = process.env.REACT_APP_API_URL;
 
-export default function Orcamento({eventoState: eventoState, sessionId: sessionId}) {
-    const [orcamento, setOrcamento] = useState<Orcamento>({
-        id_orcamento: null,
-        nome: '',
-        cliente: 0,
-        evento: 0,
-        logisticas: [{
-            id: null,
-            quantidade: null
-        }],
-        comidas: [{
-            id: null,
-            quantidade: null
-        }],
-        observacoes: '',
-        valor_total_comidas: 0,
-        desconto_total_comidas: 0,
-        valor_total_logisticas: 0,
-        desconto_total_logisticas: 0,
-    })
-    const [comidas, setComidas] = useState<Comida[]>([])
-    const [comidasSelecionadas, setComidasSelecionadas] = useState<Comida[]>([]);
-    const [logisticas, setLogisticas] = useState<Logistica[]>([])
-    const [logisticaCidade, setLogisticaCidade] = useState<LogisticaCidade>()
-    const [logisticasSelecionadas, setLogisticasSelecionadas] = useState<Logistica[]>([])
-    const [clientesSelecionados, setClientesSelecionados] = useState<Cliente>()
-    const [evento, setEvento] = useState<Evento>(eventoState)
-    const [valorComidaTotal, setValorComidaTotal] = useState(0.0)
-    const [valorLogisticaTotal, setValorLogisticaTotal] = useState(0)
+export default function Orcamento({eventoState, orcamentoState, sessionId}) {
+    const [orcamento, setOrcamento] = useState<OrcamentoType>(orcamentoState)
+    const [comidas, setComidas] = useState<ComidaType[]>([])
+    const [comidasSelecionadas, setComidasSelecionadas] = useState<ComidaType[]>([]);
+    const [logisticas, setLogisticas] = useState<LogisticaType[]>([])
+    const [logisticaCidade, setLogisticaCidade] = useState<LogisticaCidadeType>()
+    const [logisticasSelecionadas, setLogisticasSelecionadas] = useState<LogisticaType[]>([])
+    const [evento, setEvento] = useState<EventoType>(eventoState)
+    const [valorLogisticaTotal, setValorLogisticaTotal] = useState(orcamentoState.valor_total_logisticas | 0)
     const [filter, setFilter] = useState('');
     const [filterLogistica, setFilterLogistica] = useState('');
-    const [showModal, setShowModal] = useState(false);
-    const [selectedLogistica, setSelectedLogistica] = useState(null);
-    const [selectedOption, setSelectedOption] = useState('');
 
+
+      useEffect(() => {
+        setOrcamento(orcamentoState);
+    }, [orcamentoState]);
 
     useEffect(() => {
         getModels();
@@ -150,7 +41,7 @@ export default function Orcamento({eventoState: eventoState, sessionId: sessionI
         if (!evento.clientes || evento) {
             const eventoResponse = async () => {
                 const response = await fetchDataWithId('eventos', eventoState.id_evento)
-                setEvento(response.data as Evento)
+                setEvento(response.data as EventoType)
                 setOrcamento({...orcamento, evento: eventoState.id_evento})
             }
             eventoResponse()
@@ -160,49 +51,10 @@ export default function Orcamento({eventoState: eventoState, sessionId: sessionI
     useEffect(() => {
         if (evento && evento.local && evento.local.cidade) {
             getLogisticaCidade()
-            setOrcamento({...orcamento, cliente: evento.clientes[0].id_cliente})
+            setOrcamento({...orcamento, cliente: evento.clientes[0]})
         }
     }, [evento]);
 
-    //Calculo Comida
-    useEffect(() => {
-        const cliente = evento.clientes.find(cliente => cliente.id_cliente === orcamento.cliente)
-        const total = comidasSelecionadas.reduce((acc, comida) => {
-            const quantidade = orcamento?.comidas.find(c => c.id === comida.comida_id)?.quantidade || comida.quantidade_minima;
-            const total_comida_evento = (acc + comida.valor * quantidade);
-            return total_comida_evento + (total_comida_evento * parseFloat(cliente?.taxa_financeira || evento.clientes[0].taxa_financeira));
-        }, 0);
-        setValorComidaTotal(total - orcamento.desconto_total_comidas);
-    }, [orcamento, comidasSelecionadas, evento]);
-
-    //Calculo Logistica
-    useEffect(() => {
-        if (!orcamento || !logisticasSelecionadas.length || !evento || !logisticaCidade) {
-            return;
-        }
-        const total = logisticasSelecionadas.reduce((acc, logistica) => {
-            const valorLogistica = parseFloat(logistica.valor);
-            if (isNaN(valorLogistica)) {
-                console.error(`Logistica valor is NaN for logistica id ${logistica.id_logistica}`);
-                return acc;
-            }
-            const alimentacao = !isNaN(parseFloat(logisticaCidade.alimentacao)) ? parseFloat(logisticaCidade.alimentacao) : 70;
-            const dias_evento = evento.qtd_dias_evento || 1;
-            const quantidade = orcamento?.logisticas.find(l => l.id === logistica.id_logistica)?.quantidade || 1;
-            const total_basico = (valorLogistica + alimentacao) * dias_evento * quantidade;
-            const total_logistica_fora_sp = !logistica.in_sp ? (parseFloat(logisticaCidade.passagem) || 0) + ((parseFloat(logisticaCidade.hospedagem) || 0) * (dias_evento + 2)) : 0;
-            return acc + total_basico + total_logistica_fora_sp;
-        }, 0);
-        setValorLogisticaTotal(total - orcamento.desconto_total_logisticas);
-    }, [orcamento, logisticasSelecionadas, evento, logisticaCidade]);
-
-    useEffect(() => {
-        setOrcamento({...orcamento, valor_total_comidas: valorComidaTotal, valor_total_logisticas: valorLogisticaTotal})
-    }, [valorComidaTotal, valorLogisticaTotal])
-
-    const filteredComidas = comidas.filter(comida =>
-        comida.nome.toLowerCase().includes(filter.toLowerCase())
-    );
 
     const filteredLogisticas = logisticas.filter(logistica =>
         logistica.nome.toLowerCase().includes(filterLogistica.toLowerCase())
@@ -213,7 +65,7 @@ export default function Orcamento({eventoState: eventoState, sessionId: sessionI
         if (evento && evento.local && evento.local.cidade !== null) {
             try {
                 const response = await fetchDataWithId('logistica-cidade', evento.local.cidade);
-                setLogisticaCidade(response.data as LogisticaCidade);
+                setLogisticaCidade(response.data as LogisticaCidadeType);
             } catch (e) {
                 console.error('Error fetching LogisticaCidade:', e);
             }
@@ -222,42 +74,12 @@ export default function Orcamento({eventoState: eventoState, sessionId: sessionI
 
     async function getModels() {
         const logisticasResponse = await fetchDataWithoutPagination('logisticasWP', csrfToken, sessionId);
-        setLogisticas(logisticasResponse.data as Logistica[]);
+        setLogisticas(logisticasResponse.data as LogisticaType[]);
 
         const comidasResponse = await fetchDataWithoutPagination('comidasWP', csrfToken, sessionId);
-        setComidas(comidasResponse.data as Comida[]);
+        setComidas(comidasResponse.data as ComidaType[]);
 
     }
-
-    const handleToggleComida = (comida: Comida) => {
-        if (comidasSelecionadas.some(c => c.comida_id === comida.comida_id)) {
-            const updatedComidasSelecionadas = comidasSelecionadas.filter(c => c.comida_id !== comida.comida_id);
-            setComidasSelecionadas(updatedComidasSelecionadas);
-            if (orcamento) {
-                const updatedComidas = orcamento.comidas.filter(c => c.id !== comida.comida_id);
-                setOrcamento({...orcamento, comidas: updatedComidas});
-            }
-        } else {
-            const updatedComida = {...comida, quantidade: comida.quantidade_minima};
-            setComidasSelecionadas([...comidasSelecionadas, updatedComida]);
-            if (orcamento) {
-                setOrcamento({
-                    ...orcamento,
-                    comidas: [...orcamento.comidas, {id: comida.comida_id, quantidade: comida.quantidade_minima}]
-                });
-            }
-        }
-    };
-
-    const handleQuantityChange = (comida_id: number, quantidade: number) => {
-        setOrcamento(prevOrcamento => {
-            if (!prevOrcamento) return prevOrcamento;
-            const updatedComidas = prevOrcamento.comidas.map(comida =>
-                comida.id === comida_id ? {...comida, quantidade} : comida
-            );
-            return {...prevOrcamento, comidas: updatedComidas};
-        });
-    };
 
 
     const handleToggleCliente = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -265,19 +87,20 @@ export default function Orcamento({eventoState: eventoState, sessionId: sessionI
         const selectedItem = evento.clientes.find(cliente => cliente.id_cliente === selectedId);
 
         if (selectedItem) {
-            setClientesSelecionados(selectedItem);
-
             setOrcamento(prevOrcamento => ({
                 ...prevOrcamento,
-                cliente: selectedItem.id_cliente
+                cliente: selectedItem
             }));
         }
     };
 
-
-    const handleChange = (e: { target: { name: string; value: number } }) => {
+    const handleChange = (e: { target: { name: string; value: any } }) => {
         const {name, value} = e.target;
-        setOrcamento((prevOrcamento) => prevOrcamento ? {...prevOrcamento, [name]: value} : null);
+
+        setOrcamento(prevOrcamento => ({
+            ...prevOrcamento,
+            [name]: value
+        }));
     };
 
 
@@ -316,6 +139,20 @@ export default function Orcamento({eventoState: eventoState, sessionId: sessionI
                             placeholder="Nome"
                         />
                     </Form.Group>
+                    <Form.Group as={Col} controlId="formGridStatus">
+                        <Form.Label>Status do Orçamento</Form.Label>
+                        <Form.Select
+                            name="status"
+                            value={orcamento.status}
+                            onChange={handleChange}
+                        >
+                            {STATUS_ORCAMENTO.map((status, index) => (
+                                <option key={index} value={status.value}>
+                                    {status.name}
+                                </option>
+                            ))}
+                        </Form.Select>
+                    </Form.Group>
                 </Row>
                 <Row>
                     <Form.Group as={Col} controlId="formGridNome">
@@ -333,7 +170,7 @@ export default function Orcamento({eventoState: eventoState, sessionId: sessionI
                         <Form.Label>Cliente do Evento para Orçamento</Form.Label>
                         <Form.Select
                             name="cliente"
-                            value={orcamento.cliente}
+                            value={orcamento?.cliente?.id_cliente}
                             onChange={handleToggleCliente}
                         >
                             {evento.clientes.map((cliente) => (
@@ -343,97 +180,13 @@ export default function Orcamento({eventoState: eventoState, sessionId: sessionI
                         </Form.Select>
                     </Form.Group>
                 </Row>
-                <Row className='mb-3'>
-                    <Form.Group as={Col} controlId="formGridComidas">
-                        <Form.Label>Comidas do Orçamento</Form.Label>
-                        <Form.Control
-                            type="text"
-                            placeholder="Buscar comida..."
-                            value={filter}
-                            onChange={(e) => setFilter(e.target.value)}
-                            style={{marginBottom: '10px'}}
-                        />
-                        <div style={{
-                            maxHeight: '150px',
-                            overflowY: 'scroll',
-                            border: '1px solid #ced4da',
-                            padding: '10px'
-                        }}>
-                            {filteredComidas.map((comida) => (
-                                <Form.Check
-                                    key={comida.comida_id}
-                                    type="checkbox"
-                                    label={comida.nome}
-                                    value={comida.comida_id}
-                                    checked={comidasSelecionadas.some(c => c.comida_id === comida.comida_id)}
-                                    onChange={() => handleToggleComida(comida)}
-                                />
-                            ))}
-                        </div>
-                    </Form.Group>
-                    <Form.Group as={Col} controlId="formGridComidasSelecionadas">
-                        <Form.Label>Comidas Selecionadas</Form.Label>
-                        <div style={{
-                            maxHeight: '150px',
-                            overflowY: 'scroll',
-                            border: '1px solid #ced4da',
-                            padding: '10px'
-                        }}>
-                            {comidasSelecionadas.map((comida) => (
-                                <div key={comida.comida_id}
-                                     style={{display: 'flex', alignItems: 'center', marginBottom: '10px'}}>
-                                    <Form.Check
-                                        type="checkbox"
-                                        label={`${comida.nome}-R$${comida.valor}`}
-                                        value={comida.comida_id}
-                                        checked={true}
-                                        onChange={() => handleToggleComida(comida)}
-                                    />
-                                    <Form.Control
-                                        type="number"
-                                        min={comida.quantidade_minima}
-                                        value={orcamento?.comidas.find(c => c.id === comida.comida_id)?.quantidade || comida.quantidade_minima}
-                                        onChange={(e) => handleQuantityChange(comida.comida_id, parseInt(e.target.value))}
-                                        style={{width: '75px', marginLeft: '5px'}}
-                                    />
-                                </div>
-                            ))}
-                        </div>
-                    </Form.Group>
 
-                </Row>
-                <Row className='mb-3'>
-                    <Form.Group as={Col} controlId="formGridNome">
-                        <Form.Label>Total R$ comidas</Form.Label>
-                        <Form.Control
-                            type="text"
-                            value={`R$${valorComidaTotal.toFixed(2)}` || 0}
-                            disabled={true}
-                        />
-                    </Form.Group>
-                    <Form.Group as={Col} controlId="formGridNome">
-                        <Form.Label>Desconto para Cardápio</Form.Label>
-                        <NumericFormat
-                            name="desconto_total_comidas"
-                            value={orcamento.desconto_total_comidas}
-                            onValueChange={(values) => {
-                                const {floatValue} = values;
-                                handleChange({target: {name: 'desconto_total_comidas', value: floatValue || 0}});
-                            }}
-                            thousandSeparator="."
-                            decimalSeparator=","
-                            prefix="R$ "
-                            decimalScale={2}
-                            fixedDecimalScale={true}
-                            allowNegative={false}
-                            placeholder="Desconto Comida"
-                            customInput={Form.Control}
-                        />
-                    </Form.Group>
-                </Row>
+                <CardapioOrcamentoComp cardapio={comidas} setCardapio={setComidas} selectedCardapio={comidasSelecionadas} setOrcamento={setOrcamento}
+                                       orcamento={orcamento} evento={evento} filter={filter} setSelectedCardapio={setComidasSelecionadas}/>
 
                 <LogisticaOrcamentoComp orcamento={orcamento} setOrcamento={setOrcamento}
                                         logisticaCidade={logisticaCidade}
+                                        setValorLogisticaTotal={setValorLogisticaTotal}
                                         setFilterLogistica={setFilterLogistica} filteredLogisticas={filteredLogisticas}
                                         handleChange={handleChange} evento={evento} logisticas={logisticas}
                                         valorLogisticaTotal={valorLogisticaTotal} filterLogistica={filterLogistica}

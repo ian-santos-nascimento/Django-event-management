@@ -1,28 +1,15 @@
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import {Fragment} from 'react';
 import {Row, Col, Form, Badge, Modal, Button} from 'react-bootstrap';
 import {NumericFormat} from 'react-number-format';
 
-interface LogisticaCidade {
-    cidade: number,
-    hospedagem: number,
-    passagem: number,
-    alimentacao: number,
-    frete_terceiros: number,
-    frete_proprio: number,
-    frete_proprio_intervalo: number,
-    frete_proprio_completo: number,
-    diaria_completo: number,
-    diaria_simples: number,
-    logistica_lanches: number,
-    logistica_lanches_grande: number,
-}
 
 const LogisticaOrcamentoComp = ({
                                     filterLogistica,
                                     setFilterLogistica,
                                     filteredLogisticas,
                                     logisticasSelecionadas,
+                                    setValorLogisticaTotal,
                                     setLogisticas,
                                     setLogisticasSelecionadas,
                                     orcamento,
@@ -59,9 +46,31 @@ const LogisticaOrcamentoComp = ({
         });
     };
 
+
+    //Calculo Logistica
+    useEffect(() => {
+        if (!orcamento || !logisticasSelecionadas.length || !evento || !logisticaCidade) {
+            return;
+        }
+        const total = logisticasSelecionadas.reduce((acc, logistica) => {
+            const valorLogistica = logistica.valor;
+            if (isNaN(valorLogistica)) {
+                console.error(`Logistica valor is NaN for logistica id ${logistica.id_logistica}`);
+                return acc;
+            }
+            const alimentacao = !isNaN(logisticaCidade.alimentacao) ? logisticaCidade.alimentacao : 70;
+            const dias_evento = evento.qtd_dias_evento + 1 || 1;
+            const quantidade = orcamento?.logisticas?.find(l => l.id === logistica.id_logistica)?.quantidade || 1;
+            const total_basico = (valorLogistica + alimentacao) * dias_evento * quantidade;
+            const total_logistica_fora_sp = !logistica.in_sp ? (logisticaCidade.passagem || 0) + ((logisticaCidade.hospedagem || 0) * (dias_evento + 2)) : 0;
+            return acc + total_basico + total_logistica_fora_sp;
+        }, 0);
+        setValorLogisticaTotal(total - orcamento.valor_desconto_logisticas);
+    }, [orcamento, logisticasSelecionadas, evento, logisticaCidade]);
+
     const handleQuantityLogisticaChange = (logistica_id: number, quantidade: number) => {
         setOrcamento(prevOrcamento => {
-            if (!prevOrcamento) return prevOrcamento;
+            if (!prevOrcamento && !prevOrcamento.logisticas) return prevOrcamento;
             const updatedLogistica = prevOrcamento.logisticas.map(logistica =>
                 logistica.id === logistica_id ? {...logistica, quantidade} : logistica
             );
@@ -85,7 +94,7 @@ const LogisticaOrcamentoComp = ({
             setLogisticasSelecionadas([...logisticasSelecionadas, logistica]);
             setLogisticas(logisticas.filter(l => l !== logistica));
 
-            if (orcamento) {
+            if (orcamento && orcamento.logsticas) {
                 setOrcamento({
                     ...orcamento,
                     logisticas: [...orcamento.logisticas, {id: logistica.id_logistica, quantidade: 1}]
@@ -149,7 +158,7 @@ const LogisticaOrcamentoComp = ({
                                 />
                                 <Form.Control
                                     type="number"
-                                    value={orcamento?.logisticas.find(l => l.id === logistica.id_logistica)?.quantidade || 1}
+                                    value={orcamento?.logisticas?.find(l => l.id === logistica.id_logistica)?.quantidade || 1}
                                     onChange={(e) => handleQuantityLogisticaChange(logistica.id_logistica, parseInt(e.target.value))}
                                     style={{width: '75px', marginLeft: '5px'}}
                                 />
@@ -164,7 +173,7 @@ const LogisticaOrcamentoComp = ({
                     <Form.Label>Total R$ Logistica</Form.Label>
                     <Form.Control
                         type="text"
-                        value={`R$${valorLogisticaTotal.toFixed(2)} | valor * alimentação(${logisticaCidade?.alimentacao}) * dias(${evento?.qtd_dias_evento})`}
+                        value={`R$${valorLogisticaTotal.toFixed(2)} | valor * alimentação(${logisticaCidade?.alimentacao}) * dias(${evento?.qtd_dias_evento + 1})`}
                         disabled={true}
                     />
                     {logisticasSelecionadas.map((logistica) => (

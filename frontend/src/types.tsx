@@ -37,7 +37,7 @@ export interface ClienteType {
     id_cliente: number,
     cnpj: string,
     nome: string,
-    taxa_financeira: string,
+    taxa_financeira: number,
 }
 
 export interface OrcamentoType {

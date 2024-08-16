@@ -16,42 +16,13 @@ import OrcamentoView from "./OrcamentoView.tsx";
 import {fetchData} from "../ApiCall/ApiCall";
 import {InputGroup} from "react-bootstrap";
 import {faSearch, faTimes} from "@fortawesome/free-solid-svg-icons";
-
-
-interface Evento {
-    id_evento: number,
-    codigo_evento: number,
-    nome: string,
-    descricao: string,
-    observacao: string,
-    qtd_dias_evento: number,
-    qtd_pessoas: number,
-    data_inicio: string,
-    data_fim: string,
-    local: number,
-    clientes: number[]
-
-}
-
-interface Orcamento {
-    id_orcamento: number,
-    nome: string,
-    evento: number,
-    cliente: number,
-    comidas: number[],
-    logisticas: number[],
-    valor_total: number,
-    valor_total_logisticas: number,
-    valor_total_comidas: number,
-    valor_desconto_logisticas: number,
-    valor_desconto_comidas: number,
-}
+import type {OrcamentoType, EventoType} from '../types.tsx';
 
 export default function OrcamentoList({sessionId}) {
-    const [orcamentos, setOrcamentos] = useState<Orcamento[]>([])
-    const [selectedOrcamento, setSelectedOrcamento] = useState<Orcamento>(null)
-    const [eventos, setEventos] = useState<Evento[]>([])
-    const [selectedEvento, setSelectedEvento] = useState<Evento>(null)
+    const [orcamentos, setOrcamentos] = useState<OrcamentoType[]>([])
+    const [selectedOrcamento, setSelectedOrcamento] = useState<OrcamentoType>(null)
+    const [eventos, setEventos] = useState<EventoType[]>([])
+    const [selectedEvento, setSelectedEvento] = useState<EventoType>(null)
     const [showModal, setShowModal] = useState(false)
     const [showOrcamento, setShowOrcamento] = useState(false)
     const [viewOrcamento, setViewOrcamento] = useState(false)
@@ -63,8 +34,8 @@ export default function OrcamentoList({sessionId}) {
 
     useEffect(() => {
         const fetchOrcamentos = async () => {
-            const response = await fetchData('orcamentos', currentPage,searchQuery,  csrfToken, sessionId)
-            const orcamentos = response.data as Orcamento[];
+            const response = await fetchData('orcamentos', currentPage, searchQuery, csrfToken, sessionId)
+            const orcamentos = response.data as OrcamentoType[];
             setOrcamentos(orcamentos);
             setTotalPages(Math.ceil(response.count / 10));
 
@@ -75,8 +46,8 @@ export default function OrcamentoList({sessionId}) {
 
     useEffect(() => {
         const fetchEventos = async () => {
-            const response = await fetchData('eventos', currentPage, csrfToken, sessionId)
-            const eventos = response.data as Evento[];
+            const response = await fetchData('eventos', currentPage, '', csrfToken, sessionId)
+            const eventos = response.data as EventoType[];
             setEventos(eventos);
             setSelectedEvento(eventos[0])
         };
@@ -94,9 +65,11 @@ export default function OrcamentoList({sessionId}) {
             nome: '',
             evento: null,
             cliente: null,
+            observacoes: '',
             comidas: [],
             logisticas: [],
             valor_total: 0,
+            status: '',
             valor_desconto_logisticas: 0,
             valor_total_comidas: 0,
             valor_desconto_comidas: 0,
@@ -117,6 +90,8 @@ export default function OrcamentoList({sessionId}) {
 
     const handleEditOrcamento = (orcamento) => {
         setSelectedOrcamento(orcamento)
+        setSelectedEvento(orcamento.evento)
+        setShowOrcamento(true)
     }
 
     const handleSelectEventoButton = () => {
@@ -130,7 +105,7 @@ export default function OrcamentoList({sessionId}) {
     };
 
     if (showOrcamento)
-        return <Orcamento eventoState={selectedEvento} sessionId={sessionId}/>
+        return <Orcamento eventoState={selectedEvento} orcamentoState={selectedOrcamento} sessionId={sessionId}/>
 
     if (viewOrcamento)
         return <OrcamentoView orcamentoId={selectedOrcamento.id_orcamento} sessionId={sessionId}/>
@@ -181,10 +156,10 @@ export default function OrcamentoList({sessionId}) {
                 <thead>
                 <tr>
                     <th scope="col">ID</th>
-                    <th scope="col">Nome</th>
-                    <th scope="col">Valor</th>
-                    <th scope="col">Desconto Cardápio</th>
-                    <th scope="col">Desconto Logist.</th>
+                    <th scope="col">Cliente</th>
+                    <th scope="col">Evento</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Data Evento</th>
                     <th scope="col">Visualizar</th>
                     <th scope="col">Editar</th>
                 </tr>
@@ -193,10 +168,10 @@ export default function OrcamentoList({sessionId}) {
                 {orcamentos.map(item =>
                     <tr key={item.id_orcamento}>
                         <td>{item.id_orcamento}</td>
-                        <td>{item.nome}</td>
-                        <td>R${item.valor_total}</td>
-                        <td>R${item.valor_desconto_comidas}</td>
-                        <td>R${item.valor_desconto_logisticas}</td>
+                        <td>{item.cliente.nome}</td>
+                        <td>{item.evento.nome}</td>
+                        <td>{item.status}</td>
+                        <td>{item.evento.data_inicio}</td>
                         <td>
                             <button
                                 onClick={() => handleViewOrcamento(item)}
