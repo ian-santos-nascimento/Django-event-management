@@ -39,3 +39,28 @@ export const TIPO_EVENTO = [
 export const TIPO_COMIDA = [
     'Doces', 'Acompanhamentos', 'Bebidas', 'Salgados', 'Almoço', 'Embalagem', 'Lanches', 'Terceirizado'
 ]
+
+export const STATUS_ORCAMENTO = [
+    { value: 'Aprovado', name: 'Aprovado' },
+    { value: 'Declinado', name: 'Declinado' },
+    { value: 'Alteracao 1', name: 'Alteração 1' },
+    { value: 'Alteracao 2', name: 'Alteração 2' },
+    { value: 'Alteracao 3', name: 'Alteração 3' },
+    { value: 'Alteracao 4', name: 'Alteração 4' },
+    { value: 'Alteracao 5', name: 'Alteração 5' },
+    { value: 'Alteracao 6', name: 'Alteração 6' },
+    { value: 'Alteracao 7', name: 'Alteração 7' },
+    { value: 'Alteracao 8', name: 'Alteração 8' },
+    { value: 'Alteracao 9', name: 'Alteração 9' },
+    { value: 'Alteracao 10', name: 'Alteração 10' },
+    { value: 'Alteracao 11', name: 'Alteração 11' },
+    { value: 'Alteracao 12', name: 'Alteração 12' },
+    { value: 'Alteracao 13', name: 'Alteração 13' },
+    { value: 'Alteracao 14', name: 'Alteração 14' },
+    { value: 'Alteracao 15', name: 'Alteração 15' },
+    { value: 'Alteracao 16', name: 'Alteração 16' },
+    { value: 'Alteracao 17', name: 'Alteração 17' },
+    { value: 'Alteracao 18', name: 'Alteração 18' },
+    { value: 'Alteracao 19', name: 'Alteração 19' },
+    { value: 'Alteracao 20', name: 'Alteração 20' },
+];

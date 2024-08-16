@@ -8,6 +8,7 @@ import Col from "react-bootstrap/Col";
 import Button from "react-bootstrap/Button";
 // @ts-ignore
 import OrcamentoList from "./OrcamentoList.tsx";
+import {fetchDataWithId, excludeData} from "../ApiCall/ApiCall.jsx"
 
 interface Logistica {
     logistica: string;
@@ -73,9 +74,8 @@ export default function OrcamentoView({orcamentoId, sessionId}) {
     useEffect(() => {
         const fetchOrcamento = async () => {
             try {
-                const response = await axios.get(`${API_URL}orcamentos/${orcamentoId}/`);
+                const response = await fetchDataWithId('orcamentos', orcamentoId)
                 setOrcamento(response.data as Orcamento);
-                console.log(response.data)
                 setShowModal(true);
             } catch (error) {
                 console.error("Error fetching orcamento:", error);
@@ -89,9 +89,14 @@ export default function OrcamentoView({orcamentoId, sessionId}) {
         return <div>Loading...</div>;
     }
 
-    const  handleBack = () => {
+    const handleBack = () => {
         //TODO fazer return da lista sem recarregar paǵina
         window.location.reload()
+    }
+
+    const handleExcluirOrcamento = async () => {
+        const response = await excludeData(orcamento, orcamentoId);
+        console.log("RESPONSE DELETE", response)
     }
 
 
@@ -180,8 +185,8 @@ export default function OrcamentoView({orcamentoId, sessionId}) {
                         <Accordion>
                             <Accordion.Item as={'p'} eventKey="0" className='mt-3'>
                                 <Accordion.Header as={'h5'}>Comidas</Accordion.Header>
-                                <Accordion.Body style={{ backgroundColor: '##aab0b5;' }}>
-                                    {orcamento.comidas.map(comida =>(
+                                <Accordion.Body style={{backgroundColor: '##aab0b5;'}}>
+                                    {orcamento.comidas.map(comida => (
                                         <p>{comida.comida} (Qtd: {comida.quantidade})</p>
                                     ))}
                                 </Accordion.Body>
@@ -189,18 +194,18 @@ export default function OrcamentoView({orcamentoId, sessionId}) {
                             <Accordion.Item as={'p'} eventKey="1" className='mt-3'>
                                 <Accordion.Header
                                     as={'h5'}>Logisticas</Accordion.Header>
-                                <Accordion.Body style={{ backgroundColor: '##aab0b5;' }}>
-                                    {orcamento.logisticas.map(logistica =>(
+                                <Accordion.Body style={{backgroundColor: '##aab0b5;'}}>
+                                    {orcamento.logisticas.map(logistica => (
                                         <p>{logistica.logistica} (Qtd: {logistica.quantidade})</p>
                                     ))}
                                 </Accordion.Body>
                             </Accordion.Item>
                             <Accordion.Item as={'p'} eventKey="2" className='mt-3'>
-                                <Accordion.Header style={{ backgroundColor: '#aab0b5', color: 'white' }}
+                                <Accordion.Header style={{backgroundColor: '#aab0b5', color: 'white'}}
                                                   as={'h5'}>Evento</Accordion.Header>
                                 <Accordion.Body>
                                     <p>Nome/Coodigo: {orcamento.evento.nome}-{orcamento.evento.codigo_evento}</p>
-                                    <p>Data: {orcamento.evento.data_inicio}  | {orcamento.evento.data_fim}</p>
+                                    <p>Data: {orcamento.evento.data_inicio} | {orcamento.evento.data_fim}</p>
                                     <p>Dias: {orcamento.evento.qtd_dias_evento} </p>
                                     <p>Descrição: {orcamento.evento.descricao} </p>
                                 </Accordion.Body>
@@ -209,15 +214,22 @@ export default function OrcamentoView({orcamentoId, sessionId}) {
                     </Row>
                 </Modal.Body>
                 <Modal.Footer className="modal-footer-custom">
+                    <Row>
+                        <p>
+                            <strong>Total: R${orcamento.valor_total}</strong>
+                        </p>
+                    </Row>
                     <div className="d-flex justify-content-between w-100">
+
                         <Button
                             onClick={handleBack}
                             variant="secondary">
                             Voltar
                         </Button>
-                        <p>
-                            <strong>Total: R${orcamento.valor_total}</strong>
-                        </p>
+                        <Button variant="danger"
+                                type="submit" onClick={handleExcluirOrcamento}>
+                            Excluir
+                        </Button>
                     </div>
                 </Modal.Footer>
             </Modal>

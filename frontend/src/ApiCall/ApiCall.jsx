@@ -3,7 +3,7 @@ import axios from 'axios';
 const API_URL = process.env.REACT_APP_API_URL;
 
 
-export const fetchData = async (data, page ,search='' , csrfToken, sessionId) => {
+export const fetchData = async (data, page, search = '', csrfToken, sessionId) => {
     page = page !== null ? '?page=' + page : '';
     try {
         const response = await axios.get(`${API_URL}${data}/${page}&search=${search}`, {
@@ -21,7 +21,7 @@ export const fetchData = async (data, page ,search='' , csrfToken, sessionId) =>
     } catch (error) {
         console.error('Error fetching API:', error);
         return {
-            data: [], 
+            data: [],
             count: 0
         }
     }
@@ -57,6 +57,29 @@ export const fetchDataWithId = async (data, id) => {
         };
     } catch (error) {
         console.error('Error fetching clientes:', error);
+        return {
+            data: [],
+        }
+    }
+}
+
+export const excludeData = async (data, id, csrfToken, sessionId) => {
+    try {
+        const response = await axios.delete(`${API_URL}${data}/${id}`,
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                    'sessionId': sessionId
+                },
+                withCredentials: true,
+            });
+        console.log(response.status)
+        return {
+            data: response,
+        };
+    } catch (error) {
+        console.error('Error deleting data:', error);
         return {
             data: [],
         }

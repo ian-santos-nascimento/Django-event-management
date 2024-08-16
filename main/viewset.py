@@ -31,10 +31,10 @@ class EventoAnnotatedViewSet(ModelViewSet):
 class OrcamentoAnnotatedViewSet(ModelViewSet):
     queryset = Orcamento.objects.all().order_by('id_orcamento')
     permission_classes = [IsAuthenticated]
-    serializer_class = OrcamentoSerializer
+    serializer_class = OrcamentoUnicoSerializer
     authentication_classes = [SessionAuthentication]
     filter_backends = [filters.SearchFilter]
-    search_fields = ['nome', 'cliente__nome', 'evento__nome']
+    search_fields = ['nome', 'cliente__nome', 'evento__nome', 'evento__codigo_evento']
 
 
     def retrieve(self, request, pk=None):

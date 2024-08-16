@@ -57,10 +57,10 @@ class CidadeSerializer(serializers.ModelSerializer):
 
 class ComidaOrcamentoSerializer(serializers.ModelSerializer):
     comida = serializers.StringRelatedField()
-
+    comida_id = serializers.IntegerField(source='comida.comida_id', read_only=True)
     class Meta:
         model = ComidaOrcamento
-        fields = ['comida', 'quantidade', 'valor']
+        fields = ['comida', 'quantidade', 'valor', 'comida_id']
 
 
 class LogisticaOrcamentoSerializer(serializers.ModelSerializer):
@@ -162,10 +162,24 @@ class OrcamentoUnicoSerializer(serializers.ModelSerializer):
     comidas = serializers.SerializerMethodField()
     cliente = ClienteSerializer()
     evento = EventoSerializer()
+    data_fim = serializers.DateField(format='%d-%m-%Y', read_only=True)
 
     class Meta:
         model = Orcamento
-        fields = '__all__'
+        exclude = ['data_alteracao']
+
+    def update(self, instance, validated_data):
+        # Remove the instance from validated_data to prevent updating it directly
+        validated_data.pop('id_orcamento', None)
+
+        # Create a new instance of Orcamento
+        new_orcamento = Orcamento.objects.create(**validated_data)
+
+        # Handle many-to-many relationships
+        new_orcamento.comidas.set(instance.comidas.all())
+        new_orcamento.logisticas.set(instance.logisticas.all())
+
+        return new_orcamento
 
     def get_comidas(self, obj):
         comidas_orcamento = ComidaOrcamento.objects.filter(orcamento=obj)

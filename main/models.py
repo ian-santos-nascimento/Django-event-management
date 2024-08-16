@@ -165,9 +165,11 @@ class Logistica(models.Model):
 class Orcamento(models.Model):
     id_orcamento = models.AutoField(primary_key=True)
     nome = models.CharField(max_length=200)
+    status = models.CharField(max_length=200)
+    data_alteracao = models.DateField(blank=True, null=True, auto_now=True)
     observacoes = models.TextField(max_length=2000)
-    evento = models.ForeignKey(Evento, related_name='orcamentos', on_delete=models.CASCADE)
-    cliente = models.ForeignKey(Cliente, related_name='orcamentos', on_delete=models.CASCADE)
+    evento = models.ForeignKey(Evento, related_name='evento', on_delete=models.CASCADE)
+    cliente = models.ForeignKey(Cliente, related_name='cliente', on_delete=models.CASCADE)
     comidas = models.ManyToManyField(Comida, through='ComidaOrcamento')
     logisticas = models.ManyToManyField(Logistica, through='LogisticaOrcamento')
     valor_total = models.DecimalField(decimal_places=2, max_digits=10)
