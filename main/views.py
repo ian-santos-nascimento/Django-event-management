@@ -36,24 +36,26 @@ def login_view(request):
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
 def saveOrcamento(request):
-    evento_id = request.data.get('evento')
-    cliente_id = request.data.get('cliente')
+    evento= request.data.get('evento')
+    cliente = request.data.get('cliente')
     try:
-        evento = Evento.objects.get(pk=evento_id)
-        cliente = Cliente.objects.get(pk=cliente_id)
+        evento = Evento.objects.get(pk=evento['id_evento'])
+        cliente = Cliente.objects.get(pk=cliente['id_cliente'])
     except (Evento.DoesNotExist, Cliente.DoesNotExist) as e:
         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     nome_evento = request.data.get('nome')
     observacoes_evento = request.data.get('observacoes')
     valor_total_comidas = request.data.get('valor_total_comidas')
-    desconto_total_comidas = request.data.get('desconto_total_comidas')
+    desconto_total_comidas = request.data.get('valor_desconto_comidas')
     valor_total_logisticas = request.data.get('valor_total_logisticas')
-    desconto_total_logisticas = request.data.get('desconto_total_logisticas')
+    desconto_total_logisticas = request.data.get('valor_desconto_logisticas')
+    status_orcamento = request.data.get('status')
     orcamento = Orcamento(
         evento=evento,
         cliente=cliente,
         nome=nome_evento,
+        status=status_orcamento,
         observacoes=observacoes_evento,
         valor_total_comidas=valor_total_comidas,
         valor_total_logisticas=valor_total_logisticas,
@@ -123,13 +125,14 @@ def create_comida_for_orcamento(request, orcamento):
     comidas = request.data.get('comidas')
     for comida in comidas:
         try:
-            comida_bd = Comida.objects.get(pk=comida.get('id'))
+            comida_bd = Comida.objects.get(pk=comida.get('comida_id'))
             quantidade = comida.get('quantidade', 1)
             valor = comida_bd.valor
-            ComidaOrcamento.objects.update_or_create(
+            ComidaOrcamento.objects.create(
                 orcamento=orcamento,
                 comida=comida_bd,
-                defaults={'quantidade': quantidade, 'valor': valor}
+                quantidade= quantidade,
+                valor= valor
             )
         except Comida.DoesNotExist:
             continue

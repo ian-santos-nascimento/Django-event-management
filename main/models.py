@@ -173,10 +173,10 @@ class Orcamento(models.Model):
     comidas = models.ManyToManyField(Comida, through='ComidaOrcamento')
     logisticas = models.ManyToManyField(Logistica, through='LogisticaOrcamento')
     valor_total = models.DecimalField(decimal_places=2, max_digits=10)
-    valor_total_logisticas = models.DecimalField(decimal_places=2, max_digits=10)
-    valor_total_comidas = models.DecimalField(decimal_places=2, max_digits=10)
-    valor_desconto_logisticas = models.DecimalField(decimal_places=2, max_digits=10)
-    valor_desconto_comidas = models.DecimalField(decimal_places=2, max_digits=10)
+    valor_total_logisticas = models.DecimalField(decimal_places=2, max_digits=10, null=True, blank=True)
+    valor_total_comidas = models.DecimalField(decimal_places=2, max_digits=10, null=True, blank=True)
+    valor_desconto_logisticas = models.DecimalField(decimal_places=2, max_digits=10, null=True, blank=True)
+    valor_desconto_comidas = models.DecimalField(decimal_places=2, max_digits=10,null=True, blank=True)
 
 
 class ComidaOrcamento(models.Model):

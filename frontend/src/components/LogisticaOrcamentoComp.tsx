@@ -1,32 +1,42 @@
-import {useEffect, useState} from 'react';
-import {Fragment} from 'react';
-import {Row, Col, Form, Badge, Modal, Button} from 'react-bootstrap';
+import {Fragment, useEffect, useState} from 'react';
+import {Badge, Button, Col, Form, Modal, Row} from 'react-bootstrap';
 import {NumericFormat} from 'react-number-format';
 
 
 const LogisticaOrcamentoComp = ({
-                                    filterLogistica,
-                                    setFilterLogistica,
-                                    filteredLogisticas,
+                                    filterLogisticaState,
                                     logisticasSelecionadas,
-                                    setValorLogisticaTotal,
                                     setLogisticas,
                                     setLogisticasSelecionadas,
                                     orcamento,
                                     logisticas,
                                     setOrcamento,
-                                    valorLogisticaTotal,
                                     logisticaCidade,
-                                    evento,
-                                    handleChange
+                                    evento
                                 }) => {
     const [showModal, setShowModal] = useState(false);
     const [selectedLogistica, setSelectedLogistica] = useState(null);
+    const [filterLogistica, setFilterLogistica] = useState(filterLogisticaState || '');
     const [selectedOptions, setSelectedOptions] = useState({
         frete: '',
         diaria: '',
         lanches: ''
     });
+    const [valorLogisticaTotal, setValorLogisticaTotal] = useState(orcamento?.valor_total_logisticas || 0)
+
+    const filteredLogisticas = logisticas.filter(logistica =>
+        logistica.nome.toLowerCase().includes(filterLogistica.toLowerCase())
+    );
+
+    const handleChange = (e: { target: { name: string; value: any } }) => {
+        const {name, value} = e.target;
+
+        setOrcamento(prevOrcamento => ({
+            ...prevOrcamento,
+            [name]: value
+        }));
+    };
+
 
     const handleLogisticaChange = (logistica) => {
         if (logistica.tipo === 'Material') {
@@ -46,55 +56,58 @@ const LogisticaOrcamentoComp = ({
         });
     };
 
-
     //Calculo Logistica
     useEffect(() => {
         if (!orcamento || !logisticasSelecionadas.length || !evento || !logisticaCidade) {
             return;
         }
+        console.log("LOGISTICAS SELECIONADAS", logisticasSelecionadas, "LOGISTICA ORCAMENTO", orcamento.logisticas)
         const total = logisticasSelecionadas.reduce((acc, logistica) => {
-            const valorLogistica = logistica.valor;
+            const valorLogistica = parseFloat(logistica.valor);
             if (isNaN(valorLogistica)) {
                 console.error(`Logistica valor is NaN for logistica id ${logistica.id_logistica}`);
                 return acc;
             }
-            const alimentacao = !isNaN(logisticaCidade.alimentacao) ? logisticaCidade.alimentacao : 70;
-            const dias_evento = evento.qtd_dias_evento + 1 || 1;
-            const quantidade = orcamento?.logisticas?.find(l => l.id === logistica.id_logistica)?.quantidade || 1;
+            const alimentacao = !isNaN(logisticaCidade.alimentacao) ? parseFloat(logisticaCidade.alimentacao) : 70;
+            const dias_evento = evento.qtd_dias_evento || 1;
+            const quantidade = orcamento.logisticas?.find(l => l.id === logistica.id_logistica)?.quantidade || 1;
             const total_basico = (valorLogistica + alimentacao) * dias_evento * quantidade;
-            const total_logistica_fora_sp = !logistica.in_sp ? (logisticaCidade.passagem || 0) + ((logisticaCidade.hospedagem || 0) * (dias_evento + 2)) : 0;
+            const total_logistica_fora_sp = !logistica.in_sp ? (logisticaCidade.passagem || 0) + ((logisticaCidade.hospedagem || 0) * (dias_evento + 1)) : 0;
             return acc + total_basico + total_logistica_fora_sp;
         }, 0);
+
         setValorLogisticaTotal(total - orcamento.valor_desconto_logisticas);
-    }, [orcamento, logisticasSelecionadas, evento, logisticaCidade]);
+        setOrcamento(prevOrcamento => ({
+            ...prevOrcamento,
+            valor_total_logisticas: total - prevOrcamento.valor_desconto_logisticas
+        }));
+    }, [orcamento.logisticas, orcamento.valor_desconto_logisticas, logisticasSelecionadas, evento, logisticaCidade]);
 
     const handleQuantityLogisticaChange = (logistica_id: number, quantidade: number) => {
         setOrcamento(prevOrcamento => {
-            if (!prevOrcamento && !prevOrcamento.logisticas) return prevOrcamento;
-            const updatedLogistica = prevOrcamento.logisticas.map(logistica =>
-                logistica.id === logistica_id ? {...logistica, quantidade} : logistica
-            );
-            return {...prevOrcamento, logisticas: updatedLogistica};
-        });
-    }
+            if (!prevOrcamento || !prevOrcamento.logisticas) return prevOrcamento;
 
+            const updatedLogisticas = prevOrcamento.logisticas.map(log =>
+                log.id === logistica_id ? {...log, quantidade} : log
+            );
+
+            return {...prevOrcamento, logisticas: updatedLogisticas};
+        });
+    };
 
     const handleToggleLogistica = (logistica) => {
-        if (logisticasSelecionadas.includes(logistica)) {
-            // Remover da lista de selecionados e adicionar de volta à lista de disponíveis
-            setLogisticasSelecionadas(logisticasSelecionadas.filter(l => l !== logistica));
-            setLogisticas([...logisticas, logistica]);
+        const isSelected = logisticasSelecionadas.some(l => l.id_logistica === logistica.id_logistica);
 
+        if (isSelected) {
+            setLogisticasSelecionadas(logisticasSelecionadas.filter(l => l.id_logistica !== logistica.id_logistica));
             if (orcamento) {
                 const updatedLogisticas = orcamento.logisticas.filter(log => log.id !== logistica.id_logistica);
                 setOrcamento({...orcamento, logisticas: updatedLogisticas});
             }
         } else {
-            // Adicionar à lista de selecionados e remover da lista de disponíveis
             setLogisticasSelecionadas([...logisticasSelecionadas, logistica]);
-            setLogisticas(logisticas.filter(l => l !== logistica));
 
-            if (orcamento && orcamento.logsticas) {
+            if (orcamento) {
                 setOrcamento({
                     ...orcamento,
                     logisticas: [...orcamento.logisticas, {id: logistica.id_logistica, quantidade: 1}]
@@ -173,7 +186,7 @@ const LogisticaOrcamentoComp = ({
                     <Form.Label>Total R$ Logistica</Form.Label>
                     <Form.Control
                         type="text"
-                        value={`R$${valorLogisticaTotal.toFixed(2)} | valor * alimentação(${logisticaCidade?.alimentacao}) * dias(${evento?.qtd_dias_evento + 1})`}
+                        value={`R$${valorLogisticaTotal ? valorLogisticaTotal : 0} | valor * alimentação(${logisticaCidade?.alimentacao}) * dias(${evento?.qtd_dias_evento + 1})`}
                         disabled={true}
                     />
                     {logisticasSelecionadas.map((logistica) => (
@@ -191,7 +204,7 @@ const LogisticaOrcamentoComp = ({
                     <Form.Label>Desconto para Logistica</Form.Label>
                     <NumericFormat
                         name="desconto_total_logisticas"
-                        value={orcamento.desconto_total_logisticas}
+                        value={orcamento?.valor_desconto_logisticas || 0}
                         onValueChange={(values) => {
                             const {floatValue} = values;
                             handleChange({target: {name: 'desconto_total_logisticas', value: floatValue || 0}});

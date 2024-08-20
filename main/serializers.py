@@ -65,10 +65,11 @@ class ComidaOrcamentoSerializer(serializers.ModelSerializer):
 
 class LogisticaOrcamentoSerializer(serializers.ModelSerializer):
     logistica = serializers.StringRelatedField()
+    id = serializers.IntegerField(source='logistica.id_logistica', read_only=True)
 
     class Meta:
         model = LogisticaOrcamento
-        fields = ['logistica', 'quantidade', 'valor']
+        fields = ['logistica', 'quantidade', 'valor','id']
 
 
 class OrcamentoSerializer(serializers.ModelSerializer):
@@ -169,13 +170,9 @@ class OrcamentoUnicoSerializer(serializers.ModelSerializer):
         exclude = ['data_alteracao']
 
     def update(self, instance, validated_data):
-        # Remove the instance from validated_data to prevent updating it directly
         validated_data.pop('id_orcamento', None)
-
-        # Create a new instance of Orcamento
         new_orcamento = Orcamento.objects.create(**validated_data)
 
-        # Handle many-to-many relationships
         new_orcamento.comidas.set(instance.comidas.all())
         new_orcamento.logisticas.set(instance.logisticas.all())
 

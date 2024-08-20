@@ -16,7 +16,7 @@ import OrcamentoView from "./OrcamentoView.tsx";
 import {fetchData} from "../ApiCall/ApiCall";
 import {InputGroup} from "react-bootstrap";
 import {faSearch, faTimes} from "@fortawesome/free-solid-svg-icons";
-import type {OrcamentoType, EventoType} from '../types.tsx';
+import type {OrcamentoType, EventoType} from '../types';
 
 export default function OrcamentoList({sessionId}) {
     const [orcamentos, setOrcamentos] = useState<OrcamentoType[]>([])
@@ -38,7 +38,6 @@ export default function OrcamentoList({sessionId}) {
             const orcamentos = response.data as OrcamentoType[];
             setOrcamentos(orcamentos);
             setTotalPages(Math.ceil(response.count / 10));
-
         };
         fetchOrcamentos();
     }, [sessionId, currentPage, searchQuery]);
@@ -46,13 +45,13 @@ export default function OrcamentoList({sessionId}) {
 
     useEffect(() => {
         const fetchEventos = async () => {
-            const response = await fetchData('eventos', currentPage, '', csrfToken, sessionId)
+            const response = await fetchData('eventos', '', '', csrfToken, sessionId)
             const eventos = response.data as EventoType[];
             setEventos(eventos);
             setSelectedEvento(eventos[0])
         };
         fetchEventos();
-    }, [sessionId, currentPage])
+    }, [sessionId])
 
     const handlePageChange = (newPage) => {
         setCurrentPage(newPage);
@@ -60,21 +59,6 @@ export default function OrcamentoList({sessionId}) {
 
     const handleCreateOrcamento = () => {
         setShowModal(true)
-        setSelectedOrcamento({
-            id_orcamento: null,
-            nome: '',
-            evento: null,
-            cliente: null,
-            observacoes: '',
-            comidas: [],
-            logisticas: [],
-            valor_total: 0,
-            status: '',
-            valor_desconto_logisticas: 0,
-            valor_total_comidas: 0,
-            valor_desconto_comidas: 0,
-            valor_total_logisticas: 0,
-        })
     }
 
     const handleViewOrcamento = (orcamento) => {
@@ -90,6 +74,7 @@ export default function OrcamentoList({sessionId}) {
 
     const handleEditOrcamento = (orcamento) => {
         setSelectedOrcamento(orcamento)
+        console.log("ORCAMENTO SELECIONADO", orcamento)
         setSelectedEvento(orcamento.evento)
         setShowOrcamento(true)
     }
@@ -208,7 +193,6 @@ export default function OrcamentoList({sessionId}) {
                     <Modal.Title>Escolha o Evento</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    {selectedOrcamento && (
                         <div>
                             <Row className="mb-3">
                                 <Form.Group as={Col} controlId="formGridNome">
@@ -239,7 +223,6 @@ export default function OrcamentoList({sessionId}) {
 
                             </Modal.Footer>
                         </div>
-                    )}
                 </Modal.Body>
 
             </Modal>

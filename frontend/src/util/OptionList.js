@@ -41,6 +41,7 @@ export const TIPO_COMIDA = [
 ]
 
 export const STATUS_ORCAMENTO = [
+    { value: 'Criado', name: 'Criado' },
     { value: 'Aprovado', name: 'Aprovado' },
     { value: 'Declinado', name: 'Declinado' },
     { value: 'Alteracao 1', name: 'Alteração 1' },

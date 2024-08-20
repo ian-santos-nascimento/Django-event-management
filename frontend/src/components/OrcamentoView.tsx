@@ -104,7 +104,7 @@ export default function OrcamentoView({orcamentoId, sessionId}) {
         <div className='container'>
             <Modal
                 show={showModal}
-                size="lg"
+                size={"lg"}
                 aria-labelledby="contained-modal-title-vcenter"
                 centered
                 backdrop="static"
@@ -132,6 +132,26 @@ export default function OrcamentoView({orcamentoId, sessionId}) {
                     </Row>
                     <Row>
                         <FormGroup as={Col}>
+                            <Form.Label>Cliente</Form.Label>
+                            <Form.Control
+                                type="text"
+                                disabled
+                                value={`${orcamento.cliente.nome} (${orcamento.cliente.taxa_financeira * 100}%)`}
+                                readOnly
+                            />
+                        </FormGroup>
+                          <FormGroup as={Col}>
+                            <Form.Label>Valor total Orçamento</Form.Label>
+                            <Form.Control
+                                type="text"
+                                disabled
+                                value={`R$${orcamento.valor_total | 0}`}
+                                readOnly
+                            />
+                        </FormGroup>
+                    </Row>
+                    <Row>
+                        <FormGroup as={Col}>
                             <Form.Label>Valor comidas</Form.Label>
                             <Form.Control
                                 type="text"
@@ -145,7 +165,7 @@ export default function OrcamentoView({orcamentoId, sessionId}) {
                             <Form.Control
                                 type="text"
                                 disabled
-                                value={`R$${orcamento.valor_desconto_comidas}`}
+                                value={`R$${orcamento.valor_desconto_comidas | 0}`}
                                 readOnly
                             />
                         </FormGroup>
@@ -165,22 +185,12 @@ export default function OrcamentoView({orcamentoId, sessionId}) {
                             <Form.Control
                                 type="text"
                                 disabled
-                                value={`R$${orcamento.valor_desconto_logisticas}`}
+                                value={`R$${orcamento.valor_desconto_logisticas | 0}`}
                                 readOnly
                             />
                         </FormGroup>
                     </Row>
-                    <Row>
-                        <FormGroup as={Col}>
-                            <Form.Label>Cliente</Form.Label>
-                            <Form.Control
-                                type="text"
-                                disabled
-                                value={`${orcamento.cliente.nome} (${orcamento.cliente.taxa_financeira * 100}%)`}
-                                readOnly
-                            />
-                        </FormGroup>
-                    </Row>
+
                     <Row>
                         <Accordion>
                             <Accordion.Item as={'p'} eventKey="0" className='mt-3'>

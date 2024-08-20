@@ -15,26 +15,24 @@ const CardapioOrcamentoComp = ({
 
     useEffect(() => {
         const cliente = evento.clientes.find(cliente => cliente.id_cliente === orcamento?.cliente?.id_cliente)
-        console.log("CALCULANDO COMIDA")
         if (orcamento && orcamento.comidas) {
             const total = selectedCardapio.reduce((acc, comida) => {
-                const quantidade = orcamento?.comidas.find(c => c.id === comida.comida_id)?.quantidade || comida.quantidade_minima;
+                const quantidade = orcamento?.comidas.find(c => c.comida_id === comida.comida_id)?.quantidade || comida.quantidade_minima;
                 const total_comida_evento = (acc + comida.valor * quantidade);
                 return total_comida_evento + (total_comida_evento * parseFloat(cliente?.taxa_financeira || evento.clientes[0].taxa_financeira));
             }, 0);
             setValorComidaTotal(total - orcamento.valor_desconto_comidas);
+            setOrcamento({...orcamento, valor_total_comidas: valorComidaTotal})
         }
-    }, [orcamento, selectedCardapio, evento]);
+    }, [orcamento.comidas, orcamento.valor_desconto_comidas, selectedCardapio, evento]);
 
     const handleQuantityChange = (comida_id: number, quantidade: number) => {
         if (!orcamento || !orcamento.comidas) {
             return orcamento;
         }
         setOrcamento(prevOrcamento => {
-            console.log("COMIDA ORCAMENTO", orcamento.comidas)
-            console.log("COMIDA ID -- QTD", comida_id, quantidade)
             const updatedComidas = prevOrcamento.comidas.map(comida =>
-                comida.id === comida_id ? {...comida, id: comida_id,quantidade: quantidade} : comida
+                comida.comida_id === comida_id ? {...comida, id: comida_id, quantidade: quantidade} : comida
             );
             return {...prevOrcamento, comidas: updatedComidas};
         });
@@ -53,15 +51,14 @@ const CardapioOrcamentoComp = ({
         } else {
             const updatedComida = {...comida, quantidade: comida.quantidade_minima};
             setSelectedCardapio([...selectedCardapio, updatedComida]);
-            if (orcamento && orcamento.comidas) {
+            if (orcamento) {
                 setOrcamento({
                     ...orcamento,
-                    comidas: [...orcamento.comidas, {id: comida.comida_id, quantidade: comida.quantidade_minima}]
+                    comidas: [...orcamento.comidas, {comida_id: comida.comida_id, quantidade: comida.quantidade_minima}]
                 });
             }
         }
     };
-
     const filteredComidas = cardapio?.filter(comida =>
         comida.nome.toLowerCase().includes(filterCardapio.toLowerCase())
     );
@@ -127,7 +124,7 @@ const CardapioOrcamentoComp = ({
                                 <Form.Control
                                     type="number"
                                     min={comida.quantidade_minima}
-                                    value={orcamento?.comidas?.find(c => c.id === comida.comida_id)?.quantidade || comida.quantidade_minima}
+                                    value={orcamento?.comidas?.find(c => c.comida_id === comida.comida_id)?.quantidade || comida.quantidade_minima}
                                     onChange={(e) => handleQuantityChange(comida.comida_id, parseInt(e.target.value))}
                                     style={{width: '75px', marginLeft: '5px'}}
                                 />

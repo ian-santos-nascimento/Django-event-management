@@ -4,45 +4,90 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
-import {fetchData, fetchDataWithId, fetchDataWithoutPagination} from "../ApiCall/ApiCall";
+import {fetchDataWithId, fetchDataWithoutPagination} from "../ApiCall/ApiCall";
 import {STATUS_ORCAMENTO} from "../util/OptionList"
 import csrfToken from '../ApiCall/CsrfToken'
 // @ts-ignore
 import LogisticaOrcamentoComp from "./LogisticaOrcamentoComp.tsx";
 // @ts-ignore
 import CardapioOrcamentoComp from "./CardapioOrcamentoComp.tsx"
-import type {OrcamentoType, EventoType, LogisticaCidadeType, LogisticaType, ComidaType} from '../types';
+import type {ComidaType, EventoType, LogisticaCidadeType, LogisticaType, OrcamentoType} from '../types';
 
 
 const API_URL = process.env.REACT_APP_API_URL;
 
 export default function Orcamento({eventoState, orcamentoState, sessionId}) {
-    const [orcamento, setOrcamento] = useState<OrcamentoType>(orcamentoState)
+    const [orcamento, setOrcamento] = useState<OrcamentoType>(orcamentoState ||
+        {
+            id_orcamento: null,
+            nome: '',
+            evento: null,
+            cliente: null,
+            observacoes: '',
+            comidas: [],
+            logisticas: [],
+            valor_total: 0,
+            status: STATUS_ORCAMENTO[0].value,
+            valor_desconto_logisticas: 0,
+            valor_total_comidas: 0,
+            valor_desconto_comidas: 0,
+            valor_total_logisticas: 0,
+        })
     const [comidas, setComidas] = useState<ComidaType[]>([])
     const [comidasSelecionadas, setComidasSelecionadas] = useState<ComidaType[]>([]);
     const [logisticas, setLogisticas] = useState<LogisticaType[]>([])
     const [logisticaCidade, setLogisticaCidade] = useState<LogisticaCidadeType>()
     const [logisticasSelecionadas, setLogisticasSelecionadas] = useState<LogisticaType[]>([])
     const [evento, setEvento] = useState<EventoType>(eventoState)
-    const [valorLogisticaTotal, setValorLogisticaTotal] = useState(orcamentoState.valor_total_logisticas | 0)
     const [filter, setFilter] = useState('');
     const [filterLogistica, setFilterLogistica] = useState('');
-
-
-      useEffect(() => {
-        setOrcamento(orcamentoState);
-    }, [orcamentoState]);
 
     useEffect(() => {
         getModels();
     }, []);
+
+    //Mapea as comidas já selecionadas quando o Orçamento é editado
+    useEffect(() => {
+        if (orcamento.comidas && comidas.length > 0) {
+            const comidasSelecionadasTemp = orcamento.comidas.map(comidaOrcamento => {
+                const comidaSelecionada = comidas.find(comida => comida.comida_id === comidaOrcamento.comida_id);
+                if (comidaSelecionada) {
+                    return {
+                        ...comidaSelecionada,
+                        quantidade: comidaOrcamento.quantidade
+                    };
+                }
+                return null;
+            }).filter(comida => comida !== null) as ComidaType[];
+            setComidasSelecionadas(comidasSelecionadasTemp);
+        }
+    }, [orcamento.comidas, comidas])
+
+    useEffect(() => {
+        if(orcamento.logisticas && logisticas.length > 0){
+            const logisticaSelecionadaTemp = orcamento.logisticas.map(logisticaOrcamento => {
+                const logisticaSelecionada = logisticas.find(logistica => logistica.id_logistica === logisticaOrcamento.id);
+                if (logisticaSelecionada) {
+                    return {
+                        ...logisticaSelecionada,
+                        quantidade: logisticaOrcamento.quantidade
+                    };
+                }
+                return null;
+            }).filter(logistica => logistica !== null) as LogisticaType[];
+            setLogisticasSelecionadas(logisticaSelecionadaTemp);
+        }
+
+    }, [logisticas]);
 
     useEffect(() => {
         if (!evento.clientes || evento) {
             const eventoResponse = async () => {
                 const response = await fetchDataWithId('eventos', eventoState.id_evento)
                 setEvento(response.data as EventoType)
-                setOrcamento({...orcamento, evento: eventoState.id_evento})
+                if (!orcamento.evento) {
+                    setOrcamento({...orcamento, evento: eventoState.id_evento})
+                }
             }
             eventoResponse()
         }
@@ -51,14 +96,10 @@ export default function Orcamento({eventoState, orcamentoState, sessionId}) {
     useEffect(() => {
         if (evento && evento.local && evento.local.cidade) {
             getLogisticaCidade()
-            setOrcamento({...orcamento, cliente: evento.clientes[0]})
+            if (!orcamento.cliente)
+                setOrcamento({...orcamento, cliente: evento.clientes[0]})
         }
     }, [evento]);
-
-
-    const filteredLogisticas = logisticas.filter(logistica =>
-        logistica.nome.toLowerCase().includes(filterLogistica.toLowerCase())
-    );
 
 
     async function getLogisticaCidade() {
@@ -96,16 +137,15 @@ export default function Orcamento({eventoState, orcamentoState, sessionId}) {
 
     const handleChange = (e: { target: { name: string; value: any } }) => {
         const {name, value} = e.target;
-
         setOrcamento(prevOrcamento => ({
             ...prevOrcamento,
             [name]: value
         }));
     };
 
-
     const handleSubmit = async (e) => {
         e.preventDefault()
+        console.log("ORCAMENTO SAVE", orcamento)
         try {
             await axios.post(`${API_URL}orcamentos-create/`, orcamento, {
                 headers: {
@@ -116,12 +156,12 @@ export default function Orcamento({eventoState, orcamentoState, sessionId}) {
                 withCredentials: true,
             })
             alert('Orcamento created successfully!');
+            window.location.reload()
         } catch (exception) {
             console.log("Error tentando salvar orcamento", orcamento,
                 '\n erro:', exception)
             alert('Não foi possível salvar o Orçamento')
         }
-        window.location.reload()
     }
 
     return (
@@ -181,15 +221,15 @@ export default function Orcamento({eventoState, orcamentoState, sessionId}) {
                     </Form.Group>
                 </Row>
 
-                <CardapioOrcamentoComp cardapio={comidas} setCardapio={setComidas} selectedCardapio={comidasSelecionadas} setOrcamento={setOrcamento}
-                                       orcamento={orcamento} evento={evento} filter={filter} setSelectedCardapio={setComidasSelecionadas}/>
+                <CardapioOrcamentoComp cardapio={comidas} setCardapio={setComidas}
+                                       selectedCardapio={comidasSelecionadas} setOrcamento={setOrcamento}
+                                       orcamento={orcamento} evento={evento} filter={filter}
+                                       setSelectedCardapio={setComidasSelecionadas}/>
 
                 <LogisticaOrcamentoComp orcamento={orcamento} setOrcamento={setOrcamento}
                                         logisticaCidade={logisticaCidade}
-                                        setValorLogisticaTotal={setValorLogisticaTotal}
-                                        setFilterLogistica={setFilterLogistica} filteredLogisticas={filteredLogisticas}
-                                        handleChange={handleChange} evento={evento} logisticas={logisticas}
-                                        valorLogisticaTotal={valorLogisticaTotal} filterLogistica={filterLogistica}
+                                        evento={evento} logisticas={logisticas}
+                                        filterLogisticaState={filterLogistica}
                                         logisticasSelecionadas={logisticasSelecionadas} setLogisticas={setLogisticas}
                                         setLogisticasSelecionadas={setLogisticasSelecionadas}
                 />
