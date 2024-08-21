@@ -79,6 +79,7 @@ class OrcamentoSerializer(serializers.ModelSerializer):
 
 
 class LogisticaCidadeSerializer(serializers.ModelSerializer):
+    taxa_deslocamento = serializers.DecimalField(source='cidade.taxa_deslocamento', max_digits=5, decimal_places=2, read_only=True)
     class Meta:
         model = LogisticaCidade
         fields = '__all__'

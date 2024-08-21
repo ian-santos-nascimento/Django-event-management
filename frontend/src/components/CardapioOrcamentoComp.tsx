@@ -6,25 +6,31 @@ import {NumericFormat} from "react-number-format";
 import type {ComidaType} from "../types";
 
 const CardapioOrcamentoComp = ({
-                                   cardapio, setCardapio, selectedCardapio, setSelectedCardapio, orcamento,
-                                   setOrcamento, evento, filter
+                                   cardapio,
+                                   setCardapio,
+                                   logisticaCidade,
+                                   selectedCardapio,
+                                   setSelectedCardapio,
+                                   orcamento,
+                                   setOrcamento,
+                                   evento,
+                                   filter
                                }) => {
 
     const [filterCardapio, setFilterCardapio] = useState(filter)
     const [valorComidaTotal, setValorComidaTotal] = useState(orcamento.valor_total_comidas | 0.0)
 
     useEffect(() => {
-        const cliente = evento.clientes.find(cliente => cliente.id_cliente === orcamento?.cliente?.id_cliente)
         if (orcamento && orcamento.comidas) {
-            const total = selectedCardapio.reduce((acc, comida) => {
+            var total = selectedCardapio.reduce((acc, comida) => {
                 const quantidade = orcamento?.comidas.find(c => c.comida_id === comida.comida_id)?.quantidade || comida.quantidade_minima;
-                const total_comida_evento = (acc + comida.valor * quantidade);
-                return total_comida_evento + (total_comida_evento * parseFloat(cliente?.taxa_financeira || evento.clientes[0].taxa_financeira));
+                return (acc + comida.valor * quantidade);
             }, 0);
+            total += total * parseFloat(logisticaCidade?.taxa_deslocamento)
             setValorComidaTotal(total - orcamento.valor_desconto_comidas);
             setOrcamento({...orcamento, valor_total_comidas: valorComidaTotal})
         }
-    }, [orcamento.comidas, orcamento.valor_desconto_comidas, selectedCardapio, evento]);
+    }, [orcamento.comidas, orcamento.valor_desconto_comidas, selectedCardapio]);
 
     const handleQuantityChange = (comida_id: number, quantidade: number) => {
         if (!orcamento || !orcamento.comidas) {
@@ -136,7 +142,7 @@ const CardapioOrcamentoComp = ({
             </Row>
             <Row className='mb-3'>
                 <Form.Group as={Col} controlId="formGridNome">
-                    <Form.Label>Total R$ comidas</Form.Label>
+                    <Form.Label>Total R$ comidas (Com {logisticaCidade?.taxa_deslocamento * 100}% incluso)</Form.Label>
                     <Form.Control
                         type="text"
                         value={`R$${valorComidaTotal.toFixed(2)}` || 0}

@@ -39,6 +39,14 @@ export const TIPO_EVENTO = [
 export const TIPO_COMIDA = [
     'Doces', 'Acompanhamentos', 'Bebidas', 'Salgados', 'Almoço', 'Embalagem', 'Lanches', 'Terceirizado'
 ]
+export const SUBCATEGORIAS_COMIDA = {
+    Acompanhamentos: ['Batata frita', 'Arroz', 'Vinagrete'],
+    Doces: ['Brigadeiros', 'Bolos', 'Tortas'],
+    Almoço: ['Salgados', 'Lanches', 'Hamburguer'],
+    Bebidas: ['Refrigerante', 'Suco', 'Água'],
+    Salgados: ['Fritos', 'Assados', 'Industrializados'],
+
+};
 
 export const STATUS_ORCAMENTO = [
     { value: 'Criado', name: 'Criado' },

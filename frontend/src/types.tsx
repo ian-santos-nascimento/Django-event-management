@@ -67,6 +67,7 @@ export interface OrcamentoType {
 export interface LogisticaCidadeType {
     cidade: number,
     hospedagem: number,
+    taxa_deslocamento: number,
     passagem: number,
     alimentacao: number,
     frete_terceiros: number,

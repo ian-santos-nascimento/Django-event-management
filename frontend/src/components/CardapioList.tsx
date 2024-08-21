@@ -8,10 +8,11 @@ import csrfToken from "../ApiCall/CsrfToken";
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
-import {fetchData, } from '../ApiCall/ApiCall.jsx'
+import {fetchData,} from '../ApiCall/ApiCall.jsx'
 import {InputGroup} from "react-bootstrap";
 import {faSearch, faTimes} from "@fortawesome/free-solid-svg-icons";
-import {TIPO_COMIDA} from "../util/OptionList"
+import {TIPO_COMIDA, SUBCATEGORIAS_COMIDA} from "../util/OptionList"
+
 const API_URL = process.env.REACT_APP_API_URL;
 axios.defaults.xsrfCookieName = 'csrftoken';
 axios.defaults.xsrfHeaderName = 'X-CSRFToken';
@@ -22,6 +23,7 @@ interface Comida {
     nome: string,
     descricao: string,
     tipo: string,
+    subtipo: string,
     valor: number,
     quantidade_minima: number,
 }
@@ -35,16 +37,17 @@ export default function CidadeList({sessionId}) {
     const [totalPages, setTotalPages] = useState(1);
     const [searchTerm, setSearchTerm] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
+    const filteredSubcategories = SUBCATEGORIAS_COMIDA[selectedComida?.tipo] || [];
+
 
     useEffect(() => {
-        const fetchCidades = async () => {
+        const fetchCardapio = async () => {
             const response = await fetchData('comidas', currentPage, searchQuery, csrfToken, sessionId)
             const comidas = response.data as Comida[];
-            console.log("BUSCANDO COMIDA")
             setCidades(comidas);
             setTotalPages(Math.ceil(response.count / 10));
         };
-        fetchCidades();
+        fetchCardapio();
     }, [sessionId, currentPage, searchQuery]);
 
     const handlePageChange = (newPage) => {
@@ -61,7 +64,8 @@ export default function CidadeList({sessionId}) {
             comida_id: null,
             nome: '',
             descricao: '',
-            tipo: '',
+            tipo: TIPO_COMIDA[0],
+            subtipo: SUBCATEGORIAS_COMIDA[TIPO_COMIDA[0]][0],
             valor: 0.0,
             quantidade_minima: 0
         })
@@ -75,6 +79,7 @@ export default function CidadeList({sessionId}) {
 
     const handleSubmit = async (e) => {
         e.preventDefault()
+        console.log("COMIDA", selectedComida)
         try {
             if (selectedComida.comida_id !== null) {
                 await axios.put(`${API_URL}comidas/${selectedComida.comida_id}/`, selectedComida, {
@@ -138,12 +143,20 @@ export default function CidadeList({sessionId}) {
         setSearchQuery(searchTerm);
     };
 
-    const handleClearSearch = () =>{
+    const handleClearSearch = () => {
         setSearchQuery('')
         setSearchTerm('')
 
     }
+    const handleCategoryChange = (e) => {
+        const {value} = e.target;
 
+        setSelectedComida((prevSelectedComida) => ({
+            ...prevSelectedComida,
+            tipo: value,
+            subcategoria: '',  // Resetando subcategoria
+        }));
+    };
 
     return (
         <div className="container">
@@ -272,21 +285,43 @@ export default function CidadeList({sessionId}) {
                                 />
                             </Form.Group>
 
-                            <Form.Group as={Col} controlId="formGriPrazoPagamento">
-                                <Form.Label>Categoria</Form.Label>
-                                <Form.Select
-                                    required
-                                    name="tipo"
-                                    value={selectedComida.tipo}
-                                    onChange={handleChange}>
-                                    {TIPO_COMIDA.map((tipo, index) =>(
-                                        <option value={tipo} key={index}> {tipo}</option>
-                                    ))}
-                                </Form.Select>
-                                <Form.Control.Feedback type="invalid">
-                                    Escolha o tipo da comida
-                                </Form.Control.Feedback>
-                            </Form.Group>
+                            <Row>
+
+                                <Form.Group as={Col} controlId="formGriCategoria">
+                                    <Form.Label>Categoria</Form.Label>
+                                    <Form.Select
+                                        required
+                                        name="tipo"
+                                        value={selectedComida.tipo}
+                                        onChange={handleCategoryChange} // Atualiza a categoria e reseta a subcategoria
+                                    >
+                                        {TIPO_COMIDA.map((tipo, index) => (
+                                            <option value={tipo} key={index}>{tipo}</option>
+                                        ))}
+                                    </Form.Select>
+                                    <Form.Control.Feedback type="invalid">
+                                        Escolha o tipo da comida
+                                    </Form.Control.Feedback>
+                                </Form.Group>
+
+                                <Form.Group as={Col} controlId="formGriSubCategoria">
+                                    <Form.Label>Subcategoria</Form.Label>
+                                    <Form.Select
+                                        required
+                                        name="subtipo"
+                                        value={selectedComida.subtipo}
+                                        onChange={handleChange} // Atualiza a subcategoria
+                                    >
+                                        {filteredSubcategories.map((sub, index) => (
+                                            <option value={sub} key={index}>{sub}</option>
+                                        ))}
+                                    </Form.Select>
+                                    <Form.Control.Feedback type="invalid">
+                                        Escolha a subcategoria da comida
+                                    </Form.Control.Feedback>
+                                </Form.Group>
+
+                            </Row>
 
                         </Form>
                     )}

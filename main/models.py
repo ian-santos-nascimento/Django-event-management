@@ -35,10 +35,11 @@ class Endereco(models.Model):
 class Comida(models.Model):
     comida_id = models.AutoField(primary_key=True)
     nome = models.CharField(max_length=400)
-    descricao = models.TextField()
+    descricao = models.TextField(blank=True, null=True)
     valor = models.DecimalField(decimal_places=2, max_digits=8, default=0)
     quantidade_minima = models.IntegerField()
     tipo = models.CharField(max_length=200)
+    subtipo = models.CharField(max_length=200, blank=True, null=True)
 
     def __str__(self):
         comida = str(self.comida_id) + "-" + self.nome + " - " + "R$" + str(self.valor)
