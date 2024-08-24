@@ -49,7 +49,9 @@ def saveOrcamento(request):
     valor_total_comidas = request.data.get('valor_total_comidas')
     desconto_total_comidas = request.data.get('valor_desconto_comidas')
     valor_total_logisticas = request.data.get('valor_total_logisticas')
+    valor_total = request.data.get('valor_total')
     desconto_total_logisticas = request.data.get('valor_desconto_logisticas')
+    valor_imposto = request.data.get('valor_imposto')
     status_orcamento = request.data.get('status')
     orcamento = Orcamento(
         evento=evento,
@@ -61,7 +63,8 @@ def saveOrcamento(request):
         valor_total_logisticas=valor_total_logisticas,
         valor_desconto_comidas=desconto_total_comidas,
         valor_desconto_logisticas=desconto_total_logisticas,
-        valor_total=valor_total_logisticas + valor_total_comidas,
+        valor_total=valor_total,
+        valor_imposto= valor_imposto,
     )
     orcamento.save()
     create_comida_for_orcamento(request, orcamento)
