@@ -178,6 +178,7 @@ class Orcamento(models.Model):
     valor_total_comidas = models.DecimalField(decimal_places=2, max_digits=10, null=True, blank=True)
     valor_desconto_logisticas = models.DecimalField(decimal_places=2, max_digits=10, null=True, blank=True)
     valor_desconto_comidas = models.DecimalField(decimal_places=2, max_digits=10,null=True, blank=True)
+    valor_imposto = models.DecimalField(decimal_places=2, max_digits=10,null=True, blank=True)
 
 
 class ComidaOrcamento(models.Model):

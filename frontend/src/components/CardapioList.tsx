@@ -59,7 +59,7 @@ export default function CidadeList({sessionId}) {
         setShowModal(true);
     };
 
-    const handleCreateCidade = () => {
+    const handleCreateCardapio = () => {
         setSelectedComida({
             comida_id: null,
             nome: '',
@@ -150,11 +150,10 @@ export default function CidadeList({sessionId}) {
     }
     const handleCategoryChange = (e) => {
         const {value} = e.target;
-
         setSelectedComida((prevSelectedComida) => ({
             ...prevSelectedComida,
             tipo: value,
-            subcategoria: '',  // Resetando subcategoria
+            subtipo: SUBCATEGORIAS_COMIDA[value][0],  // Resetando subcategoria
         }));
     };
 
@@ -162,7 +161,7 @@ export default function CidadeList({sessionId}) {
         <div className="container">
             <h2 className="text-center">Controle do Cardápio</h2>
             <div className=" justify-content-between w-100">
-                <Button variant='primary' className='mb-3' onClick={handleCreateCidade}>Nova Item do Cardápio</Button>
+                <Button variant='primary' className='mb-3' onClick={handleCreateCardapio}>Nova Item do Cardápio</Button>
                 <InputGroup className="mb-3">
                     <Form.Control
                         type="text"
@@ -193,7 +192,8 @@ export default function CidadeList({sessionId}) {
                     <th scope="col">Nome</th>
                     <th scope="col">Descricao</th>
                     <th scope="col">Qtd.Minima</th>
-                    <th scope="col">Tipo</th>
+                    <th scope="col">Categoria</th>
+                    <th scope="col">SubCategoria</th>
                     <th scope="col">Valor</th>
                     <th scope="col">Editar</th>
                 </tr>
@@ -206,6 +206,7 @@ export default function CidadeList({sessionId}) {
                         <td>{item.descricao.slice(0, 50)}</td>
                         <td>{item.quantidade_minima}</td>
                         <td>{item.tipo}</td>
+                        <td>{item.subtipo}</td>
                         <td>R${item.valor}</td>
                         <td>
                             <button

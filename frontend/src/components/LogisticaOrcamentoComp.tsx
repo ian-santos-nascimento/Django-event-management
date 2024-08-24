@@ -1,19 +1,33 @@
 import {Fragment, useEffect, useState} from 'react';
 import {Badge, Button, Col, Form, Modal, Row} from 'react-bootstrap';
 import {NumericFormat} from 'react-number-format';
+import {EventoType, LogisticaCidadeType, LogisticaType, OrcamentoType} from "../types";
+import {parse} from "@fortawesome/fontawesome-svg-core";
+
+interface Props {
+    filterLogisticaState: string; // Substitua `any` com o tipo correto, se souber
+    logisticasSelecionadas: LogisticaType[]; // Substitua `any` com o tipo correto
+    setLogisticas: React.Dispatch<React.SetStateAction<LogisticaType[]>>; // Substitua `any` com o tipo correto
+    setLogisticasSelecionadas: React.Dispatch<React.SetStateAction<LogisticaType[]>>; // Substitua `any` com o tipo correto
+    orcamento: OrcamentoType;
+    logisticas: LogisticaType[]; // Substitua `any` com o tipo correto
+    setOrcamento: React.Dispatch<React.SetStateAction<OrcamentoType>>;
+    logisticaCidade: LogisticaCidadeType; // Substitua `any` com o tipo correto
+    evento: EventoType; // Substitua `any` com o tipo correto
+}
 
 
-const LogisticaOrcamentoComp = ({
-                                    filterLogisticaState,
-                                    logisticasSelecionadas,
-                                    setLogisticas,
-                                    setLogisticasSelecionadas,
-                                    orcamento,
-                                    logisticas,
-                                    setOrcamento,
-                                    logisticaCidade,
-                                    evento
-                                }) => {
+const LogisticaOrcamentoComp: React.FC<Props> = ({
+                                                     filterLogisticaState,
+                                                     logisticasSelecionadas,
+                                                     setLogisticas,
+                                                     setLogisticasSelecionadas,
+                                                     orcamento,
+                                                     logisticas,
+                                                     setOrcamento,
+                                                     logisticaCidade,
+                                                     evento
+                                                 }) => {
     const [showModal, setShowModal] = useState(false);
     const [selectedLogistica, setSelectedLogistica] = useState(null);
     const [filterLogistica, setFilterLogistica] = useState(filterLogisticaState || '');
@@ -58,48 +72,49 @@ const LogisticaOrcamentoComp = ({
 
     //Calculo Logistica
     useEffect(() => {
-        if (!orcamento || !logisticasSelecionadas.length || !evento || !logisticaCidade) {
+        if (!orcamento || !evento || !logisticaCidade) {
             return;
         }
-        console.log("LOGISTICAS SELECIONADAS", logisticasSelecionadas, "LOGISTICA ORCAMENTO", orcamento.logisticas)
-        const total = logisticasSelecionadas.reduce((acc, logistica) => {
+        const total = orcamento.logisticas.reduce((acc, logistica) => {
             const valorLogistica = parseFloat(logistica.valor);
             if (isNaN(valorLogistica)) {
-                console.error(`Logistica valor is NaN for logistica id ${logistica.id_logistica}`);
+                console.error(`Logistica valor is NaN for logistica id ${logistica.id}`);
                 return acc;
             }
             const alimentacao = !isNaN(logisticaCidade.alimentacao) ? parseFloat(logisticaCidade.alimentacao) : 70;
             const dias_evento = evento.qtd_dias_evento || 1;
-            const quantidade = orcamento.logisticas?.find(l => l.id === logistica.id_logistica)?.quantidade || 1;
+            const quantidade = logistica.quantidade || 1;
             const total_basico = (valorLogistica + alimentacao) * dias_evento * quantidade;
-            const total_logistica_fora_sp = !logistica.in_sp ? (logisticaCidade.passagem || 0) + ((logisticaCidade.hospedagem || 0) * (dias_evento + 1)) : 0;
+            const logisticaFilter = logisticas.find(logisticaList => logisticaList.id_logistica === logistica.id)
+            const total_logistica_fora_sp = !logisticaFilter.in_sp ? parseFloat(logisticaCidade.passagem || 0) + (parseFloat(logisticaCidade.hospedagem || 0) * (dias_evento + 1)) : 0;
             return acc + total_basico + total_logistica_fora_sp;
         }, 0);
-
         setValorLogisticaTotal(total - orcamento.valor_desconto_logisticas);
         setOrcamento(prevOrcamento => ({
             ...prevOrcamento,
             valor_total_logisticas: total - prevOrcamento.valor_desconto_logisticas
         }));
-    }, [orcamento.logisticas, orcamento.valor_desconto_logisticas, logisticasSelecionadas, evento, logisticaCidade]);
+    }, [logisticasSelecionadas, orcamento.valor_desconto_logisticas, evento]);
+
 
     const handleQuantityLogisticaChange = (logistica_id: number, quantidade: number) => {
-        setOrcamento(prevOrcamento => {
+        setOrcamento((prevOrcamento: OrcamentoType) => {
             if (!prevOrcamento || !prevOrcamento.logisticas) return prevOrcamento;
 
             const updatedLogisticas = prevOrcamento.logisticas.map(log =>
                 log.id === logistica_id ? {...log, quantidade} : log
             );
 
-            return {...prevOrcamento, logisticas: updatedLogisticas};
+            return {...prevOrcamento, logisticas: updatedLogisticas} as OrcamentoType;
         });
     };
 
     const handleToggleLogistica = (logistica) => {
         const isSelected = logisticasSelecionadas.some(l => l.id_logistica === logistica.id_logistica);
 
-        if (isSelected) {
-            setLogisticasSelecionadas(logisticasSelecionadas.filter(l => l.id_logistica !== logistica.id_logistica));
+        if (isSelected) { //remove a logistica da lista de selecionada
+            const updateLogisticaSelecionada = logisticasSelecionadas.filter(l => l.id_logistica !== logistica.id_logistica);
+            setLogisticasSelecionadas(updateLogisticaSelecionada);
             if (orcamento) {
                 const updatedLogisticas = orcamento.logisticas.filter(log => log.id !== logistica.id_logistica);
                 setOrcamento({...orcamento, logisticas: updatedLogisticas});
@@ -110,15 +125,19 @@ const LogisticaOrcamentoComp = ({
             if (orcamento) {
                 setOrcamento({
                     ...orcamento,
-                    logisticas: [...orcamento.logisticas, {id: logistica.id_logistica, quantidade: 1}]
+                    logisticas: [...orcamento.logisticas, {
+                        id: logistica.id_logistica,
+                        quantidade: 1,
+                        valor: logistica.valor
+                    }]
                 });
             }
+
         }
     };
 
     const handleModalSave = () => {
         if (selectedLogistica) {
-            // Passa as opções selecionadas para o componente pai (Orcamento)
             handleToggleLogistica({...selectedLogistica, selectedOptions});
         }
         setShowModal(false);
@@ -203,11 +222,11 @@ const LogisticaOrcamentoComp = ({
                 <Form.Group as={Col} controlId="formGridNome">
                     <Form.Label>Desconto para Logistica</Form.Label>
                     <NumericFormat
-                        name="desconto_total_logisticas"
+                        name="valor_desconto_logisticas"
                         value={orcamento?.valor_desconto_logisticas || 0}
                         onValueChange={(values) => {
                             const {floatValue} = values;
-                            handleChange({target: {name: 'desconto_total_logisticas', value: floatValue || 0}});
+                            handleChange({target: {name: 'valor_desconto_logisticas', value: floatValue || 0}});
                         }}
                         thousandSeparator="."
                         decimalSeparator=","

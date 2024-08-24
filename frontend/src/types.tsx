@@ -47,11 +47,11 @@ export interface OrcamentoType {
     status: string,
     evento: EventoType,
     cliente: ClienteType,
-    logisticas: [{
-        id: number,
-        valor: number,
-        quantidade: number
-    }],
+    logisticas:Array<{
+        id: number;
+        valor: number;
+        quantidade: number;
+    }>;
     comidas: [{
         comida_id: number,
         quantidade: number
@@ -61,6 +61,7 @@ export interface OrcamentoType {
     valor_total_comidas: number,
     valor_desconto_logisticas: number,
     valor_desconto_comidas: number,
+    valor_imposto:number
 }
 
 

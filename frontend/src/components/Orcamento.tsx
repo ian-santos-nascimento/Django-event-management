@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import {useEffect, useState, useRef} from "react";
 import axios from "axios";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
@@ -32,6 +32,7 @@ export default function Orcamento({eventoState, orcamentoState, sessionId}) {
             valor_total_comidas: 0,
             valor_desconto_comidas: 0,
             valor_total_logisticas: 0,
+            valor_imposto: 0
         })
     const [comidas, setComidas] = useState<ComidaType[]>([])
     const [comidasSelecionadas, setComidasSelecionadas] = useState<ComidaType[]>([]);
@@ -41,6 +42,7 @@ export default function Orcamento({eventoState, orcamentoState, sessionId}) {
     const [evento, setEvento] = useState<EventoType>(eventoState)
     const [filter, setFilter] = useState('');
     const [filterLogistica, setFilterLogistica] = useState('');
+    const isFirstRender = useRef(true);
 
     useEffect(() => {
         getModels();
@@ -62,9 +64,9 @@ export default function Orcamento({eventoState, orcamentoState, sessionId}) {
             setComidasSelecionadas(comidasSelecionadasTemp);
         }
     }, [orcamento.comidas, comidas])
-
+    //Mapea as Logisticas já selecionadas quando o Orçamento é editado
     useEffect(() => {
-        if(orcamento.logisticas && logisticas.length > 0){
+        if (orcamento.logisticas && logisticas.length > 0) {
             const logisticaSelecionadaTemp = orcamento.logisticas.map(logisticaOrcamento => {
                 const logisticaSelecionada = logisticas.find(logistica => logistica.id_logistica === logisticaOrcamento.id);
                 if (logisticaSelecionada) {
@@ -94,6 +96,19 @@ export default function Orcamento({eventoState, orcamentoState, sessionId}) {
     }, []);
 
     useEffect(() => {
+        if (!isFirstRender.current) {
+            console.log("CALCULANDO IMPOSTO")
+            const total_comidas = (orcamento.valor_total_comidas - orcamento.valor_desconto_comidas) || 0
+            const total_logisticas = (parseFloat(orcamento.valor_total_logisticas) - parseFloat(orcamento.valor_desconto_logisticas)) || 0
+            var total = total_comidas + total_logisticas
+            console.log("COMIDAS", total_comidas, "LOGISTICAS", total_logisticas, "TOTAL", total, "ORCAMENTO", orcamento)
+            const valor_imposto = total * 0.2
+            total += valor_imposto
+            setOrcamento({...orcamento, valor_total: total, valor_imposto: valor_imposto})
+        }
+    }, [orcamento.logisticas, orcamento.comidas, orcamento.valor_desconto_logisticas, orcamento.valor_desconto_comidas]);
+
+    useEffect(() => {
         if (evento && evento.local && evento.local.cidade) {
             getLogisticaCidade()
             if (!orcamento.cliente)
@@ -101,6 +116,14 @@ export default function Orcamento({eventoState, orcamentoState, sessionId}) {
         }
     }, [evento]);
 
+    useEffect(() => {
+        setInterval(() => {
+            if (isFirstRender.current || orcamento.id_orcamento) {
+                isFirstRender.current = false
+                return
+            }
+        }, 5000)
+    }, []);
 
     async function getLogisticaCidade() {
         if (evento && evento.local && evento.local.cidade !== null) {
@@ -119,13 +142,13 @@ export default function Orcamento({eventoState, orcamentoState, sessionId}) {
 
         const comidasResponse = await fetchDataWithoutPagination('comidasWP', csrfToken, sessionId);
         setComidas(comidasResponse.data as ComidaType[]);
-
     }
 
 
     const handleToggleCliente = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const selectedId = parseInt(e.target.value);
         const selectedItem = evento.clientes.find(cliente => cliente.id_cliente === selectedId);
+        isFirstRender.current = false;
 
         if (selectedItem) {
             setOrcamento(prevOrcamento => ({
@@ -141,6 +164,7 @@ export default function Orcamento({eventoState, orcamentoState, sessionId}) {
             ...prevOrcamento,
             [name]: value
         }));
+        isFirstRender.current = false;
     };
 
     const handleSubmit = async (e) => {
@@ -234,7 +258,38 @@ export default function Orcamento({eventoState, orcamentoState, sessionId}) {
                                         setLogisticasSelecionadas={setLogisticasSelecionadas}
                 />
 
-                <Button variant="primary" type="submit" onClick={handleSubmit}>
+                <Row>
+                    <Form.Group as={Col} controlId="formGridNome">
+                        <Form.Label>Valor total (Com imposto)</Form.Label>
+                        <Form.Control
+                            name="valor_total"
+                            disabled
+                            value={`R$${parseFloat(orcamento.valor_total).toFixed(2)}`}
+                            type="text"
+                        />
+                    </Form.Group>
+                    <Form.Group as={Col} controlId="formGridNome">
+                        <Form.Label>Valor total (Sem imposto)</Form.Label>
+                        <Form.Control
+                            name="valor_total"
+                            disabled
+                            value={`R$${(parseFloat(orcamento?.valor_total) - parseFloat(orcamento?.valor_imposto)).toFixed(2)}`}
+                            type="text"
+                        />
+                    </Form.Group>
+                    <Form.Group as={Col} controlId="formGridNome">
+                        <Form.Label>Valor imposto (20%)</Form.Label>
+                        <Form.Control
+                            name="valor_imposto"
+                            disabled
+                            value={`R$${parseFloat(orcamento.valor_imposto || 0).toFixed(2)}`}
+                            type="text"
+                        />
+                    </Form.Group>
+                </Row>
+
+
+                <Button className={'mt-3'} variant="primary" type="submit" onClick={handleSubmit}>
                     {orcamento !== null && orcamento.id_orcamento === null ? 'Criar' : 'Editar'}
                 </Button>
             </Form>
