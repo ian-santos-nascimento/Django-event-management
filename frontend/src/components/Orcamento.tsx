@@ -10,11 +10,10 @@ import csrfToken from '../ApiCall/CsrfToken'
 // @ts-ignore
 import LogisticaOrcamentoComp from "./LogisticaOrcamentoComp.tsx";
 // @ts-ignore
-import CardapioOrcamentoComp from "./CardapioOrcamentoComp.tsx"
+import CardapioOrcamentoComp from "./CardapioOrcamentoComp.tsx";
 import type {ComidaType, EventoType, LogisticaCidadeType, LogisticaType, OrcamentoType} from '../types';
+import ModalOrcamentoFinal from "./ModalOrcamentoFinal.tsx";
 
-
-const API_URL = process.env.REACT_APP_API_URL;
 
 export default function Orcamento({eventoState, orcamentoState, sessionId}) {
     const [orcamento, setOrcamento] = useState<OrcamentoType>(orcamentoState ||
@@ -43,6 +42,7 @@ export default function Orcamento({eventoState, orcamentoState, sessionId}) {
     const [filter, setFilter] = useState('');
     const [filterLogistica, setFilterLogistica] = useState('');
     const isFirstRender = useRef(true);
+    const [loadModalFinal, setLoadModalFinal] = useState(false)
 
     useEffect(() => {
         getModels();
@@ -56,7 +56,8 @@ export default function Orcamento({eventoState, orcamentoState, sessionId}) {
                 if (comidaSelecionada) {
                     return {
                         ...comidaSelecionada,
-                        quantidade: comidaOrcamento.quantidade
+                        quantidade: comidaOrcamento.quantidade,
+                        valor: comidaOrcamento.valor
                     };
                 }
                 return null;
@@ -95,18 +96,6 @@ export default function Orcamento({eventoState, orcamentoState, sessionId}) {
         }
     }, []);
 
-    useEffect(() => {
-        if (!isFirstRender.current) {
-            console.log("CALCULANDO IMPOSTO")
-            const total_comidas = (orcamento.valor_total_comidas - orcamento.valor_desconto_comidas) || 0
-            const total_logisticas = (parseFloat(orcamento.valor_total_logisticas) - parseFloat(orcamento.valor_desconto_logisticas)) || 0
-            var total = total_comidas + total_logisticas
-            console.log("COMIDAS", total_comidas, "LOGISTICAS", total_logisticas, "TOTAL", total, "ORCAMENTO", orcamento)
-            const valor_imposto = total * 0.2
-            total += valor_imposto
-            setOrcamento({...orcamento, valor_total: total, valor_imposto: valor_imposto})
-        }
-    }, [orcamento.logisticas, orcamento.comidas, orcamento.valor_desconto_logisticas, orcamento.valor_desconto_comidas]);
 
     useEffect(() => {
         if (evento && evento.local && evento.local.cidade) {
@@ -124,6 +113,10 @@ export default function Orcamento({eventoState, orcamentoState, sessionId}) {
             }
         }, 5000)
     }, []);
+
+    const handleBack = () =>{
+        window.location.reload()
+    }
 
     async function getLogisticaCidade() {
         if (evento && evento.local && evento.local.cidade !== null) {
@@ -157,6 +150,9 @@ export default function Orcamento({eventoState, orcamentoState, sessionId}) {
             }));
         }
     };
+    const handleShowModalFinal = () => {
+        setLoadModalFinal(true)
+    }
 
     const handleChange = (e: { target: { name: string; value: any } }) => {
         const {name, value} = e.target;
@@ -167,25 +163,13 @@ export default function Orcamento({eventoState, orcamentoState, sessionId}) {
         isFirstRender.current = false;
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault()
-        console.log("ORCAMENTO SAVE", orcamento)
-        try {
-            await axios.post(`${API_URL}orcamentos-create/`, orcamento, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken,
-                    'sessionId': sessionId
-                },
-                withCredentials: true,
-            })
-            alert('Orcamento created successfully!');
-            window.location.reload()
-        } catch (exception) {
-            console.log("Error tentando salvar orcamento", orcamento,
-                '\n erro:', exception)
-            alert('Não foi possível salvar o Orçamento')
-        }
+
+    if (loadModalFinal) {
+        return <ModalOrcamentoFinal orcamento={orcamento}
+                                    cardapioSelecionado={comidasSelecionadas}
+                                    logisticasSelecionadas={logisticasSelecionadas} evento={evento}
+                                    logisticaCidade={logisticaCidade} setOrcamento={setOrcamento}
+                                    showModal={loadModalFinal} setShowModal={setLoadModalFinal} sessionId={sessionId}/>
     }
 
     return (
@@ -257,41 +241,14 @@ export default function Orcamento({eventoState, orcamentoState, sessionId}) {
                                         logisticasSelecionadas={logisticasSelecionadas} setLogisticas={setLogisticas}
                                         setLogisticasSelecionadas={setLogisticasSelecionadas}
                 />
-
-                <Row>
-                    <Form.Group as={Col} controlId="formGridNome">
-                        <Form.Label>Valor total (Com imposto)</Form.Label>
-                        <Form.Control
-                            name="valor_total"
-                            disabled
-                            value={`R$${parseFloat(orcamento.valor_total).toFixed(2)}`}
-                            type="text"
-                        />
-                    </Form.Group>
-                    <Form.Group as={Col} controlId="formGridNome">
-                        <Form.Label>Valor total (Sem imposto)</Form.Label>
-                        <Form.Control
-                            name="valor_total"
-                            disabled
-                            value={`R$${(parseFloat(orcamento?.valor_total) - parseFloat(orcamento?.valor_imposto)).toFixed(2)}`}
-                            type="text"
-                        />
-                    </Form.Group>
-                    <Form.Group as={Col} controlId="formGridNome">
-                        <Form.Label>Valor imposto (20%)</Form.Label>
-                        <Form.Control
-                            name="valor_imposto"
-                            disabled
-                            value={`R$${parseFloat(orcamento.valor_imposto || 0).toFixed(2)}`}
-                            type="text"
-                        />
-                    </Form.Group>
-                </Row>
-
-
-                <Button className={'mt-3'} variant="primary" type="submit" onClick={handleSubmit}>
-                    {orcamento !== null && orcamento.id_orcamento === null ? 'Criar' : 'Editar'}
-                </Button>
+                <div className=" mt-3 mb-3 d-flex justify-content-between w-100">
+                    <Button className={'mt-3'} variant="secondary" onClick={handleBack} type="reset">
+                        Retornar
+                    </Button>
+                    <Button className={'mt-3'} variant="primary" type="button" onClick={handleShowModalFinal}>
+                        Prosseguir
+                    </Button>
+                </div>
             </Form>
         </div>
     )

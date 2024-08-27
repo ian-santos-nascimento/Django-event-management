@@ -4,6 +4,7 @@ import Form from "react-bootstrap/Form";
 import Col from "react-bootstrap/Col";
 import {NumericFormat} from "react-number-format";
 import type {ComidaType} from "../types";
+import {Badge} from "react-bootstrap";
 
 const CardapioOrcamentoComp = ({
                                    cardapio,
@@ -25,10 +26,11 @@ const CardapioOrcamentoComp = ({
             var total = selectedCardapio.reduce((acc, comida) => {
                 const quantidade = orcamento?.comidas.find(c => c.comida_id === comida.comida_id)?.quantidade || comida.quantidade_minima;
                 return (acc + comida.valor * quantidade);
-            }, 0);
+            }, 0) - orcamento.valor_desconto_comidas;
+            console.log("COMIDAS", total,"DESCONTOS", orcamento.valor_desconto_comidas, "TAXA", logisticaCidade?.taxa_deslocamento)
             total += total * parseFloat(logisticaCidade?.taxa_deslocamento)
-            setValorComidaTotal(total - orcamento.valor_desconto_comidas);
-            setOrcamento({...orcamento, valor_total_comidas: valorComidaTotal})
+            setValorComidaTotal(total);
+            setOrcamento({...orcamento, valor_total_comidas: total})
         }
     }, [orcamento.comidas, orcamento.valor_desconto_comidas, selectedCardapio]);
 
@@ -60,7 +62,7 @@ const CardapioOrcamentoComp = ({
             if (orcamento) {
                 setOrcamento({
                     ...orcamento,
-                    comidas: [...orcamento.comidas, {comida_id: comida.comida_id, quantidade: comida.quantidade_minima}]
+                    comidas: [...orcamento.comidas, {comida_id: comida.comida_id, quantidade: comida.quantidade_minima, valor: comida.valor}]
                 });
             }
         }
@@ -137,6 +139,9 @@ const CardapioOrcamentoComp = ({
                             </div>
                         ))}
                     </div>
+                    <Badge bg="secondary">
+                        Sem imposto: R${(valorComidaTotal - (valorComidaTotal * logisticaCidade?.taxa_deslocamento)).toFixed(2)}
+                                </Badge>
                 </Form.Group>
 
             </Row>
@@ -145,7 +150,7 @@ const CardapioOrcamentoComp = ({
                     <Form.Label>Total R$ comidas (Com {logisticaCidade?.taxa_deslocamento * 100}% incluso)</Form.Label>
                     <Form.Control
                         type="text"
-                        value={`R$${valorComidaTotal.toFixed(2)}` || 0}
+                        value={`R$${valorComidaTotal.toFixed(2) || 0}`}
                         disabled={true}
                     />
                 </Form.Group>

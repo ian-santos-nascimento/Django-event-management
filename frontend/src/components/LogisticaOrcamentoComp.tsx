@@ -5,15 +5,15 @@ import {EventoType, LogisticaCidadeType, LogisticaType, OrcamentoType} from "../
 import {parse} from "@fortawesome/fontawesome-svg-core";
 
 interface Props {
-    filterLogisticaState: string; // Substitua `any` com o tipo correto, se souber
-    logisticasSelecionadas: LogisticaType[]; // Substitua `any` com o tipo correto
-    setLogisticas: React.Dispatch<React.SetStateAction<LogisticaType[]>>; // Substitua `any` com o tipo correto
-    setLogisticasSelecionadas: React.Dispatch<React.SetStateAction<LogisticaType[]>>; // Substitua `any` com o tipo correto
+    filterLogisticaState: string;
+    logisticasSelecionadas: LogisticaType[];
+    setLogisticas: React.Dispatch<React.SetStateAction<LogisticaType[]>>;
+    setLogisticasSelecionadas: React.Dispatch<React.SetStateAction<LogisticaType[]>>;
     orcamento: OrcamentoType;
-    logisticas: LogisticaType[]; // Substitua `any` com o tipo correto
+    logisticas: LogisticaType[];
     setOrcamento: React.Dispatch<React.SetStateAction<OrcamentoType>>;
-    logisticaCidade: LogisticaCidadeType; // Substitua `any` com o tipo correto
-    evento: EventoType; // Substitua `any` com o tipo correto
+    logisticaCidade: LogisticaCidadeType;
+    evento: EventoType;
 }
 
 
@@ -94,7 +94,7 @@ const LogisticaOrcamentoComp: React.FC<Props> = ({
             ...prevOrcamento,
             valor_total_logisticas: total - prevOrcamento.valor_desconto_logisticas
         }));
-    }, [logisticasSelecionadas, orcamento.valor_desconto_logisticas, evento]);
+    }, [logisticasSelecionadas, orcamento.valor_desconto_logisticas, evento, orcamento.logisticas]);
 
 
     const handleQuantityLogisticaChange = (logistica_id: number, quantidade: number) => {
@@ -205,7 +205,7 @@ const LogisticaOrcamentoComp: React.FC<Props> = ({
                     <Form.Label>Total R$ Logistica</Form.Label>
                     <Form.Control
                         type="text"
-                        value={`R$${valorLogisticaTotal ? valorLogisticaTotal : 0} | valor * alimentação(${logisticaCidade?.alimentacao}) * dias(${evento?.qtd_dias_evento + 1})`}
+                        value={`R$${valorLogisticaTotal ? valorLogisticaTotal : 0} | valor * alimentação(${logisticaCidade?.alimentacao}) * dias(${evento?.qtd_dias_evento})`}
                         disabled={true}
                     />
                     {logisticasSelecionadas.map((logistica) => (

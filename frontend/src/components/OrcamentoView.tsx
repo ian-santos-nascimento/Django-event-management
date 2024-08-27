@@ -6,76 +6,20 @@ import Form from "react-bootstrap/Form";
 import {Accordion, FormGroup} from "react-bootstrap";
 import Col from "react-bootstrap/Col";
 import Button from "react-bootstrap/Button";
-// @ts-ignore
-import OrcamentoList from "./OrcamentoList.tsx";
 import {fetchDataWithId, excludeData} from "../ApiCall/ApiCall.jsx"
+import {OrcamentoType} from "../types";
 
-interface Logistica {
-    logistica: string;
-    valor: number;
-    quantidade: number;
-
-}
-
-interface Comida {
-    comida: string;
-    valor: number;
-    quantidade: number;
-}
-
-interface Cliente {
-    id_cliente: string;
-    razao_social: string;
-    cnpj: string;
-    inscricao_estadual: string;
-    nome: string;
-    telefone: string;
-    prazo_pagamento: string;
-    taxa_financeira: number;
-    inicio_contrato: string;
-    fim_contrato: string;
-}
-
-interface Evento {
-    id_evento: number;
-    codigo_evento: number;
-    nome: string;
-    descricao: string;
-    observacao: string;
-    qtd_dias_evento: number;
-    qtd_pessoas: number;
-    data_inicio: string;
-    data_fim: string;
-    local: number;
-    clientes: number[];
-}
-
-interface Orcamento {
-    logisticas: Logistica[];
-    comidas: Comida[];
-    cliente: Cliente;
-    evento: Evento;
-    nome: string;
-    observacoes: string;
-    valor_total: number;
-    valor_total_logisticas: number;
-    valor_total_comidas: number;
-    valor_desconto_logisticas: number;
-    valor_desconto_comidas: number;
-}
-
-const API_URL = process.env.REACT_APP_API_URL;
 
 
 export default function OrcamentoView({orcamentoId, sessionId}) {
-    const [orcamento, setOrcamento] = useState<Orcamento | null>(null);
+    const [orcamento, setOrcamento] = useState<OrcamentoType | null>(null);
     const [showModal, setShowModal] = useState(true);
 
     useEffect(() => {
         const fetchOrcamento = async () => {
             try {
                 const response = await fetchDataWithId('orcamentos', orcamentoId)
-                setOrcamento(response.data as Orcamento);
+                setOrcamento(response.data as OrcamentoType);
                 setShowModal(true);
             } catch (error) {
                 console.error("Error fetching orcamento:", error);
@@ -96,7 +40,6 @@ export default function OrcamentoView({orcamentoId, sessionId}) {
 
     const handleExcluirOrcamento = async () => {
         const response = await excludeData(orcamento, orcamentoId);
-        console.log("RESPONSE DELETE", response)
     }
 
 
@@ -146,6 +89,15 @@ export default function OrcamentoView({orcamentoId, sessionId}) {
                                 type="text"
                                 disabled
                                 value={`R$${orcamento.valor_total | 0}`}
+                                readOnly
+                            />
+                        </FormGroup>
+                        <FormGroup as={Col}>
+                            <Form.Label>Valor total imposto</Form.Label>
+                            <Form.Control
+                                type="text"
+                                disabled
+                                value={`R$${orcamento.valor_imposto | 0}`}
                                 readOnly
                             />
                         </FormGroup>
