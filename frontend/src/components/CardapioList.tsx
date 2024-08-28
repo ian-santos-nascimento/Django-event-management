@@ -79,7 +79,6 @@ export default function CidadeList({sessionId}) {
 
     const handleSubmit = async (e) => {
         e.preventDefault()
-        console.log("COMIDA", selectedComida)
         try {
             if (selectedComida.comida_id !== null) {
                 await axios.put(`${API_URL}comidas/${selectedComida.comida_id}/`, selectedComida, {
@@ -115,7 +114,7 @@ export default function CidadeList({sessionId}) {
         setSelectedComida(null);
     };
 
-    const handleExcluirCidade = async () => {
+    const handleExcluirComida = async () => {
         try {
             await axios.delete(`${API_URL}comidas/${selectedComida.comida_id}/`, {
                 headers: {
@@ -330,7 +329,7 @@ export default function CidadeList({sessionId}) {
                 <Modal.Footer className="modal-footer-custom">
                     <div className="d-flex justify-content-between w-100">
                         <Button disabled={selectedComida !== null && selectedComida.comida_id === null} variant="danger"
-                                type="submit" onClick={handleExcluirCidade}>
+                                type="submit" onClick={handleExcluirComida}>
                             Excluir
                         </Button>
                         <Button variant="primary" type="submit" onClick={handleSubmit}>

@@ -229,9 +229,9 @@ export default function Orcamento({eventoState, orcamentoState, sessionId}) {
                     </Form.Group>
                 </Row>
 
-                <CardapioOrcamentoComp cardapio={comidas} setCardapio={setComidas} logisticaCidade={logisticaCidade}
+                <CardapioOrcamentoComp cardapio={comidas}  logisticaCidade={logisticaCidade}
                                        selectedCardapio={comidasSelecionadas} setOrcamento={setOrcamento}
-                                       orcamento={orcamento} evento={evento} filter={filter}
+                                       orcamento={orcamento} evento={evento}
                                        setSelectedCardapio={setComidasSelecionadas}/>
 
                 <LogisticaOrcamentoComp orcamento={orcamento} setOrcamento={setOrcamento}
