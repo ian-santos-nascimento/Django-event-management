@@ -128,7 +128,8 @@ const LogisticaOrcamentoComp: React.FC<Props> = ({
                     logisticas: [...orcamento.logisticas, {
                         id: logistica.id_logistica,
                         quantidade: 1,
-                        valor: logistica.valor
+                        valor: logistica.valor,
+                        logistica: logistica.nome
                     }]
                 });
             }

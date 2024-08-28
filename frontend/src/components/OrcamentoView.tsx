@@ -83,6 +83,8 @@ export default function OrcamentoView({orcamentoId, sessionId}) {
                                 readOnly
                             />
                         </FormGroup>
+                    </Row>
+                    <Row>
                           <FormGroup as={Col}>
                             <Form.Label>Valor total Orçamento</Form.Label>
                             <Form.Control
@@ -98,6 +100,15 @@ export default function OrcamentoView({orcamentoId, sessionId}) {
                                 type="text"
                                 disabled
                                 value={`R$${orcamento.valor_imposto | 0}`}
+                                readOnly
+                            />
+                        </FormGroup>
+                        <FormGroup as={Col}>
+                            <Form.Label>Valor decoração</Form.Label>
+                            <Form.Control
+                                type="text"
+                                disabled
+                                value={`R$${orcamento.valor_decoracao | 0}`}
                                 readOnly
                             />
                         </FormGroup>

@@ -62,7 +62,7 @@ const CardapioOrcamentoComp = ({
             if (orcamento) {
                 setOrcamento({
                     ...orcamento,
-                    comidas: [...orcamento.comidas, {comida_id: comida.comida_id, quantidade: comida.quantidade_minima, valor: comida.valor}]
+                    comidas: [...orcamento.comidas, {comida_id: comida.comida_id, quantidade: comida.quantidade_minima, valor: comida.valor, comida: comida.nome}]
                 });
             }
         }

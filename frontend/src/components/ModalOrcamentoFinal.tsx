@@ -5,7 +5,7 @@ import Button from "react-bootstrap/Button";
 import axios from "axios";
 import csrfToken from '../ApiCall/CsrfToken'
 import Modal from "react-bootstrap/Modal";
-import {useEffect} from "react";
+import {useEffect, useState} from "react";
 import {
     CardapioOrcamentoType,
     ComidaType,
@@ -19,12 +19,12 @@ import {Accordion} from "react-bootstrap";
 const API_URL = process.env.REACT_APP_API_URL;
 
 interface Props {
-    logisticasSelecionadas: LogisticaType[]; // Substitua `any` com o tipo correto
-    cardapioSelecionado: CardapioOrcamentoType[]; // Substitua `any` com o tipo correto
+    logisticasSelecionadas: LogisticaType[];
+    cardapioSelecionado: ComidaType[];
     orcamento: OrcamentoType;
     setOrcamento: React.Dispatch<React.SetStateAction<OrcamentoType>>;
-    logisticaCidade: LogisticaCidadeType; // Substitua `any` com o tipo correto
-    evento: EventoType; // Substitua `any` com o tipo correto
+    logisticaCidade: LogisticaCidadeType;
+    evento: EventoType;
     showModal: boolean;
     setShowModal: React.Dispatch<React.SetStateAction<boolean>>;
     sessionId: string
@@ -42,16 +42,24 @@ const ModalOrcamentoFinal: React.FC<Props> = ({
                                                   sessionId
                                               }) => {
 
+
     useEffect(() => {
         const total_comidas = parseFloat(orcamento.valor_total_comidas) || 0
-        console.log("TOTAL COMIDAS", total_comidas)
         const total_logisticas = parseFloat(orcamento.valor_total_logisticas) || 0
-        var total = total_comidas + total_logisticas
+        const decoracaoCompleta = cardapioSelecionado.some(cardapio => cardapio.tipo === 'Intervalo_Doce' || cardapio.tipo === 'Intervalo_Salgado' ||
+            cardapio.tipo === 'Almoço')
+        const adicional_decoracao = decoracaoCompleta ? 800 : 400
+        console.log("EVENTO", orcamento.evento)
+        var total = total_comidas + total_logisticas + adicional_decoracao
         const valor_imposto = total * 0.2
         total += valor_imposto
-        console.log("TOTAL_LOGISTICA", total_logisticas, "TOTAL_COMIDA", total_comidas)
-        console.log("TOTAL" + total, "TOTAL SEM IMPOSTO", total - valor_imposto, "TOTAL_IMPOSTO", valor_imposto)
-        setOrcamento({...orcamento, valor_total: total, valor_imposto: valor_imposto})
+        setOrcamento({
+            ...orcamento,
+            valor_total: total,
+            valor_imposto: valor_imposto,
+            valor_decoracao: adicional_decoracao,
+            evento: evento
+        })
     }, []);
 
 
@@ -149,47 +157,56 @@ const ModalOrcamentoFinal: React.FC<Props> = ({
                                     type="text"
                                 />
                             </Form.Group>
+                            <Form.Group as={Col} controlId="formGridNome">
+                                <Form.Label>Adicional decoração</Form.Label>
+                                <Form.Control
+                                    name="valor_decoracao"
+                                    disabled
+                                    value={`R$${parseFloat(orcamento.valor_decoracao || 0).toFixed(2)}`}
+                                    type="text"
+                                />
+                            </Form.Group>
                         </Row>
-                          <Row>
-                        <Accordion>
-                            <Accordion.Item as={'p'} eventKey="0" className='mt-3'>
-                                <Accordion.Header as={'h5'}>Comidas</Accordion.Header>
-                                <Accordion.Body style={{backgroundColor: '##aab0b5;'}}>
-                                    {orcamento.comidas.map(comida => (
-                                        <p>{comida.comida} (Qtd: {comida.quantidade})</p>
-                                    ))}
-                                </Accordion.Body>
-                            </Accordion.Item>
-                            <Accordion.Item as={'p'} eventKey="1" className='mt-3'>
-                                <Accordion.Header
-                                    as={'h5'}>Logisticas</Accordion.Header>
-                                <Accordion.Body style={{backgroundColor: '##aab0b5;'}}>
-                                    {orcamento.logisticas.map(logistica => (
-                                        <p>{logistica.logistica} (Qtd: {logistica.quantidade})</p>
-                                    ))}
-                                </Accordion.Body>
-                            </Accordion.Item>
-                            <Accordion.Item as={'p'} eventKey="2" className='mt-3'>
-                                <Accordion.Header style={{backgroundColor: '#aab0b5', color: 'white'}}
-                                                  as={'h5'}>Evento</Accordion.Header>
-                                <Accordion.Body>
-                                    <p>Nome/Coodigo: {orcamento.evento.nome}-{orcamento.evento.codigo_evento}</p>
-                                    <p>Data: {orcamento.evento.data_inicio} | {orcamento.evento.data_fim}</p>
-                                    <p>Dias: {orcamento.evento.qtd_dias_evento} </p>
-                                    <p>Descrição: {orcamento.evento.descricao} </p>
-                                </Accordion.Body>
-                            </Accordion.Item>
-                             <Accordion.Item as={'p'} eventKey="3" className='mt-3'>
-                                <Accordion.Header style={{backgroundColor: '#aab0b5', color: 'white'}}
-                                                  as={'h5'}>Cliente</Accordion.Header>
-                                <Accordion.Body>
-                                    <p>Nome: {orcamento.cliente.nome}</p>
-                                    <p>Taxa Financeira: {orcamento.cliente.taxa_financeira * 100}% </p>
-                                    <p>CNPJ: {orcamento.cliente.cnpj} </p>
-                                </Accordion.Body>
-                            </Accordion.Item>
-                        </Accordion>
-                    </Row>
+                        <Row>
+                            <Accordion>
+                                <Accordion.Item as={'p'} eventKey="0" className='mt-3'>
+                                    <Accordion.Header as={'h5'}>Comidas</Accordion.Header>
+                                    <Accordion.Body style={{backgroundColor: '##aab0b5;'}}>
+                                        {orcamento.comidas.map(comida => (
+                                            <p>{comida.comida} (Qtd: {comida.quantidade})</p>
+                                        ))}
+                                    </Accordion.Body>
+                                </Accordion.Item>
+                                <Accordion.Item as={'p'} eventKey="1" className='mt-3'>
+                                    <Accordion.Header
+                                        as={'h5'}>Logisticas</Accordion.Header>
+                                    <Accordion.Body style={{backgroundColor: '##aab0b5;'}}>
+                                        {orcamento.logisticas.map(logistica => (
+                                            <p>{logistica.logistica} (Qtd: {logistica.quantidade})</p>
+                                        ))}
+                                    </Accordion.Body>
+                                </Accordion.Item>
+                                <Accordion.Item as={'p'} eventKey="2" className='mt-3'>
+                                    <Accordion.Header style={{backgroundColor: '#aab0b5', color: 'white'}}
+                                                      as={'h5'}>Evento</Accordion.Header>
+                                    <Accordion.Body>
+                                        <p>Nome/Coodigo: {evento.nome}-{evento.codigo_evento}</p>
+                                        <p>Data: {evento.data_inicio} | {evento.data_fim}</p>
+                                        <p>Dias: {evento.qtd_dias_evento} </p>
+                                        <p>Descrição: {evento.descricao} </p>
+                                    </Accordion.Body>
+                                </Accordion.Item>
+                                <Accordion.Item as={'p'} eventKey="3" className='mt-3'>
+                                    <Accordion.Header style={{backgroundColor: '#aab0b5', color: 'white'}}
+                                                      as={'h5'}>Cliente</Accordion.Header>
+                                    <Accordion.Body>
+                                        <p>Nome: {orcamento.cliente.nome}</p>
+                                        <p>Taxa Financeira: {orcamento.cliente.taxa_financeira * 100}% </p>
+                                        <p>CNPJ: {orcamento.cliente.cnpj} </p>
+                                    </Accordion.Body>
+                                </Accordion.Item>
+                            </Accordion>
+                        </Row>
 
                         <Button className={'mt-3'} variant="primary" type="submit" onClick={handleSubmit}>
                             {orcamento !== null && orcamento.id_orcamento === null ? 'Criar' : 'Editar'}

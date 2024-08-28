@@ -19,7 +19,8 @@ export interface ComidaType {
     descricao: string
     valor: number,
     quantidade_minima: number
-    tipo: string
+    tipo: string,
+    subtipo: string,
 }
 
 
@@ -47,29 +48,30 @@ export interface OrcamentoType {
     status: string,
     evento: EventoType,
     cliente: ClienteType,
-    logisticas: Array<{
-        id: number;
-        valor: number;
-        quantidade: number;
-    }>;
-    comidas: [{
-        comida_id: number,
-        quantidade: number,
-        valor: number
-    }],
+    logisticas: Array<LogisticaOrcamentoType>;
+    comidas: CardapioOrcamentoType[],
     valor_total: number,
     valor_total_logisticas: number,
     valor_total_comidas: number,
     valor_desconto_logisticas: number,
     valor_desconto_comidas: number,
-    valor_imposto: number
+    valor_imposto: number,
+    valor_decoracao: number
 }
 
 export interface CardapioOrcamentoType {
     comida_id: number,
+    comida: string,
     quantidade: number,
     valor: number
 
+}
+
+export interface LogisticaOrcamentoType {
+    id: number;
+    valor: number;
+    quantidade: number;
+    logistica: string
 }
 
 
