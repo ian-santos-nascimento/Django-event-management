@@ -76,6 +76,10 @@ export default function Local({local, sessionId}) {
 
     }
 
+    const voltar = () =>{
+        window.location.reload();
+    }
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -110,7 +114,7 @@ export default function Local({local, sessionId}) {
 
     return (
         <div className="container">
-            <h2 className="text-center">Edição da Localidade</h2>
+            <h2 className="text-center">Criar/Editar  Localidade</h2>
             <Form onSubmit={handleSubmit}>
                 <Row className="mb-3">
                     <Form.Group as={Col} controlId="formGridNome">
@@ -183,11 +187,20 @@ export default function Local({local, sessionId}) {
                 </Row>
 
                 <div className="d-flex justify-content-between w-100">
-                    <Button disabled={local.id_local === null}
-                            variant="danger"
-                            type="button" onClick={handleExcluirLocal}>
-                        Excluir
-                    </Button>
+                    {local.id_local === null && (
+                         <Button
+                                variant="secondary"
+                                type="button" onClick={voltar}>
+                            Voltar
+                        </Button>
+                    )}
+                    {local.id_local !== null && (
+                        <Button
+                                variant="danger"
+                                type="button" onClick={handleExcluirLocal}>
+                            Excluir
+                        </Button>
+                    )}
                     <Button variant="primary" type="submit">
                         {local.id_local === null ? 'Criar' : 'Editar'}
                     </Button>

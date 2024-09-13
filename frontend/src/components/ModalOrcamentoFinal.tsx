@@ -49,10 +49,10 @@ const ModalOrcamentoFinal: React.FC<Props> = ({
         const decoracaoCompleta = cardapioSelecionado.some(cardapio => cardapio.tipo === 'Intervalo_Doce' || cardapio.tipo === 'Intervalo_Salgado' ||
             cardapio.tipo === 'Almoço')
         const adicional_decoracao = decoracaoCompleta ? 800 : 400
-        console.log("EVENTO", orcamento.evento)
         var total = total_comidas + total_logisticas + adicional_decoracao
         const valor_imposto = total * 0.2
         total += valor_imposto
+        total += (total * orcamento.cliente.taxa_financeira)
         setOrcamento({
             ...orcamento,
             valor_total: total,
@@ -131,20 +131,11 @@ const ModalOrcamentoFinal: React.FC<Props> = ({
                         </Row>
                         <Row>
                             <Form.Group as={Col} controlId="formGridNome">
-                                <Form.Label>Valor total (Com imposto)</Form.Label>
+                                <Form.Label>Valor total (Com imposto e taxa de {orcamento?.cliente.taxa_financeira})</Form.Label>
                                 <Form.Control
                                     name="valor_total"
                                     disabled
                                     value={`R$${parseFloat(orcamento.valor_total).toFixed(2)}`}
-                                    type="text"
-                                />
-                            </Form.Group>
-                            <Form.Group as={Col} controlId="formGridNome">
-                                <Form.Label>Valor total (Sem imposto)</Form.Label>
-                                <Form.Control
-                                    name="valor_total"
-                                    disabled
-                                    value={`R$${(parseFloat(orcamento?.valor_total) - parseFloat(orcamento?.valor_imposto)).toFixed(2)}`}
                                     type="text"
                                 />
                             </Form.Group>
