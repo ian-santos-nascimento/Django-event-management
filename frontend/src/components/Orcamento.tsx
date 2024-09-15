@@ -12,6 +12,7 @@ import LogisticaOrcamentoComp from "./LogisticaOrcamentoComp.tsx";
 // @ts-ignore
 import CardapioOrcamentoComp from "./CardapioOrcamentoComp.tsx";
 import type {ComidaType, EventoType, LogisticaCidadeType, LogisticaType, OrcamentoType} from '../types';
+// @ts-ignore
 import ModalOrcamentoFinal from "./ModalOrcamentoFinal.tsx";
 
 
@@ -37,7 +38,8 @@ export default function Orcamento({eventoState, orcamentoState, sessionId}) {
     const [comidasSelecionadas, setComidasSelecionadas] = useState<ComidaType[]>([]);
     const [logisticas, setLogisticas] = useState<LogisticaType[]>([])
     const [logisticaCidade, setLogisticaCidade] = useState<LogisticaCidadeType>()
-    const [logisticasSelecionadas, setLogisticasSelecionadas] = useState<LogisticaType[]>([])
+    const [logisticasPessoasSelecionadas, setLogisticasPessoasSelecionadas] = useState<LogisticaType[]>([])
+    const [logisticasMateriaisSelecionadas, setLogisticasMateriaisSelecionadas] = useState<LogisticaType[]>([])
     const [evento, setEvento] = useState<EventoType>(eventoState)
     const [filter, setFilter] = useState('');
     const [filterLogistica, setFilterLogistica] = useState('');
@@ -68,9 +70,9 @@ export default function Orcamento({eventoState, orcamentoState, sessionId}) {
     //Mapea as Logisticas já selecionadas quando o Orçamento é editado
     useEffect(() => {
         if (orcamento.logisticas && logisticas.length > 0) {
-            const logisticaSelecionadaTemp = orcamento.logisticas.map(logisticaOrcamento => {
+            const logisticaPessoasSelecionadasTemp = orcamento.logisticas.map(logisticaOrcamento => {
                 const logisticaSelecionada = logisticas.find(logistica => logistica.id_logistica === logisticaOrcamento.id);
-                if (logisticaSelecionada) {
+                if (logisticaSelecionada && logisticaSelecionada.tipo === 'Pessoa') {
                     return {
                         ...logisticaSelecionada,
                         quantidade: logisticaOrcamento.quantidade
@@ -78,7 +80,19 @@ export default function Orcamento({eventoState, orcamentoState, sessionId}) {
                 }
                 return null;
             }).filter(logistica => logistica !== null) as LogisticaType[];
-            setLogisticasSelecionadas(logisticaSelecionadaTemp);
+            const logisticaMateriaisSelecionadosTemp = orcamento.logisticas.map(logisticaOrcamento => {
+                const logisticaSelecionada = logisticas.find(logistica => logistica.id_logistica === logisticaOrcamento.id);
+                if (logisticaSelecionada && logisticaSelecionada.tipo === 'Material') {
+                    return {
+                        ...logisticaSelecionada,
+                        quantidade: logisticaOrcamento.quantidade
+                    };
+                }
+                return null;
+            }).filter(logistica => logistica !== null) as LogisticaType[];
+
+            setLogisticasPessoasSelecionadas(logisticaPessoasSelecionadasTemp);
+            setLogisticasMateriaisSelecionadas(logisticaMateriaisSelecionadosTemp);
         }
 
     }, [logisticas]);
@@ -114,7 +128,7 @@ export default function Orcamento({eventoState, orcamentoState, sessionId}) {
         }, 5000)
     }, []);
 
-    const handleBack = () =>{
+    const handleBack = () => {
         window.location.reload()
     }
 
@@ -167,8 +181,7 @@ export default function Orcamento({eventoState, orcamentoState, sessionId}) {
     if (loadModalFinal) {
         return <ModalOrcamentoFinal orcamento={orcamento}
                                     cardapioSelecionado={comidasSelecionadas}
-                                    logisticasSelecionadas={logisticasSelecionadas} evento={evento}
-                                    logisticaCidade={logisticaCidade} setOrcamento={setOrcamento}
+                                    evento={evento}  setOrcamento={setOrcamento}
                                     showModal={loadModalFinal} setShowModal={setLoadModalFinal} sessionId={sessionId}/>
     }
 
@@ -229,17 +242,18 @@ export default function Orcamento({eventoState, orcamentoState, sessionId}) {
                     </Form.Group>
                 </Row>
 
-                <CardapioOrcamentoComp cardapio={comidas}  logisticaCidade={logisticaCidade}
+                <CardapioOrcamentoComp cardapio={comidas} logisticaCidade={logisticaCidade}
                                        selectedCardapio={comidasSelecionadas} setOrcamento={setOrcamento}
                                        orcamento={orcamento} evento={evento}
                                        setSelectedCardapio={setComidasSelecionadas}/>
 
                 <LogisticaOrcamentoComp orcamento={orcamento} setOrcamento={setOrcamento}
                                         logisticaCidade={logisticaCidade}
-                                        evento={evento} logisticas={logisticas}
+                                        evento={evento} logisticas={logisticas} setLogisticas={setLogisticas}
                                         filterLogisticaState={filterLogistica}
-                                        logisticasSelecionadas={logisticasSelecionadas} setLogisticas={setLogisticas}
-                                        setLogisticasSelecionadas={setLogisticasSelecionadas}
+                                        logisticasMateriaisSelecionadas={logisticasMateriaisSelecionadas}
+                                        setLogisticasMateriaisSelecionadas={setLogisticasMateriaisSelecionadas}
+                                        logisticasPessoasSelecionadas={logisticasPessoasSelecionadas} setLogisticasPessoasSelecionadas={setLogisticasPessoasSelecionadas}
                 />
                 <div className=" mt-3 mb-3 d-flex justify-content-between w-100">
                     <Button className={'mt-3'} variant="secondary" onClick={handleBack} type="reset">

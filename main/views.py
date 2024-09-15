@@ -11,6 +11,7 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework import permissions, status
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -33,18 +34,36 @@ def login_view(request):
         return JsonResponse({'error': 'Invalid credentials'}, status=400)
 
 
+def verificarOrcamentosDuplicados(orcamento):
+    # Verifica se já existe um orçamento com o mesmo evento, cliente e status
+    orcamentos = Orcamento.objects.filter(
+        evento=orcamento.evento,
+        cliente=orcamento.cliente,
+        status=orcamento.status
+    )
+
+    if orcamentos.exists():
+        return JsonResponse({'error': 'Já existe um orçamento com o mesmo status, evento e cliente.'},
+                            status=status.HTTP_409_CONFLICT)
+
+    return None
+
+
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
 def saveOrcamento(request):
-    evento= request.data.get('evento')
+    evento = request.data.get('evento')
     cliente = request.data.get('cliente')
+
     try:
         evento = Evento.objects.get(pk=evento['id_evento'])
         cliente = Cliente.objects.get(pk=cliente['id_cliente'])
     except (Evento.DoesNotExist, Cliente.DoesNotExist) as e:
-        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        return JsonResponse({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+    # Extrai os campos necessários do request
     nome_evento = request.data.get('nome')
+    id_orcamento = request.data.get('id_orcamento')
     observacoes_evento = request.data.get('observacoes')
     valor_total_comidas = request.data.get('valor_total_comidas')
     desconto_total_comidas = request.data.get('valor_desconto_comidas')
@@ -53,7 +72,10 @@ def saveOrcamento(request):
     desconto_total_logisticas = request.data.get('valor_desconto_logisticas')
     valor_imposto = request.data.get('valor_imposto')
     status_orcamento = request.data.get('status')
+
+    # Cria ou atualiza o orçamento
     orcamento = Orcamento(
+        id_orcamento=id_orcamento,
         evento=evento,
         cliente=cliente,
         nome=nome_evento,
@@ -64,12 +86,22 @@ def saveOrcamento(request):
         valor_desconto_comidas=desconto_total_comidas,
         valor_desconto_logisticas=desconto_total_logisticas,
         valor_total=valor_total,
-        valor_imposto= valor_imposto,
+        valor_imposto=valor_imposto,
     )
+
+    # Verifica duplicidade antes de salvar
+    duplicidade_response = verificarOrcamentosDuplicados(orcamento)
+    if duplicidade_response:
+        return duplicidade_response  # Retorna erro se houver duplicidade
+
+    # Salva o orçamento
     orcamento.save()
+
+    # Funções para salvar comidas e logísticas
     create_comida_for_orcamento(request, orcamento)
     create_logistica_for_orcamento(request, orcamento)
-    return Response('Orçamento salvo com sucesso!', status=status.HTTP_200_OK)
+
+    return JsonResponse({'message': 'Orçamento salvo com sucesso!'}, status=status.HTTP_200_OK)
 
 
 class UserLogin(APIView):
@@ -134,8 +166,8 @@ def create_comida_for_orcamento(request, orcamento):
             ComidaOrcamento.objects.create(
                 orcamento=orcamento,
                 comida=comida_bd,
-                quantidade= quantidade,
-                valor= valor
+                quantidade=quantidade,
+                valor=valor
             )
         except Comida.DoesNotExist:
             continue

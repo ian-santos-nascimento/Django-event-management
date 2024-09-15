@@ -29,7 +29,7 @@ export const ESTADOS_BRASILEIROS = [
 ];
 
 export const TIPO_LOGISTICA = [
-    'Pessoa', 'Material', 'Outros'
+    'Pessoa', 'Material'
 ]
 
 export const TIPO_EVENTO = [

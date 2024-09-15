@@ -19,11 +19,9 @@ import {Accordion} from "react-bootstrap";
 const API_URL = process.env.REACT_APP_API_URL;
 
 interface Props {
-    logisticasSelecionadas: LogisticaType[];
     cardapioSelecionado: ComidaType[];
     orcamento: OrcamentoType;
     setOrcamento: React.Dispatch<React.SetStateAction<OrcamentoType>>;
-    logisticaCidade: LogisticaCidadeType;
     evento: EventoType;
     showModal: boolean;
     setShowModal: React.Dispatch<React.SetStateAction<boolean>>;
@@ -35,10 +33,8 @@ const ModalOrcamentoFinal: React.FC<Props> = ({
                                                   setOrcamento,
                                                   showModal,
                                                   setShowModal,
-                                                  logisticasSelecionadas,
                                                   cardapioSelecionado,
                                                   evento,
-                                                  logisticaCidade,
                                                   sessionId
                                               }) => {
 
@@ -78,9 +74,12 @@ const ModalOrcamentoFinal: React.FC<Props> = ({
             alert('Orcamento created successfully!');
             window.location.reload()
         } catch (exception) {
-            console.log("Error tentando salvar orcamento", orcamento,
-                '\n erro:', exception)
-            alert('Não foi possível salvar o Orçamento')
+            if (exception.response && exception.response.data && exception.response.data.error) {
+                alert(exception.response.data.error);
+            } else {
+                alert('Não foi possível salvar o Orçamento');
+            }
+            console.log("Error tentando salvar orcamento", orcamento, '\n erro:', exception);
         }
     }
 
@@ -131,7 +130,8 @@ const ModalOrcamentoFinal: React.FC<Props> = ({
                         </Row>
                         <Row>
                             <Form.Group as={Col} controlId="formGridNome">
-                                <Form.Label>Valor total (Com imposto e taxa de {orcamento?.cliente.taxa_financeira})</Form.Label>
+                                <Form.Label>Valor total (Com imposto e taxa
+                                    de {orcamento?.cliente.taxa_financeira})</Form.Label>
                                 <Form.Control
                                     name="valor_total"
                                     disabled
