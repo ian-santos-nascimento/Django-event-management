@@ -37,21 +37,31 @@ const LogisticaOrcamentoComp: React.FC<Props> = ({
     const logisticasPessoas = logisticas.filter(logistica => logistica.tipo === 'Pessoa');
     const logisticasMateriais = logisticas.filter(logistica => logistica.tipo === 'Material');
     const [selectedLogistica, setSelectedLogistica] = useState(null);
-    const [filterLogistica, setFilterLogistica] = useState(filterLogisticaState || '');
+    const [filterLogisticaPessoa, setFilterLogisticaPessoa] = useState('');
+    const [filterLogisticaMaterial, setFilterLogisticaMaterial] = useState('');
     const [selectedOptions, setSelectedOptions] = useState({
-        frete: '',
-        diaria: '',
-        lanches: ''
+        frete: {nome: '', valor: 0},
+        diaria: {nome: '', valor: 0},
+        lanches: {nome: '', valor: 0}
     });
+
     const [valorLogisticaTotal, setValorLogisticaTotal] = useState(orcamento?.valor_total_logisticas || 0)
 
     const filteredLogisticasMateriais = logisticasMateriais.filter(logistica =>
-        logistica.nome.toLowerCase().includes(filterLogistica.toLowerCase())
+        logistica.nome.toLowerCase().includes(filterLogisticaMaterial.toLowerCase())
     );
 
-     const filteredLogisticasPessoas = logisticasPessoas.filter(logistica =>
-        logistica.nome.toLowerCase().includes(filterLogistica.toLowerCase())
+    const filteredLogisticasPessoas = logisticasPessoas.filter(logistica =>
+        logistica.nome.toLowerCase().includes(filterLogisticaPessoa.toLowerCase())
     );
+
+    useEffect(() => {
+        calculoLogisticaMaterial()
+    }, [logisticasMateriaisSelecionadas]);
+
+    useEffect(() => {
+        calculoLogisticaPessoa()
+    }, [logisticasPessoasSelecionadas]);
 
     const handleChange = (e: { target: { name: string; value: any } }) => {
         const {name, value} = e.target;
@@ -64,28 +74,53 @@ const LogisticaOrcamentoComp: React.FC<Props> = ({
 
 
     const handleLogisticaChange = (logistica) => {
-        if (logistica.tipo === 'Material') {
-            setSelectedLogistica(logistica);
-            setShowModal(true);
+        const alreadySelected = logisticasMateriaisSelecionadas.some(l => l.id_logistica === logistica.id_logistica);
+        if (alreadySelected) {
+            handleToggleLogisticaMaterial(logistica)
         } else {
-            handleToggleLogisticaPessoa(logistica);
+            if (logistica.tipo === 'Material') {
+                setSelectedLogistica(logistica);
+                setShowModal(true);
+            } else {
+                handleToggleLogisticaPessoa(logistica);
+            }
         }
     };
+
 
     const handleModalClose = () => {
         setShowModal(false);
         setSelectedOptions({
-            frete: '',
-            diaria: '',
-            lanches: ''
+            frete: {nome: '', valor: 0},
+            diaria: {nome: '', valor: 0},
+            lanches: {nome: '', valor: 0}
         });
     };
 
-    //Calculo Logistica
-    useEffect(() => {
-        if (!orcamento || !evento || !logisticaCidade) {
-            return;
-        }
+    const calculoLogisticaMaterial = () => {
+        console.log("OPCOES SELECIONADS", selectedOptions)
+        const total = orcamento.logisticas.reduce((acc, logistica) => {
+            const valorLogistica = parseFloat(logistica.valor);
+            if (isNaN(valorLogistica)) {
+                console.error(`Logistica valor is NaN for logistica id ${logistica.id}`);
+                return acc;
+            }
+            const dias_evento = evento.qtd_dias_evento || 1;
+            const quantidade = logistica.quantidade || 1;
+            const total_basico = (valorLogistica) * dias_evento * quantidade;
+            const logisticaFilter = logisticas.find(logisticaList => logisticaList.id_logistica === logistica.id)
+            const total_logistica_fora_sp = !logisticaFilter.in_sp ? parseFloat(selectedOptions.frete.valor || 0) + parseFloat(selectedOptions.diaria.valor || 0) + parseFloat(selectedOptions.lanches.valor || 0) : 0;
+            console.log("TOTAIS", total_basico, "TOTAL FORA SP", total_logistica_fora_sp)
+            return acc + total_basico + total_logistica_fora_sp;
+        }, 0);
+        setValorLogisticaTotal(total - orcamento.valor_desconto_logisticas);
+        setOrcamento(prevOrcamento => ({
+            ...prevOrcamento,
+            valor_total_logisticas: total - prevOrcamento.valor_desconto_logisticas
+        }));
+    }
+
+    const calculoLogisticaPessoa = () => {
         const total = orcamento.logisticas.reduce((acc, logistica) => {
             const valorLogistica = parseFloat(logistica.valor);
             if (isNaN(valorLogistica)) {
@@ -105,10 +140,22 @@ const LogisticaOrcamentoComp: React.FC<Props> = ({
             ...prevOrcamento,
             valor_total_logisticas: total - prevOrcamento.valor_desconto_logisticas
         }));
-    }, [logisticasMateriaisSelecionadas, logisticasPessoasSelecionadas, orcamento.valor_desconto_logisticas, evento, orcamento.logisticas]);
+    }
 
 
-    const handleQuantityLogisticaChange = (logistica_id: number, quantidade: number) => {
+    const handleQuantityLogisticaMaterialChange = (logistica_id: number, quantidade: number) => {
+        setOrcamento((prevOrcamento: OrcamentoType) => {
+            if (!prevOrcamento || !prevOrcamento.logisticas) return prevOrcamento;
+
+            const updatedLogisticas = prevOrcamento.logisticas.map(log =>
+                log.id === logistica_id ? {...log, quantidade} : log
+            );
+
+            return {...prevOrcamento, logisticas: updatedLogisticas} as OrcamentoType;
+        });
+    };
+
+    const handleQuantityLogisticaPessoaChange = (logistica_id: number, quantidade: number) => {
         setOrcamento((prevOrcamento: OrcamentoType) => {
             if (!prevOrcamento || !prevOrcamento.logisticas) return prevOrcamento;
 
@@ -144,9 +191,9 @@ const LogisticaOrcamentoComp: React.FC<Props> = ({
                     }]
                 });
             }
-
         }
     };
+
     const handleToggleLogisticaPessoa = (logistica) => {
         const isSelected = logisticasPessoasSelecionadas.some(l => l.id_logistica === logistica.id_logistica);
 
@@ -182,8 +229,11 @@ const LogisticaOrcamentoComp: React.FC<Props> = ({
         setShowModal(false);
     };
 
-    const handleOptionChange = (group, value) => {
-        setSelectedOptions((prev) => ({...prev, [group]: value}));
+    const handleOptionChange = (category, nome, valor) => {
+        setSelectedOptions(prevState => ({
+            ...prevState,
+            [category]: {nome, valor}
+        }));
     };
 
     return (
@@ -194,8 +244,8 @@ const LogisticaOrcamentoComp: React.FC<Props> = ({
                     <Form.Control
                         type="text"
                         placeholder="Buscar Logistica..."
-                        value={filterLogistica}
-                        onChange={(e) => setFilterLogistica(e.target.value)}
+                        value={filterLogisticaPessoa}
+                        onChange={(e) => setFilterLogisticaPessoa(e.target.value)}
                         style={{marginBottom: '10px'}}
                     />
                     <div
@@ -230,7 +280,7 @@ const LogisticaOrcamentoComp: React.FC<Props> = ({
                                 <Form.Control
                                     type="number"
                                     value={orcamento?.logisticas?.find(l => l.id === logistica.id_logistica)?.quantidade || 1}
-                                    onChange={(e) => handleQuantityLogisticaChange(logistica.id_logistica, parseInt(e.target.value))}
+                                    onChange={(e) => handleQuantityLogisticaPessoaChange(logistica.id_logistica, parseInt(e.target.value))}
                                     style={{width: '75px', marginLeft: '5px'}}
                                 />
                             </div>
@@ -238,14 +288,14 @@ const LogisticaOrcamentoComp: React.FC<Props> = ({
                     </div>
                 </Form.Group>
             </Row>
-             <Row>
+            <Row>
                 <Form.Group as={Col} className="mb-3" controlId="formGridLogisticas">
                     <Form.Label>Logisticas de Material</Form.Label>
                     <Form.Control
                         type="text"
                         placeholder="Buscar Logistica..."
-                        value={filterLogistica}
-                        onChange={(e) => setFilterLogistica(e.target.value)}
+                        value={filterLogisticaMaterial}
+                        onChange={(e) => setFilterLogisticaMaterial(e.target.value)}
                         style={{marginBottom: '10px'}}
                     />
                     <div
@@ -280,7 +330,7 @@ const LogisticaOrcamentoComp: React.FC<Props> = ({
                                 <Form.Control
                                     type="number"
                                     value={orcamento?.logisticas?.find(l => l.id === logistica.id_logistica)?.quantidade || 1}
-                                    onChange={(e) => handleQuantityLogisticaChange(logistica.id_logistica, parseInt(e.target.value))}
+                                    onChange={(e) => handleQuantityLogisticaMaterialChange(logistica.id_logistica, parseInt(e.target.value))}
                                     style={{width: '75px', marginLeft: '5px'}}
                                 />
                             </div>
@@ -294,7 +344,7 @@ const LogisticaOrcamentoComp: React.FC<Props> = ({
                     <Form.Label>Total R$ Logistica</Form.Label>
                     <Form.Control
                         type="text"
-                        value={`R$${valorLogisticaTotal ? valorLogisticaTotal : 0} | valor * alimentação(${logisticaCidade?.alimentacao}) * dias(${evento?.qtd_dias_evento})`}
+                        value={`R$${valorLogisticaTotal ? valorLogisticaTotal : 0} `}
                         disabled={true}
                     />
                     {logisticasPessoasSelecionadas.map((logistica) => (
@@ -311,7 +361,7 @@ const LogisticaOrcamentoComp: React.FC<Props> = ({
                         <Fragment key={logistica.id_logistica}>
                             {(!logistica.in_sp && logistica.tipo === 'Material') && (
                                 <Badge bg="secondary">
-                                    {logistica.nome}(Frete:R${logisticaCidade?.fre}, passagem:
+                                    {logistica.nome}(Frete:R${logisticaCidade?.frete}, passagem:
                                     R${logisticaCidade?.passagem})
                                 </Badge>
                             )}
@@ -347,62 +397,63 @@ const LogisticaOrcamentoComp: React.FC<Props> = ({
                     <h5>Frete</h5>
                     <Form.Check
                         type="radio"
-                        label={'Frete Próprio Basico.  R$' + logisticaCidade?.frete_proprio}
+                        label={`Frete Próprio Basico. R$${logisticaCidade?.frete_proprio}`}
                         name="frete"
                         value="frete_proprio"
-                        checked={selectedOptions.frete === 'frete_proprio'}
-                        onChange={(e) => handleOptionChange('frete', e.target.value)}
+                        checked={selectedOptions.frete.nome === 'Frete Próprio Basico'}
+                        onChange={() => handleOptionChange('frete', 'Frete Próprio Basico', logisticaCidade?.frete_proprio)}
                     />
                     <Form.Check
                         type="radio"
-                        label={'Frete Próprio + Int.  R$' + logisticaCidade?.frete_proprio_intervalo}
+                        label={`Frete Próprio + Int. R$${logisticaCidade?.frete_proprio_intervalo}`}
                         name="frete"
                         value="frete_proprio_intervalo"
-                        checked={selectedOptions.frete === 'frete_proprio_intervalo'}
-                        onChange={(e) => handleOptionChange('frete', e.target.value)}
+                        checked={selectedOptions.frete.nome === 'Frete Próprio + Int.'}
+                        onChange={() => handleOptionChange('frete', 'Frete Próprio + Int.', logisticaCidade?.frete_proprio_intervalo)}
                     />
                     <Form.Check
                         type="radio"
-                        label={'Frete Próprio Completo  R$' + logisticaCidade?.frete_proprio_completo}
+                        label={`Frete Próprio Completo. R$${logisticaCidade?.frete_proprio_completo}`}
                         name="frete"
                         value="frete_proprio_completo"
-                        checked={selectedOptions.frete === 'frete_proprio_completo'}
-                        onChange={(e) => handleOptionChange('frete', e.target.value)}
+                        checked={selectedOptions.frete.nome === 'Frete Próprio Completo'}
+                        onChange={() => handleOptionChange('frete', 'Frete Próprio Completo', logisticaCidade?.frete_proprio_completo)}
                     />
 
                     <h5>Diária</h5>
                     <Form.Check
                         type="radio"
-                        label={'Diária Completo  R$' + logisticaCidade?.diaria_completo}
+                        label={`Diária Completo. R$${logisticaCidade?.diaria_completo}`}
                         name="diaria"
                         value="diaria_completo"
-                        checked={selectedOptions.diaria === 'diaria_completo'}
-                        onChange={(e) => handleOptionChange('diaria', e.target.value)}
+                        checked={selectedOptions.diaria.nome === 'Diária Completo'}
+                        onChange={() => handleOptionChange('diaria', 'Diária Completo', logisticaCidade?.diaria_completo)}
                     />
                     <Form.Check
                         type="radio"
-                        label={'Diária Simples  R$' + logisticaCidade?.diaria_simples}
+                        label={`Diária Simples. R$${logisticaCidade?.diaria_simples}`}
                         name="diaria"
                         value="diaria_simples"
-                        checked={selectedOptions.diaria === 'diaria_simples'}
-                        onChange={(e) => handleOptionChange('diaria', e.target.value)}
+                        checked={selectedOptions.diaria.nome === 'Diária Simples'}
+                        onChange={() => handleOptionChange('diaria', 'Diária Simples', logisticaCidade?.diaria_simples)}
                     />
 
                     <h5>Lanches</h5>
                     <Form.Check
                         type="radio"
-                        label={'Logística Lanches < 800  R$' + logisticaCidade?.logistica_lanches}
+                        label={`Logística Lanches < 800. R$${logisticaCidade?.logistica_lanches}`}
                         name="lanches"
                         value="logistica_lanches"
-                        checked={selectedOptions.lanches === 'logistica_lanches'}
-                        onChange={(e) => handleOptionChange('lanches', e.target.value)}
+                        checked={selectedOptions.lanches.nome === 'Logística Lanches < 800'}
+                        onChange={() => handleOptionChange('lanches', 'Logística Lanches < 800', logisticaCidade?.logistica_lanches)}
                     />
                     <Form.Check
                         type="radio"
-                        label={'Logística Lanches > 800  R$' + logisticaCidade?.logistica_lanches_grande} name="lanches"
+                        label={`Logística Lanches > 800. R$${logisticaCidade?.logistica_lanches_grande}`}
+                        name="lanches"
                         value="logistica_lanches_grande"
-                        checked={selectedOptions.lanches === 'logistica_lanches_grande'}
-                        onChange={(e) => handleOptionChange('lanches', e.target.value)}
+                        checked={selectedOptions.lanches.nome === 'Logística Lanches > 800'}
+                        onChange={() => handleOptionChange('lanches', 'Logística Lanches > 800', logisticaCidade?.logistica_lanches_grande)}
                     />
                 </Modal.Body>
                 <Modal.Footer>
