@@ -6,12 +6,9 @@ import {parse} from "@fortawesome/fontawesome-svg-core";
 
 interface Props {
     filterLogisticaState: string;
-    logisticasMateriaisSelecionadas: LogisticaType[];
-    logisticasPessoasSelecionadas: LogisticaType[];
     logisticasSelecionadas: LogisticaType[];
     setLogisticas: React.Dispatch<React.SetStateAction<LogisticaType[]>>;
-    setLogisticasMateriaisSelecionadas: React.Dispatch<React.SetStateAction<LogisticaType[]>>;
-    setLogisticasPessoasSelecionadas: React.Dispatch<React.SetStateAction<LogisticaType[]>>;
+    setLogisticasSelecionadas: React.Dispatch<React.SetStateAction<LogisticaType[]>>;
     orcamento: OrcamentoType;
     logisticas: LogisticaType[];
     setOrcamento: React.Dispatch<React.SetStateAction<OrcamentoType>>;
@@ -22,11 +19,9 @@ interface Props {
 
 const LogisticaOrcamentoComp: React.FC<Props> = ({
                                                      filterLogisticaState,
-                                                     logisticasMateriaisSelecionadas,
-                                                     logisticasPessoasSelecionadas,
+                                                     logisticasSelecionadas,
                                                      setLogisticas,
-                                                     setLogisticasMateriaisSelecionadas,
-                                                     setLogisticasPessoasSelecionadas,
+                                                     setLogisticasSelecionadas,
                                                      orcamento,
                                                      logisticas,
                                                      setOrcamento,
@@ -34,34 +29,13 @@ const LogisticaOrcamentoComp: React.FC<Props> = ({
                                                      evento
                                                  }) => {
     const [showModal, setShowModal] = useState(false);
-    const logisticasPessoas = logisticas.filter(logistica => logistica.tipo === 'Pessoa');
-    const logisticasMateriais = logisticas.filter(logistica => logistica.tipo === 'Material');
     const [selectedLogistica, setSelectedLogistica] = useState(null);
-    const [filterLogisticaPessoa, setFilterLogisticaPessoa] = useState('');
-    const [filterLogisticaMaterial, setFilterLogisticaMaterial] = useState('');
-    const [selectedOptions, setSelectedOptions] = useState({
-        frete: {nome: '', valor: 0},
-        diaria: {nome: '', valor: 0},
-        lanches: {nome: '', valor: 0}
-    });
-
+    const [filterLogistica, setFilterLogistica] = useState(filterLogisticaState || '');
     const [valorLogisticaTotal, setValorLogisticaTotal] = useState(orcamento?.valor_total_logisticas || 0)
 
-    const filteredLogisticasMateriais = logisticasMateriais.filter(logistica =>
-        logistica.nome.toLowerCase().includes(filterLogisticaMaterial.toLowerCase())
+    const filteredLogisticas = logisticas.filter(logistica =>
+        logistica.nome.toLowerCase().includes(filterLogistica.toLowerCase())
     );
-
-    const filteredLogisticasPessoas = logisticasPessoas.filter(logistica =>
-        logistica.nome.toLowerCase().includes(filterLogisticaPessoa.toLowerCase())
-    );
-
-    useEffect(() => {
-        calculoLogisticaMaterial()
-    }, [logisticasMateriaisSelecionadas]);
-
-    useEffect(() => {
-        calculoLogisticaPessoa()
-    }, [logisticasPessoasSelecionadas]);
 
     const handleChange = (e: { target: { name: string; value: any } }) => {
         const {name, value} = e.target;
@@ -72,55 +46,11 @@ const LogisticaOrcamentoComp: React.FC<Props> = ({
         }));
     };
 
-
-    const handleLogisticaChange = (logistica) => {
-        const alreadySelected = logisticasMateriaisSelecionadas.some(l => l.id_logistica === logistica.id_logistica);
-        if (alreadySelected) {
-            handleToggleLogisticaMaterial(logistica)
-        } else {
-            if (logistica.tipo === 'Material') {
-                setSelectedLogistica(logistica);
-                setShowModal(true);
-            } else {
-                handleToggleLogisticaPessoa(logistica);
-            }
+    //Calculo Logistica
+    useEffect(() => {
+        if (!orcamento || !evento || !logisticaCidade) {
+            return;
         }
-    };
-
-
-    const handleModalClose = () => {
-        setShowModal(false);
-        setSelectedOptions({
-            frete: {nome: '', valor: 0},
-            diaria: {nome: '', valor: 0},
-            lanches: {nome: '', valor: 0}
-        });
-    };
-
-    const calculoLogisticaMaterial = () => {
-        console.log("OPCOES SELECIONADS", selectedOptions)
-        const total = orcamento.logisticas.reduce((acc, logistica) => {
-            const valorLogistica = parseFloat(logistica.valor);
-            if (isNaN(valorLogistica)) {
-                console.error(`Logistica valor is NaN for logistica id ${logistica.id}`);
-                return acc;
-            }
-            const dias_evento = evento.qtd_dias_evento || 1;
-            const quantidade = logistica.quantidade || 1;
-            const total_basico = (valorLogistica) * dias_evento * quantidade;
-            const logisticaFilter = logisticas.find(logisticaList => logisticaList.id_logistica === logistica.id)
-            const total_logistica_fora_sp = !logisticaFilter.in_sp ? parseFloat(selectedOptions.frete.valor || 0) + parseFloat(selectedOptions.diaria.valor || 0) + parseFloat(selectedOptions.lanches.valor || 0) : 0;
-            console.log("TOTAIS", total_basico, "TOTAL FORA SP", total_logistica_fora_sp)
-            return acc + total_basico + total_logistica_fora_sp;
-        }, 0);
-        setValorLogisticaTotal(total - orcamento.valor_desconto_logisticas);
-        setOrcamento(prevOrcamento => ({
-            ...prevOrcamento,
-            valor_total_logisticas: total - prevOrcamento.valor_desconto_logisticas
-        }));
-    }
-
-    const calculoLogisticaPessoa = () => {
         const total = orcamento.logisticas.reduce((acc, logistica) => {
             const valorLogistica = parseFloat(logistica.valor);
             if (isNaN(valorLogistica)) {
@@ -140,10 +70,10 @@ const LogisticaOrcamentoComp: React.FC<Props> = ({
             ...prevOrcamento,
             valor_total_logisticas: total - prevOrcamento.valor_desconto_logisticas
         }));
-    }
+    }, [logisticasSelecionadas, orcamento.valor_desconto_logisticas, evento, orcamento.logisticas]);
 
 
-    const handleQuantityLogisticaMaterialChange = (logistica_id: number, quantidade: number) => {
+    const handleQuantityLogisticaChange = (logistica_id: number, quantidade: number) => {
         setOrcamento((prevOrcamento: OrcamentoType) => {
             if (!prevOrcamento || !prevOrcamento.logisticas) return prevOrcamento;
 
@@ -155,31 +85,17 @@ const LogisticaOrcamentoComp: React.FC<Props> = ({
         });
     };
 
-    const handleQuantityLogisticaPessoaChange = (logistica_id: number, quantidade: number) => {
-        setOrcamento((prevOrcamento: OrcamentoType) => {
-            if (!prevOrcamento || !prevOrcamento.logisticas) return prevOrcamento;
-
-            const updatedLogisticas = prevOrcamento.logisticas.map(log =>
-                log.id === logistica_id ? {...log, quantidade} : log
-            );
-
-            return {...prevOrcamento, logisticas: updatedLogisticas} as OrcamentoType;
-        });
-    };
-
-    const handleToggleLogisticaMaterial = (logistica) => {
-        const isSelected = logisticasMateriaisSelecionadas.some(l => l.id_logistica === logistica.id_logistica);
-
-        if (isSelected) { //remove a logistica da lista de selecionada
-            const updateLogisticaSelecionada = logisticasMateriaisSelecionadas.filter(l => l.id_logistica !== logistica.id_logistica);
-            setLogisticasMateriaisSelecionadas(updateLogisticaSelecionada);
+    const handleToggleLogistica = (logistica) => {
+        const isSelected = logisticasSelecionadas.some(l => l.id_logistica === logistica.id_logistica);
+        if (isSelected) {
+            const updateLogisticaSelecionada = logisticasSelecionadas.filter(l => l.id_logistica !== logistica.id_logistica);
+            setLogisticasSelecionadas(updateLogisticaSelecionada);
             if (orcamento) {
                 const updatedLogisticas = orcamento.logisticas.filter(log => log.id !== logistica.id_logistica);
                 setOrcamento({...orcamento, logisticas: updatedLogisticas});
             }
         } else {
-            setLogisticasMateriaisSelecionadas([...logisticasMateriaisSelecionadas, logistica]);
-
+            setLogisticasSelecionadas([...logisticasSelecionadas, logistica]);
             if (orcamento) {
                 setOrcamento({
                     ...orcamento,
@@ -191,82 +107,47 @@ const LogisticaOrcamentoComp: React.FC<Props> = ({
                     }]
                 });
             }
-        }
-    };
-
-    const handleToggleLogisticaPessoa = (logistica) => {
-        const isSelected = logisticasPessoasSelecionadas.some(l => l.id_logistica === logistica.id_logistica);
-
-        if (isSelected) { //remove a logistica da lista de selecionada
-            const updateLogisticaSelecionada = logisticasPessoasSelecionadas.filter(l => l.id_logistica !== logistica.id_logistica);
-            setLogisticasPessoasSelecionadas(updateLogisticaSelecionada);
-            if (orcamento) {
-                const updatedLogisticas = orcamento.logisticas.filter(log => log.id !== logistica.id_logistica);
-                setOrcamento({...orcamento, logisticas: updatedLogisticas});
-            }
-        } else {
-            setLogisticasPessoasSelecionadas([...logisticasPessoasSelecionadas, logistica]);
-
-            if (orcamento) {
-                setOrcamento({
-                    ...orcamento,
-                    logisticas: [...orcamento.logisticas, {
-                        id: logistica.id_logistica,
-                        quantidade: 1,
-                        valor: logistica.valor,
-                        logistica: logistica.nome
-                    }]
-                });
-            }
-
         }
     };
 
     const handleModalSave = () => {
         if (selectedLogistica) {
-            handleToggleLogisticaMaterial({...selectedLogistica, selectedOptions});
+            handleToggleLogistica({...selectedLogistica});
         }
         setShowModal(false);
-    };
-
-    const handleOptionChange = (category, nome, valor) => {
-        setSelectedOptions(prevState => ({
-            ...prevState,
-            [category]: {nome, valor}
-        }));
     };
 
     return (
         <>
             <Row>
                 <Form.Group as={Col} className="mb-3" controlId="formGridLogisticas">
-                    <Form.Label>Logisticas Pessoas</Form.Label>
+                    <Form.Label>Logisticas do Orçamento</Form.Label>
                     <Form.Control
                         type="text"
                         placeholder="Buscar Logistica..."
-                        value={filterLogisticaPessoa}
-                        onChange={(e) => setFilterLogisticaPessoa(e.target.value)}
+                        value={filterLogistica}
+                        onChange={(e) => setFilterLogistica(e.target.value)}
                         style={{marginBottom: '10px'}}
                     />
                     <div
                         style={{maxHeight: '150px', overflowY: 'scroll', border: '1px solid #ced4da', padding: '10px'}}>
-                        {filteredLogisticasPessoas.map((logistica) => (
+                        {filteredLogisticas.map((logistica) => (
                             <Form.Check
                                 key={logistica.id_logistica}
                                 type="checkbox"
                                 label={logistica.nome}
                                 value={logistica.id_logistica}
-                                checked={logisticasPessoasSelecionadas.some(l => l.id_logistica === logistica.id_logistica)}
-                                onChange={() => handleLogisticaChange(logistica)}
+                                checked={logisticasSelecionadas.some(l => l.id_logistica === logistica.id_logistica)}
+                                onChange={() => handleToggleLogistica(logistica)}
                             />
                         ))}
                     </div>
                 </Form.Group>
                 <Form.Group className="mb-3" as={Col} controlId="formGridLogisticasSelecionadas">
-                    <Form.Label>Logisticas Selecionadas de Pessoas</Form.Label>
+                    <Form.Label>Logisticas Selecionadas</Form.Label>
                     <div
                         style={{maxHeight: '150px', overflowY: 'scroll', border: '1px solid #ced4da', padding: '10px'}}>
-                        {logisticasPessoasSelecionadas.map((logistica) => (
+                        {logisticasSelecionadas.map((logistica) => (
                             <div key={logistica.id_logistica}
                                  style={{display: 'flex', alignItems: 'center', marginBottom: '10px'}}>
                                 <Form.Check
@@ -275,62 +156,12 @@ const LogisticaOrcamentoComp: React.FC<Props> = ({
                                     label={`${logistica.nome}-R$${logistica.valor}`}
                                     value={logistica.id_logistica}
                                     checked={true}
-                                    onChange={() => handleToggleLogisticaPessoa(logistica)}
+                                    onChange={() => handleToggleLogistica(logistica)}
                                 />
                                 <Form.Control
                                     type="number"
                                     value={orcamento?.logisticas?.find(l => l.id === logistica.id_logistica)?.quantidade || 1}
-                                    onChange={(e) => handleQuantityLogisticaPessoaChange(logistica.id_logistica, parseInt(e.target.value))}
-                                    style={{width: '75px', marginLeft: '5px'}}
-                                />
-                            </div>
-                        ))}
-                    </div>
-                </Form.Group>
-            </Row>
-            <Row>
-                <Form.Group as={Col} className="mb-3" controlId="formGridLogisticas">
-                    <Form.Label>Logisticas de Material</Form.Label>
-                    <Form.Control
-                        type="text"
-                        placeholder="Buscar Logistica..."
-                        value={filterLogisticaMaterial}
-                        onChange={(e) => setFilterLogisticaMaterial(e.target.value)}
-                        style={{marginBottom: '10px'}}
-                    />
-                    <div
-                        style={{maxHeight: '150px', overflowY: 'scroll', border: '1px solid #ced4da', padding: '10px'}}>
-                        {filteredLogisticasMateriais.map((logistica) => (
-                            <Form.Check
-                                key={logistica.id_logistica}
-                                type="checkbox"
-                                label={logistica.nome}
-                                value={logistica.id_logistica}
-                                checked={logisticasMateriaisSelecionadas.some(l => l.id_logistica === logistica.id_logistica)}
-                                onChange={() => handleLogisticaChange(logistica)}
-                            />
-                        ))}
-                    </div>
-                </Form.Group>
-                <Form.Group className="mb-3" as={Col} controlId="formGridLogisticasSelecionadas">
-                    <Form.Label>Logisticas Selecionadas de Material</Form.Label>
-                    <div
-                        style={{maxHeight: '150px', overflowY: 'scroll', border: '1px solid #ced4da', padding: '10px'}}>
-                        {logisticasMateriaisSelecionadas.map((logistica) => (
-                            <div key={logistica.id_logistica}
-                                 style={{display: 'flex', alignItems: 'center', marginBottom: '10px'}}>
-                                <Form.Check
-                                    key={logistica.id_logistica}
-                                    type="checkbox"
-                                    label={`${logistica.nome}-R$${logistica.valor}`}
-                                    value={logistica.id_logistica}
-                                    checked={true}
-                                    onChange={() => handleLogisticaChange(logistica)}
-                                />
-                                <Form.Control
-                                    type="number"
-                                    value={orcamento?.logisticas?.find(l => l.id === logistica.id_logistica)?.quantidade || 1}
-                                    onChange={(e) => handleQuantityLogisticaMaterialChange(logistica.id_logistica, parseInt(e.target.value))}
+                                    onChange={(e) => handleQuantityLogisticaChange(logistica.id_logistica, parseInt(e.target.value))}
                                     style={{width: '75px', marginLeft: '5px'}}
                                 />
                             </div>
@@ -344,24 +175,14 @@ const LogisticaOrcamentoComp: React.FC<Props> = ({
                     <Form.Label>Total R$ Logistica</Form.Label>
                     <Form.Control
                         type="text"
-                        value={`R$${valorLogisticaTotal ? valorLogisticaTotal : 0} `}
+                        value={`R$${valorLogisticaTotal ? valorLogisticaTotal : 0} | valor * alimentação(${logisticaCidade?.alimentacao}) * dias(${evento?.qtd_dias_evento})`}
                         disabled={true}
                     />
-                    {logisticasPessoasSelecionadas.map((logistica) => (
+                    {logisticasSelecionadas.map((logistica) => (
                         <Fragment key={logistica.id_logistica}>
                             {(!logistica.in_sp && logistica.tipo === 'Pessoa') && (
                                 <Badge bg="secondary">
                                     {logistica.nome}(Hospedagem:R${logisticaCidade?.hospedagem}, passagem:
-                                    R${logisticaCidade?.passagem})
-                                </Badge>
-                            )}
-                        </Fragment>
-                    ))}
-                    {logisticasPessoasSelecionadas.map((logistica) => (
-                        <Fragment key={logistica.id_logistica}>
-                            {(!logistica.in_sp && logistica.tipo === 'Material') && (
-                                <Badge bg="secondary">
-                                    {logistica.nome}(Frete:R${logisticaCidade?.frete}, passagem:
                                     R${logisticaCidade?.passagem})
                                 </Badge>
                             )}
@@ -388,83 +209,6 @@ const LogisticaOrcamentoComp: React.FC<Props> = ({
                     />
                 </Form.Group>
             </Row>
-
-            <Modal show={showModal} onHide={handleModalClose}>
-                <Modal.Header closeButton>
-                    <Modal.Title>Escolha Opções para {selectedLogistica?.nome}</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <h5>Frete</h5>
-                    <Form.Check
-                        type="radio"
-                        label={`Frete Próprio Basico. R$${logisticaCidade?.frete_proprio}`}
-                        name="frete"
-                        value="frete_proprio"
-                        checked={selectedOptions.frete.nome === 'Frete Próprio Basico'}
-                        onChange={() => handleOptionChange('frete', 'Frete Próprio Basico', logisticaCidade?.frete_proprio)}
-                    />
-                    <Form.Check
-                        type="radio"
-                        label={`Frete Próprio + Int. R$${logisticaCidade?.frete_proprio_intervalo}`}
-                        name="frete"
-                        value="frete_proprio_intervalo"
-                        checked={selectedOptions.frete.nome === 'Frete Próprio + Int.'}
-                        onChange={() => handleOptionChange('frete', 'Frete Próprio + Int.', logisticaCidade?.frete_proprio_intervalo)}
-                    />
-                    <Form.Check
-                        type="radio"
-                        label={`Frete Próprio Completo. R$${logisticaCidade?.frete_proprio_completo}`}
-                        name="frete"
-                        value="frete_proprio_completo"
-                        checked={selectedOptions.frete.nome === 'Frete Próprio Completo'}
-                        onChange={() => handleOptionChange('frete', 'Frete Próprio Completo', logisticaCidade?.frete_proprio_completo)}
-                    />
-
-                    <h5>Diária</h5>
-                    <Form.Check
-                        type="radio"
-                        label={`Diária Completo. R$${logisticaCidade?.diaria_completo}`}
-                        name="diaria"
-                        value="diaria_completo"
-                        checked={selectedOptions.diaria.nome === 'Diária Completo'}
-                        onChange={() => handleOptionChange('diaria', 'Diária Completo', logisticaCidade?.diaria_completo)}
-                    />
-                    <Form.Check
-                        type="radio"
-                        label={`Diária Simples. R$${logisticaCidade?.diaria_simples}`}
-                        name="diaria"
-                        value="diaria_simples"
-                        checked={selectedOptions.diaria.nome === 'Diária Simples'}
-                        onChange={() => handleOptionChange('diaria', 'Diária Simples', logisticaCidade?.diaria_simples)}
-                    />
-
-                    <h5>Lanches</h5>
-                    <Form.Check
-                        type="radio"
-                        label={`Logística Lanches < 800. R$${logisticaCidade?.logistica_lanches}`}
-                        name="lanches"
-                        value="logistica_lanches"
-                        checked={selectedOptions.lanches.nome === 'Logística Lanches < 800'}
-                        onChange={() => handleOptionChange('lanches', 'Logística Lanches < 800', logisticaCidade?.logistica_lanches)}
-                    />
-                    <Form.Check
-                        type="radio"
-                        label={`Logística Lanches > 800. R$${logisticaCidade?.logistica_lanches_grande}`}
-                        name="lanches"
-                        value="logistica_lanches_grande"
-                        checked={selectedOptions.lanches.nome === 'Logística Lanches > 800'}
-                        onChange={() => handleOptionChange('lanches', 'Logística Lanches > 800', logisticaCidade?.logistica_lanches_grande)}
-                    />
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={handleModalClose}>
-                        Cancelar
-                    </Button>
-                    <Button variant="primary" onClick={handleModalSave}>
-                        Salvar
-                    </Button>
-                </Modal.Footer>
-            </Modal>
         </>
     );
 };

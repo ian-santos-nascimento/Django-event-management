@@ -1,11 +1,13 @@
 import Row from "react-bootstrap/Row";
 import Form from "react-bootstrap/Form";
 import Col from "react-bootstrap/Col";
-import Button from "react-bootstrap/Button";
 import axios from "axios";
 import csrfToken from '../ApiCall/CsrfToken'
 import Modal from "react-bootstrap/Modal";
 import {useEffect, useState} from "react";
+import {OverlayTrigger, Tooltip, Button} from 'react-bootstrap';
+import {faCheck, faTimes,} from "@fortawesome/free-solid-svg-icons";
+
 import {
     CardapioOrcamentoType,
     ComidaType,
@@ -15,15 +17,19 @@ import {
     OrcamentoType
 } from "../types";
 import {Accordion} from "react-bootstrap";
+import verificarFrete from "../util/CalculoOrcamento.ts";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 
 const API_URL = process.env.REACT_APP_API_URL;
 
 interface Props {
     cardapioSelecionado: ComidaType[];
+    logisticasSelecionadas: LogisticaType[];
     orcamento: OrcamentoType;
     setOrcamento: React.Dispatch<React.SetStateAction<OrcamentoType>>;
     evento: EventoType;
     showModal: boolean;
+    logisticaCidade: LogisticaCidadeType,
     setShowModal: React.Dispatch<React.SetStateAction<boolean>>;
     sessionId: string
 }
@@ -34,9 +40,13 @@ const ModalOrcamentoFinal: React.FC<Props> = ({
                                                   showModal,
                                                   setShowModal,
                                                   cardapioSelecionado,
+                                                  logisticasSelecionadas,
+                                                  logisticaCidade,
                                                   evento,
                                                   sessionId
                                               }) => {
+
+    const frete = verificarFrete(cardapioSelecionado, logisticaCidade)
 
 
     useEffect(() => {
@@ -45,7 +55,8 @@ const ModalOrcamentoFinal: React.FC<Props> = ({
         const decoracaoCompleta = cardapioSelecionado.some(cardapio => cardapio.tipo === 'Intervalo_Doce' || cardapio.tipo === 'Intervalo_Salgado' ||
             cardapio.tipo === 'Almoço')
         const adicional_decoracao = decoracaoCompleta ? 800 : 400
-        var total = total_comidas + total_logisticas + adicional_decoracao
+        var total = total_comidas + total_logisticas + adicional_decoracao + parseFloat(frete)
+        console.log("VALOR TOTAL", total)
         const valor_imposto = total * 0.2
         total += valor_imposto
         total += (total * orcamento.cliente.taxa_financeira)
@@ -57,6 +68,23 @@ const ModalOrcamentoFinal: React.FC<Props> = ({
             evento: evento
         })
     }, []);
+
+    const renderTooltip = (props) => (
+        <Tooltip id="button-tooltip" {...props} style={{
+            ...props.style
+        }}>
+            {Object.entries(logisticaCidade).filter(([key]) => ['frete_proprio', 'frete_proprio_intervalo', 'frete_proprio_completo', 'diaria_completo', 'diaria_simples'
+            ,'frete_terceiros', 'logistica_lanches', 'logistica_lanches_grande'].includes(key))
+                .map(([key, value]) => (
+                    <li style={{}} key={key}>
+                        {`${key}: R$${value}`}
+                        {value === frete &&
+                            <Button style={{blockSize: '30px', padding: '0px'}} disabled><FontAwesomeIcon
+                                icon={faCheck}/></Button>}
+                    </li>
+                ))}
+        </Tooltip>
+    );
 
 
     const handleSubmit = async (e) => {
@@ -98,6 +126,54 @@ const ModalOrcamentoFinal: React.FC<Props> = ({
                     <form>
                         <Row>
                             <Form.Group as={Col} controlId="formGridNome">
+                                <Form.Label>Valor total (Com imposto e taxa
+                                    de {orcamento?.cliente.taxa_financeira * 100}%)</Form.Label>
+                                <Form.Control
+                                    name="valor_total"
+                                    disabled
+                                    value={`R$${parseFloat(orcamento.valor_total).toFixed(2)}`}
+                                    type="text"
+                                />
+                            </Form.Group>
+                            <Form.Group as={Col} controlId="formGridNome">
+                                <Form.Label>Valor imposto (20%)</Form.Label>
+                                <Form.Control
+                                    name="valor_imposto"
+                                    disabled
+                                    value={`R$${parseFloat(orcamento.valor_imposto || 0).toFixed(2)}`}
+                                    type="text"
+                                />
+                            </Form.Group>
+                        </Row>
+                        <Row>
+                            <Form.Group as={Col} controlId="formGridNome">
+                                <Form.Label>Valor da decoração</Form.Label>
+                                <Form.Control
+                                    name="valor_decoracao"
+                                    disabled
+                                    value={`R$${parseFloat(orcamento.valor_decoracao || 0).toFixed(2)}`}
+                                    type="text"
+                                />
+                            </Form.Group>
+                            <Form.Group as={Col} controlId="formGridNome">
+                                <Form.Label>Valor frete</Form.Label>
+                                <OverlayTrigger
+                                    placement="right"
+                                    delay={{show: 250, hide: 500}}
+                                    overlay={renderTooltip}
+                                >
+                                    <Button variant="secondary" size={"sm"} style={{marginLeft: '10px'}}>i</Button>
+                                </OverlayTrigger>
+                                <Form.Control
+                                    name="valor_frete"
+                                    disabled
+                                    value={`R$${parseFloat(frete || 0).toFixed(2)}`}
+                                    type="text"
+                                />
+                            </Form.Group>
+                        </Row>
+                        <Row>
+                            <Form.Group as={Col} controlId="formGridNome">
                                 <Form.Label>Nome</Form.Label>
                                 <Form.Control
                                     name="nome"
@@ -127,36 +203,6 @@ const ModalOrcamentoFinal: React.FC<Props> = ({
                                     />
                                 </Form.Group>
                             </Row>
-                        </Row>
-                        <Row>
-                            <Form.Group as={Col} controlId="formGridNome">
-                                <Form.Label>Valor total (Com imposto e taxa
-                                    de {orcamento?.cliente.taxa_financeira})</Form.Label>
-                                <Form.Control
-                                    name="valor_total"
-                                    disabled
-                                    value={`R$${parseFloat(orcamento.valor_total).toFixed(2)}`}
-                                    type="text"
-                                />
-                            </Form.Group>
-                            <Form.Group as={Col} controlId="formGridNome">
-                                <Form.Label>Valor imposto (20%)</Form.Label>
-                                <Form.Control
-                                    name="valor_imposto"
-                                    disabled
-                                    value={`R$${parseFloat(orcamento.valor_imposto || 0).toFixed(2)}`}
-                                    type="text"
-                                />
-                            </Form.Group>
-                            <Form.Group as={Col} controlId="formGridNome">
-                                <Form.Label>Adicional decoração</Form.Label>
-                                <Form.Control
-                                    name="valor_decoracao"
-                                    disabled
-                                    value={`R$${parseFloat(orcamento.valor_decoracao || 0).toFixed(2)}`}
-                                    type="text"
-                                />
-                            </Form.Group>
                         </Row>
                         <Row>
                             <Accordion>
