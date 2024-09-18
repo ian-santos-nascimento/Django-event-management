@@ -3,10 +3,12 @@ import Row from "react-bootstrap/Row";
 import Form from "react-bootstrap/Form";
 import Col from "react-bootstrap/Col";
 import {NumericFormat} from "react-number-format";
-import {ComidaType, EventoType, LogisticaCidadeType, OrcamentoType} from "../types";
 import {Badge} from "react-bootstrap";
 import Modal from "react-bootstrap/Modal";
+import {ComidaType, EventoType, LogisticaCidadeType, OrcamentoType} from "../types";
 import {SUBCATEGORIAS_COMIDA, TIPO_COMIDA} from "../util/OptionList"
+// @ts-ignore
+import {agruparComidasPorTipo} from "../util/CalculoOrcamento.ts";
 
 interface Props {
     logisticaCidade: LogisticaCidadeType;
@@ -31,8 +33,10 @@ const CardapioOrcamentoComp: React.FC<Props> = ({
     const [valorComidaTotal, setValorComidaTotal] = useState(orcamento.valor_total_comidas | 0.0)
     const [selectCategoria, setSelectCategoria] = useState({tipo: '', subtipo: ''})
     const [showModal, setShowModal] = useState(false)
+    const [agrupadasPorTipo, setAgrupadasPorTipo] = useState([])
     const filteredSubcategories = SUBCATEGORIAS_COMIDA[selectCategoria.tipo] || [];
     const filteredComidas = cardapio.filter(comida => comida.subtipo === selectCategoria.subtipo)
+
 
     useEffect(() => {
         if (orcamento && orcamento.comidas) {
@@ -44,6 +48,8 @@ const CardapioOrcamentoComp: React.FC<Props> = ({
             setValorComidaTotal(total);
             setOrcamento({...orcamento, valor_total_comidas: total})
         }
+        setAgrupadasPorTipo(agruparComidasPorTipo(selectedCardapio));
+        console.log("GRUPO TIPO", agrupadasPorTipo)
     }, [orcamento.comidas, orcamento.valor_desconto_comidas, selectedCardapio]);
 
     const handleQuantityChange = (comida_id: number, quantidade: number) => {
@@ -150,42 +156,72 @@ const CardapioOrcamentoComp: React.FC<Props> = ({
             <Row className='mb-3'>
                 <Form.Group as={Col} controlId="formGridComidasSelecionadas">
                     <Form.Label>Comidas Selecionadas</Form.Label>
-                    <div style={{
-                        maxHeight: '150px',
-                        overflowY: 'scroll',
-                        border: '1px solid #ced4da',
-                        padding: '10px'
-                    }}>
-                        {selectedCardapio.map((comida) => (
-                            <div key={comida.comida_id}
-                                 style={{display: 'flex', alignItems: 'center', marginBottom: '10px'}}>
-                                <Form.Check
-                                    type="checkbox"
-                                    label={`${comida.nome}-R$${comida.valor}`}
-                                    value={comida.comida_id}
-                                    checked={true}
-                                    onChange={() => handleToggleComida(comida)}
-                                />
-                                <Form.Control
-                                    type="number"
-                                    min={comida.quantidade_minima}
-                                    value={orcamento?.comidas?.find(c => c.comida_id === comida.comida_id)?.quantidade || comida.quantidade_minima}
-                                    onChange={(e) => handleQuantityChange(comida.comida_id, parseInt(e.target.value))}
-                                    style={{width: '75px', marginLeft: '5px'}}
-                                />
+                    <div style={{display: 'flex', justifyContent: 'flex-start'}}>
+                        {Object.keys(agrupadasPorTipo).length === 0 ? (
+                            <div style={{
+                                maxHeight: '150px',
+                                overflowY: 'scroll',
+                                border: '1px solid #ced4da',
+                                padding: '10px'
+                            }}>
+                                <p>Nenhuma comida selecionada</p>
                             </div>
-                        ))}
+
+                        ) : (
+                            Object.keys(agrupadasPorTipo).map(tipo => (
+                                <div>
+                                    <div key={tipo} style={{flex: 1, margin: '0 10px'}}>
+                                        <h4>{tipo}</h4>
+                                        <div style={{
+                                            maxHeight: '150px',
+                                            overflowY: 'scroll',
+                                            border: '1px solid #ced4da',
+                                            padding: '10px'
+                                        }}>
+                                            {agrupadasPorTipo[tipo].map(comida => (
+                                                <div key={comida.comida_id}
+                                                     style={{
+                                                         display: 'flex',
+                                                         alignItems: 'center',
+                                                         marginBottom: '10px'
+                                                     }}>
+                                                    <Form.Check
+                                                        type="checkbox"
+                                                        label={`${comida.nome} - R$${comida.valor}`}
+                                                        checked={true}
+                                                        onChange={() => handleToggleComida(comida)}
+                                                    />
+                                                    <Form.Control
+                                                        type="number"
+                                                        min={comida.quantidade_minima}
+                                                        value={orcamento?.comidas?.find(c => c.comida_id === comida.comida_id)?.quantidade || comida.quantidade_minima}
+                                                        onChange={(e) => handleQuantityChange(comida.comida_id, parseInt(e.target.value))}
+                                                        style={{width: '75px', marginLeft: '5px'}}
+                                                    />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <Badge bg="secondary" style={{flex: 1, margin: '0 10px'}}>
+                                        Sem imposto:
+                                        R${(agrupadasPorTipo[tipo].reduce((total, comida) => {
+                                        const quantidade = orcamento?.comidas?.find(c => c.comida_id === comida.comida_id)?.quantidade || comida.quantidade_minima;
+                                        return total + (comida.valor * quantidade);
+                                    }, 0)).toFixed(2) || 0}
+                                    </Badge>
+                                </div>
+
+                            ))
+                        )}
                     </div>
-                    <Badge bg="secondary">
-                        Sem imposto:
-                        R${(valorComidaTotal - (valorComidaTotal * logisticaCidade?.taxa_deslocamento)).toFixed(2)}
-                    </Badge>
+
                 </Form.Group>
 
             </Row>
             <Row className='mb-3'>
                 <Form.Group as={Col} controlId="formGridNome">
-                    <Form.Label>Total R$ comidas (Com {logisticaCidade?.taxa_deslocamento * 100}% incluso)</Form.Label>
+                    <Form.Label>Total R$ comidas (Com taxa de {logisticaCidade?.taxa_deslocamento * 100}% deslocamento
+                        incluso)</Form.Label>
                     <Form.Control
                         type="text"
                         value={`R$${valorComidaTotal.toFixed(2) || 0}`}
@@ -216,16 +252,16 @@ const CardapioOrcamentoComp: React.FC<Props> = ({
                 <Modal.Header closeButton>
                     <Modal.Title>Selecionar Comidas</Modal.Title>
                 </Modal.Header>
-                <Modal.Body style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                <Modal.Body style={{maxHeight: '400px', overflowY: 'auto'}}>
                     {filteredComidas.map((comida) => (
                         <Form.Check
-                                key={comida.comida_id}
-                                type="checkbox"
-                                label={comida.nome}
-                                value={comida.comida_id}
-                                checked={selectedCardapio.some(c => c.comida_id === comida.comida_id)}
-                                onChange={() => handleToggleComida(comida)}
-                            />
+                            key={comida.comida_id}
+                            type="checkbox"
+                            label={comida.nome}
+                            value={comida.comida_id}
+                            checked={selectedCardapio.some(c => c.comida_id === comida.comida_id)}
+                            onChange={() => handleToggleComida(comida)}
+                        />
                     ))}
                 </Modal.Body>
             </Modal>

@@ -14,3 +14,14 @@ export default function verificarFrete(cardapioSelecionado: ComidaType[], logist
     }
 
 }
+
+export function agruparComidasPorTipo(comidas) {
+    return comidas.reduce((acc, comida) => {
+        const tipo = comida.tipo; // Certifique-se de que cada comida tem um tipo
+        if (!acc[tipo]) {
+            acc[tipo] = [];
+        }
+        acc[tipo].push(comida);
+        return acc;
+    }, {});
+};
