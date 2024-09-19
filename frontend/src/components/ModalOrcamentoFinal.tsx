@@ -17,7 +17,7 @@ import {
     OrcamentoType
 } from "../types";
 import {Accordion} from "react-bootstrap";
-import verificarFrete from "../util/CalculoOrcamento.ts";
+import verificarLogistica from "../util/CalculoOrcamento.ts";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 
 const API_URL = process.env.REACT_APP_API_URL;
@@ -46,7 +46,8 @@ const ModalOrcamentoFinal: React.FC<Props> = ({
                                                   sessionId
                                               }) => {
 
-    const frete = verificarFrete(cardapioSelecionado, logisticaCidade)
+    const frete = verificarLogistica(cardapioSelecionado, logisticaCidade).frete
+    const locomocao = verificarLogistica(cardapioSelecionado, logisticaCidade).locomocao
 
 
     useEffect(() => {
@@ -55,8 +56,7 @@ const ModalOrcamentoFinal: React.FC<Props> = ({
         const decoracaoCompleta = cardapioSelecionado.some(cardapio => cardapio.tipo === 'Intervalo_Doce' || cardapio.tipo === 'Intervalo_Salgado' ||
             cardapio.tipo === 'Almoço')
         const adicional_decoracao = decoracaoCompleta ? 800 : 400
-        var total = total_comidas + total_logisticas + adicional_decoracao + parseFloat(frete)
-        console.log("VALOR TOTAL", total)
+        var total = total_comidas + total_logisticas + adicional_decoracao + parseFloat(frete) + parseFloat(locomocao)
         const valor_imposto = total * 0.2
         total += valor_imposto
         total += (total * orcamento.cliente.taxa_financeira)
@@ -69,16 +69,32 @@ const ModalOrcamentoFinal: React.FC<Props> = ({
         })
     }, []);
 
-    const renderTooltip = (props) => (
+    const renderTooltipDiaria = (props) => (
         <Tooltip id="button-tooltip" {...props} style={{
             ...props.style
         }}>
-            {Object.entries(logisticaCidade).filter(([key]) => ['frete_proprio', 'frete_proprio_intervalo', 'frete_proprio_completo', 'diaria_completo', 'diaria_simples'
-            ,'frete_terceiros', 'logistica_lanches', 'logistica_lanches_grande'].includes(key))
+            {Object.entries(logisticaCidade).filter(([key]) => ['frete_proprio', 'frete_proprio_intervalo', 'frete_proprio_completo',
+                , 'frete_terceiros',].includes(key))
                 .map(([key, value]) => (
                     <li style={{}} key={key}>
                         {`${key}: R$${value}`}
                         {value === frete &&
+                            <Button style={{blockSize: '30px', padding: '0px'}} disabled><FontAwesomeIcon
+                                icon={faCheck}/></Button>}
+                    </li>
+                ))}
+        </Tooltip>
+    );
+
+    const renderTooltipLocomoacao = (props) => (
+        <Tooltip id="button-tooltip" {...props} style={{
+            ...props.style
+        }}>
+            {Object.entries(logisticaCidade).filter(([key]) => ['diaria_completo', 'diaria_simples'].includes(key))
+                .map(([key, value]) => (
+                    <li style={{}} key={key}>
+                        {`${key}: R$${value}`}
+                        {value === locomocao &&
                             <Button style={{blockSize: '30px', padding: '0px'}} disabled><FontAwesomeIcon
                                 icon={faCheck}/></Button>}
                     </li>
@@ -156,11 +172,27 @@ const ModalOrcamentoFinal: React.FC<Props> = ({
                                 />
                             </Form.Group>
                             <Form.Group as={Col} controlId="formGridNome">
+                                <Form.Label>Valor de locomoção</Form.Label>
+                                <OverlayTrigger
+                                    placement="right"
+                                    delay={{show: 250, hide: 500}}
+                                    overlay={renderTooltipLocomoacao}
+                                >
+                                    <Button variant="secondary" size={"sm"} style={{marginLeft: '10px'}}>i</Button>
+                                </OverlayTrigger>
+                                <Form.Control
+                                    name="valor_decoracao"
+                                    disabled
+                                    value={`R$${parseFloat(locomocao || 0).toFixed(2)}`}
+                                    type="text"
+                                />
+                            </Form.Group>
+                            <Form.Group as={Col} controlId="formGridNome">
                                 <Form.Label>Valor frete</Form.Label>
                                 <OverlayTrigger
                                     placement="right"
                                     delay={{show: 250, hide: 500}}
-                                    overlay={renderTooltip}
+                                    overlay={renderTooltipDiaria}
                                 >
                                     <Button variant="secondary" size={"sm"} style={{marginLeft: '10px'}}>i</Button>
                                 </OverlayTrigger>

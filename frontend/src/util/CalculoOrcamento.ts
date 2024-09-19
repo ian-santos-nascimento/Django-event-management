@@ -1,16 +1,16 @@
 // @ts-ignore
 import {ComidaType, LogisticaCidadeType} from "../types.tsx"
 
-export default function verificarFrete(cardapioSelecionado: ComidaType[], logisticaCidade: LogisticaCidadeType) {
+export default function verificarLogistica(cardapioSelecionado: ComidaType[], logisticaCidade: LogisticaCidadeType) {
     const temIntervaloDoce = cardapioSelecionado.some(item => item.tipo === "Intervalo_Doce");
     const temIntervaloSalgado = cardapioSelecionado.some(item => item.tipo === "Intervalo_Salgado");
     const temAlmoco = cardapioSelecionado.some(item => item.tipo === "Almoço");
     if (!temIntervaloDoce && !temIntervaloSalgado && !temAlmoco) {
-        return logisticaCidade.frete_proprio;
+        return {frete: logisticaCidade.frete_proprio, locomocao: logisticaCidade.diaria_simples};
     } else if (temIntervaloDoce || temIntervaloSalgado && !temAlmoco) {
-        return logisticaCidade.frete_proprio_intervalo;
+        return {frete: logisticaCidade.frete_proprio_intervalo, locomocao: logisticaCidade.diaria_completo};
     } else if (temAlmoco) {
-        return logisticaCidade.frete_proprio_completo;
+        return {frete: logisticaCidade.frete_proprio_completo, locomocao: logisticaCidade.diaria_completo};
     }
 
 }
