@@ -10,7 +10,6 @@ import {fetchDataWithId, excludeData} from "../ApiCall/ApiCall.jsx"
 import {OrcamentoType} from "../types";
 
 
-
 export default function OrcamentoView({orcamentoId, sessionId}) {
     const [orcamento, setOrcamento] = useState<OrcamentoType | null>(null);
     const [showModal, setShowModal] = useState(true);
@@ -34,13 +33,15 @@ export default function OrcamentoView({orcamentoId, sessionId}) {
     }
 
     const handleBack = () => {
-        //TODO fazer return da lista sem recarregar paǵina
         window.location.reload()
     }
 
     const handleExcluirOrcamento = async () => {
-        const response = await excludeData(orcamento, orcamentoId);
-    }
+        const response = await excludeData("orcamentos", orcamentoId);
+        if (response.success) {
+            window.location.reload();  // Reinicia a página
+        }
+    };
 
 
     return (
@@ -85,7 +86,7 @@ export default function OrcamentoView({orcamentoId, sessionId}) {
                         </FormGroup>
                     </Row>
                     <Row>
-                          <FormGroup as={Col}>
+                        <FormGroup as={Col}>
                             <Form.Label>Valor total Orçamento</Form.Label>
                             <Form.Control
                                 type="text"

@@ -195,6 +195,6 @@ class ComidaOrcamento(models.Model):
 class LogisticaOrcamento(models.Model):
     id_logistica_orcamento = models.AutoField(primary_key=True)
     logistica = models.ForeignKey(Logistica, on_delete=models.DO_NOTHING, )
-    orcamento = models.ForeignKey(Orcamento, on_delete=models.DO_NOTHING, )
+    orcamento = models.ForeignKey(Orcamento, on_delete=models.CASCADE, )
     valor = models.DecimalField(decimal_places=2, max_digits=8)
     quantidade = models.IntegerField(default=1)

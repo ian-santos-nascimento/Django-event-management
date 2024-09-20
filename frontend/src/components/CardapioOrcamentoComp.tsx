@@ -44,7 +44,6 @@ const CardapioOrcamentoComp: React.FC<Props> = ({
                 const quantidade = orcamento?.comidas.find(c => c.comida_id === comida.comida_id)?.quantidade || comida.quantidade_minima;
                 return (acc + comida.valor * quantidade);
             }, 0) - orcamento.valor_desconto_comidas;
-            total += total * parseFloat(logisticaCidade?.taxa_deslocamento)
             setValorComidaTotal(total);
             setOrcamento({...orcamento, valor_total_comidas: total})
         }
@@ -202,8 +201,8 @@ const CardapioOrcamentoComp: React.FC<Props> = ({
                                             ))}
                                         </div>
                                     </div>
-                                    <Badge bg="secondary" style={{flex: 1, margin: '0 10px'}}>
-                                        Sem imposto:
+                                    <Badge bg="primary" style={{flex: 1, margin: '0 10px'}}>
+                                        Total categoria:
                                         R${(agrupadasPorTipo[tipo].reduce((total, comida) => {
                                         const quantidade = orcamento?.comidas?.find(c => c.comida_id === comida.comida_id)?.quantidade || comida.quantidade_minima;
                                         return total + (comida.valor * quantidade);
@@ -220,8 +219,7 @@ const CardapioOrcamentoComp: React.FC<Props> = ({
             </Row>
             <Row className='mb-3'>
                 <Form.Group as={Col} controlId="formGridNome">
-                    <Form.Label>Total R$ comidas (Com taxa de {logisticaCidade?.taxa_deslocamento * 100}% deslocamento
-                        incluso)</Form.Label>
+                    <Form.Label>Total R$ comidas</Form.Label>
                     <Form.Control
                         type="text"
                         value={`R$${valorComidaTotal.toFixed(2) || 0}`}

@@ -175,7 +175,7 @@ const LogisticaOrcamentoComp: React.FC<Props> = ({
                     <Form.Label>Total R$ Logistica</Form.Label>
                     <Form.Control
                         type="text"
-                        value={`R$${valorLogisticaTotal ? valorLogisticaTotal : 0} | valor * alimentação(${logisticaCidade?.alimentacao}) * dias(${evento?.qtd_dias_evento})`}
+                        value={`R$${valorLogisticaTotal ? valorLogisticaTotal : 0} | valor + alimentação(${logisticaCidade?.alimentacao}) * dias(${evento?.qtd_dias_evento})`}
                         disabled={true}
                     />
                     {logisticasSelecionadas.map((logistica) => (

@@ -46,23 +46,24 @@ const ModalOrcamentoFinal: React.FC<Props> = ({
                                                   sessionId
                                               }) => {
 
+    const dias_evento = evento.qtd_dias_evento + 1
     const frete = verificarLogistica(cardapioSelecionado, logisticaCidade).frete
-    const locomocao = verificarLogistica(cardapioSelecionado, logisticaCidade).locomocao
-
+    const locomocao = verificarLogistica(cardapioSelecionado, logisticaCidade).locomocao * dias_evento
 
     useEffect(() => {
-        const total_comidas = parseFloat(orcamento.valor_total_comidas) || 0
-        const total_logisticas = parseFloat(orcamento.valor_total_logisticas) || 0
+        const valor_cardapio = parseFloat(orcamento.valor_total_comidas + (orcamento.valor_total_comidas * logisticaCidade?.taxa_deslocamento)) || 0
+        const total_logisticas = parseFloat(orcamento.valor_total_logisticas) | 0
         const decoracaoCompleta = cardapioSelecionado.some(cardapio => cardapio.tipo === 'Intervalo_Doce' || cardapio.tipo === 'Intervalo_Salgado' ||
             cardapio.tipo === 'Almoço')
         const adicional_decoracao = decoracaoCompleta ? 800 : 400
-        var total = total_comidas + total_logisticas + adicional_decoracao + parseFloat(frete) + parseFloat(locomocao)
+        var total = valor_cardapio + total_logisticas + adicional_decoracao + parseFloat(frete) + parseFloat(locomocao)
         const valor_imposto = total * 0.2
         total += valor_imposto
         total += (total * orcamento.cliente.taxa_financeira)
         setOrcamento({
             ...orcamento,
             valor_total: total,
+            valor_total_comidas: valor_cardapio,
             valor_imposto: valor_imposto,
             valor_decoracao: adicional_decoracao,
             evento: evento
@@ -88,13 +89,13 @@ const ModalOrcamentoFinal: React.FC<Props> = ({
 
     const renderTooltipLocomoacao = (props) => (
         <Tooltip id="button-tooltip" {...props} style={{
-            ...props.style
+            ...props.style,
         }}>
             {Object.entries(logisticaCidade).filter(([key]) => ['diaria_completo', 'diaria_simples'].includes(key))
                 .map(([key, value]) => (
                     <li style={{}} key={key}>
                         {`${key}: R$${value}`}
-                        {value === locomocao &&
+                        {value * dias_evento === (locomocao) &&
                             <Button style={{blockSize: '30px', padding: '0px'}} disabled><FontAwesomeIcon
                                 icon={faCheck}/></Button>}
                     </li>
@@ -105,7 +106,6 @@ const ModalOrcamentoFinal: React.FC<Props> = ({
 
     const handleSubmit = async (e) => {
         e.preventDefault()
-        console.log("ORCAMENTO SAVE", orcamento)
         try {
             await axios.post(`${API_URL}orcamentos-create/`, orcamento, {
                 headers: {
@@ -142,8 +142,8 @@ const ModalOrcamentoFinal: React.FC<Props> = ({
                     <form>
                         <Row>
                             <Form.Group as={Col} controlId="formGridNome">
-                                <Form.Label>Valor total (Com imposto e taxa
-                                    de {orcamento?.cliente.taxa_financeira * 100}%)</Form.Label>
+                                <Form.Label>Valor total (Imposto e taxa
+                                    de {orcamento?.cliente.taxa_financeira * 100}% do cliente)</Form.Label>
                                 <Form.Control
                                     name="valor_total"
                                     disabled
@@ -174,7 +174,7 @@ const ModalOrcamentoFinal: React.FC<Props> = ({
                             <Form.Group as={Col} controlId="formGridNome">
                                 <Form.Label>Valor de locomoção</Form.Label>
                                 <OverlayTrigger
-                                    placement="right"
+                                    placement="bottom"
                                     delay={{show: 250, hide: 500}}
                                     overlay={renderTooltipLocomoacao}
                                 >
@@ -239,19 +239,24 @@ const ModalOrcamentoFinal: React.FC<Props> = ({
                         <Row>
                             <Accordion>
                                 <Accordion.Item as={'p'} eventKey="0" className='mt-3'>
-                                    <Accordion.Header as={'h5'}>Comidas</Accordion.Header>
+                                    <Accordion.Header as={'h5'}>Comidas:
+                                        R${orcamento.valor_total_comidas | 0} ({logisticaCidade?.taxa_deslocamento * 100}% taxa de
+                                        deslocamento incluso)</Accordion.Header>
                                     <Accordion.Body style={{backgroundColor: '##aab0b5;'}}>
                                         {orcamento.comidas.map(comida => (
-                                            <p>{comida.comida} (Qtd: {comida.quantidade})</p>
+                                            <p>{comida.comida} (Qtd: {comida.quantidade}, valor:
+                                                R${parseFloat(comida.valor).toFixed(2)})</p>
                                         ))}
                                     </Accordion.Body>
                                 </Accordion.Item>
                                 <Accordion.Item as={'p'} eventKey="1" className='mt-3'>
                                     <Accordion.Header
-                                        as={'h5'}>Logisticas</Accordion.Header>
+                                        as={'h5'}>Logisticas:
+                                        R${orcamento.valor_total_logisticas | 0}</Accordion.Header>
                                     <Accordion.Body style={{backgroundColor: '##aab0b5;'}}>
                                         {orcamento.logisticas.map(logistica => (
-                                            <p>{logistica.logistica} (Qtd: {logistica.quantidade})</p>
+                                            <p>{logistica.logistica} (Qtd: {logistica.quantidade},
+                                                Diária: {parseFloat(logistica.valor).toFixed(2)})</p>
                                         ))}
                                     </Accordion.Body>
                                 </Accordion.Item>

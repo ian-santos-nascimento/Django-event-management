@@ -62,29 +62,22 @@ export const fetchDataWithId = async (data, id) => {
         }
     }
 }
-
-export const excludeData = async (data, id, csrfToken, sessionId) => {
+export const excludeData = async (path, id, csrfToken, sessionId) => {
     try {
-        const response = await axios.delete(`${API_URL}${data}/${id}`,
-            {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken,
-                    'sessionId': sessionId
-                },
-                withCredentials: true,
-            });
-        console.log(response.status)
-        return {
-            data: response,
-        };
+        const response = await axios.delete(`${API_URL}${path}/${id}`, {
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,
+                'sessionId': sessionId,
+            },
+            withCredentials: true,
+        });
+        return {success: true, data: response.data};
     } catch (error) {
-        console.error('Error deleting data:', error);
-        return {
-            data: [],
-        }
+        alert(error.response?.data?.error || "Ocorreu um erro ao excluir o dado.");
+        return {success: false, data: null};
     }
-}
+};
 
 export const eventoPost = async (evento, csrfToken, sessionId) => {
     try {

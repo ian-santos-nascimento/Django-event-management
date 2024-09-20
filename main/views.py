@@ -71,6 +71,7 @@ def saveOrcamento(request):
     valor_total = request.data.get('valor_total')
     desconto_total_logisticas = request.data.get('valor_desconto_logisticas')
     valor_imposto = request.data.get('valor_imposto')
+    valor_decoracao = request.data.get('valor_decoracao')
     status_orcamento = request.data.get('status')
 
     # Cria ou atualiza o orçamento
@@ -86,6 +87,7 @@ def saveOrcamento(request):
         valor_desconto_comidas=desconto_total_comidas,
         valor_desconto_logisticas=desconto_total_logisticas,
         valor_total=valor_total,
+        valor_decoracao=valor_decoracao,
         valor_imposto=valor_imposto,
     )
 
