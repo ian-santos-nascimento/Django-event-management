@@ -11,7 +11,7 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework import permissions, status
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -110,13 +110,16 @@ class UserLogin(APIView):
     permission_classes = (permissions.AllowAny,)
     authentication_classes = (SessionAuthentication,)
 
-    def post(self, request):
+    def post(self, request, failed=AuthenticationFailed('Invalid credentials')):
         data = request.data
         serializer = UserLoginSerializer(data=data)
         if serializer.is_valid(raise_exception=True):
             user = serializer.check_user(data)
+            if user is None:
+                raise failed
+
             login(request, user)
-            return Response({"Login successful"}, status=status.HTTP_200_OK)
+            return Response({"message": "Login successful"}, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])

@@ -19,8 +19,7 @@ const Login = ({setAuthenticated, setSessionId}) => {
     const handleSubmit = async (event) => {
         event.preventDefault();
         try {
-            console.log("FAZENDO POST REQUEST")
-            login.post('login/', {
+            const responseData = await login.post('login/', {
                     username: username,
                     password: password
                 },
@@ -30,13 +29,21 @@ const Login = ({setAuthenticated, setSessionId}) => {
                         'Content-Type': 'application/json'
                     }
                 }
-            ).then(function (responseData) {
-                setAuthenticated(true)
-                setSessionId(responseData.headers.get('sessionid'))
-                console.log("RESPONSE:", responseData)
-            })
+            );
+
+            // Caso o login seja bem-sucedido
+            setAuthenticated(true);
+            setSessionId(responseData.headers.get('sessionid'));
+            console.log("RESPONSE:", responseData);
+
         } catch (error) {
-            setErrorMessage('Invalid credentials');
+            // Verifica se há uma resposta e captura a mensagem de erro
+            if (error.response && error.response.data) {
+                const errorMessage = Array.isArray(error.response.data) ? error.response.data[0] : 'Invalid credentials';
+                setErrorMessage(errorMessage);
+            } else {
+                setErrorMessage('Something went wrong. Please try again.');
+            }
             console.error('Error logging in:', error);
         }
     };
