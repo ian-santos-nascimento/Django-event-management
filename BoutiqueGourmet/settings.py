@@ -1,4 +1,4 @@
-import os
+
 from pathlib import Path
 import dj_database_url
 from dotenv import load_dotenv
@@ -80,6 +80,9 @@ DATABASES = {
     )
 }
 
+# Password validation
+# https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
+
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -94,7 +97,18 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
-
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.SessionAuthentication',
+    ),
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,
+}
+# Internationalization
+# https://docs.djangoproject.com/en/5.0/topics/i18n/
 
 LANGUAGE_CODE = 'pt-br'
 
@@ -113,3 +127,7 @@ LOGIN_URL = 'login'
 
 DJANGO_LOG_LEVEL = DEBUG
 CORS_ORIGIN_ALLOW_ALL = True
+
+SESSION_COOKIE_HTTPONLY = False  # TODO change to TRUE to security
+SESSION_COOKIE_SECURE = False  # Defina como True em produção
+SESSION_COOKIE_SAMESITE = 'Lax'  # Pode ser 'Strict' ou 'None' conforme suas necessidades

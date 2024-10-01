@@ -2,7 +2,7 @@
 
 import React, {useState} from 'react';
 import axios from 'axios';
-import csrftoken from './ApiCall/CsrfToken'; // Import the CSRF token utility
+import csrftoken from '../ApiCall/CsrfToken'; // Import the CSRF token utility
 const API_URL = process.env.REACT_APP_API_URL
 axios.defaults.xsrfCookieName = 'csrftoken';
 axios.defaults.withXSRFToken = true
@@ -11,7 +11,7 @@ axios.defaults.withCredentials = true;
 
 const login = axios.create({baseURL: API_URL})
 
-const Login = ({setAuthenticated}) => {
+const Login = ({setAuthenticated, setSessionId}) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
@@ -19,8 +19,7 @@ const Login = ({setAuthenticated}) => {
     const handleSubmit = async (event) => {
         event.preventDefault();
         try {
-            console.log("FAZENDO POST REQUEST")
-            login.post('login/', {
+            const responseData = await login.post('login/', {
                     username: username,
                     password: password
                 },
@@ -30,12 +29,21 @@ const Login = ({setAuthenticated}) => {
                         'Content-Type': 'application/json'
                     }
                 }
-            ).then(function (responseData) {
-                setAuthenticated(true)
-                console.log("RESPONSE:", responseData)
-            })
+            );
+
+            // Caso o login seja bem-sucedido
+            setAuthenticated(true);
+            setSessionId(responseData.headers.get('sessionid'));
+            console.log("RESPONSE:", responseData);
+
         } catch (error) {
-            setErrorMessage('Invalid credentials');
+            // Verifica se há uma resposta e captura a mensagem de erro
+            if (error.response && error.response.data) {
+                const errorMessage = Array.isArray(error.response.data) ? error.response.data[0] : 'Invalid credentials';
+                setErrorMessage(errorMessage);
+            } else {
+                setErrorMessage('Something went wrong. Please try again.');
+            }
             console.error('Error logging in:', error);
         }
     };
