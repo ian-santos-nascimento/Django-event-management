@@ -46,7 +46,7 @@ CORS_ORIGIN_WHITELIST = [
     'https://frontend-mu-rose.vercel.app/',  #TODO replace with the URL of your ReactJS application
 ]
 CORS_ALLOWED_ORIGINS = [ #TODO replacte with actual URL
-    'https://frontend-mu-rose.vercel.app/',
+    'https://frontend-mu-rose.vercel.app',
 ]
 CSRF_TRUSTED_ORIGINS = ['https://frontend-mu-rose.vercel.app', 'https://frontend-mu-rose.vercel.app']
 CORS_ALLOW_CREDENTIALS = True
