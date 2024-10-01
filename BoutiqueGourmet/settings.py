@@ -11,8 +11,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY')
 
 DEBUG = False
-
-ALLOWED_HOSTS = ['*'] ##TODO CHANGE TO INSTANCE IP e DOMAIN.COM.BR
+APP_NAME = os.environ.get("FLY_APP_NAME")
+ALLOWED_HOSTS = ['*', f"{APP_NAME}.fly.dev"] ##TODO CHANGE TO INSTANCE IP e DOMAIN.COM.BR
 
 
 INSTALLED_APPS = [
