@@ -71,8 +71,6 @@ export default function Cliente({cliente, csrfToken, sessionId, setSelectedClien
                 await axios.put(`${API_URL}clientes/${selectedCliente.id_cliente}/`, selectedCliente, {
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRFToken': csrfToken,
-                        'sessionId': sessionId
                     },
                     withCredentials: true,
                 });
@@ -81,8 +79,6 @@ export default function Cliente({cliente, csrfToken, sessionId, setSelectedClien
                 await axios.post(`${API_URL}clientes/`, selectedCliente, {
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRFToken': csrfToken,
-                        'sessionId': sessionId
                     },
                     withCredentials: true,
                 });

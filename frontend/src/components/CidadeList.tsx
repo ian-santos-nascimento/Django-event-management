@@ -76,8 +76,6 @@ export default function CidadeList({sessionId}) {
                 await axios.put(`${API_URL}cidades/${selectedCidade.id_cidade}/`, selectedCidade, {
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRFToken': csrfToken,
-                        'sessionId': sessionId
                     },
                     withCredentials: true,
                 });
@@ -86,8 +84,6 @@ export default function CidadeList({sessionId}) {
                 await axios.post(`${API_URL}cidades/`, selectedCidade, {
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRFToken': csrfToken,
-                        'sessionId': sessionId
                     },
                     withCredentials: true,
                 });
@@ -111,8 +107,6 @@ export default function CidadeList({sessionId}) {
             await axios.delete(`${API_URL}cidades/${selectedCidade.id_cidade}/`, {
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken,
-                    'sessionId': sessionId
                 },
                 withCredentials: true,
             });

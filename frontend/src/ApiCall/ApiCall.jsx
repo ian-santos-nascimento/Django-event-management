@@ -9,7 +9,6 @@ export const fetchData = async (data, page, search = '', csrfToken, sessionId) =
         const response = await axios.get(`${API_URL}${data}/${page}&search=${search}`, {
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': csrfToken,
             },
             withCredentials: true,
         });
@@ -32,7 +31,6 @@ export const fetchDataWithoutPagination = async (data, csrfToken, sessionId) => 
         const response = await axios.get(`${API_URL}${data}/`, {
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': csrfToken,
             },
             withCredentials: true,
         });
@@ -65,7 +63,6 @@ export const excludeData = async (path, id, csrfToken, sessionId) => {
         const response = await axios.delete(`${API_URL}${path}/${id}`, {
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': csrfToken,
             },
             withCredentials: true,
         });
@@ -82,7 +79,6 @@ export const eventoPost = async (evento, csrfToken, sessionId) => {
             await axios.put(`${API_URL}eventos/${evento.id_evento}/`, evento, {
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken,
                 },
                 withCredentials: true,
             });
@@ -91,7 +87,6 @@ export const eventoPost = async (evento, csrfToken, sessionId) => {
             await axios.post(`${API_URL}eventos/`, evento, {
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken,
                 },
                 withCredentials: true,
             });

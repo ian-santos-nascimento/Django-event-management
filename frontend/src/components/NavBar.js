@@ -23,7 +23,6 @@ export default function NavBar({setAuthenticated, isAuthenticated}) {
             console.log("SAINDO LOGOUT")
             await axios.post(`${apiUrl}logout/`, {}, {
                 headers: {
-                    'X-CSRFToken': csrftoken,
                     'Content-Type': 'application/json'
                 },
                 withCredentials: true

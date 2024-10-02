@@ -110,8 +110,6 @@ const ModalOrcamentoFinal: React.FC<Props> = ({
             await axios.post(`${API_URL}orcamentos-create/`, orcamento, {
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken,
-                    'sessionId': sessionId
                 },
                 withCredentials: true,
             })

@@ -61,8 +61,6 @@ export default function Local({local, sessionId}) {
                 {
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRFToken': csrfToken,
-                        'sessionId': sessionId
                     },
                     withCredentials: true,
                 });
@@ -88,8 +86,6 @@ export default function Local({local, sessionId}) {
                 await axios.post(`${API_URL}locais/`, localState, {
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRFToken': csrfToken,
-                        'sessionId': sessionId
                     },
                     withCredentials: true,
                 })
@@ -98,8 +94,6 @@ export default function Local({local, sessionId}) {
                 await axios.put(`${API_URL}locais/${local.id_local}/`, localState, {
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRFToken': csrfToken,
-                        'sessionId': sessionId
                     },
                     withCredentials: true,
                 });

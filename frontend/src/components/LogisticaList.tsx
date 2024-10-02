@@ -82,8 +82,6 @@ export default function LogisticaList({sessionId, csrfToken}) {
                 await axios.put(`${API_URL}logisticas/${selectedLogistica.id_logistica}/`, selectedLogistica, {
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRFToken': csrfToken,
-                        'sessionId': sessionId
                     },
                     withCredentials: true,
                 });
@@ -92,8 +90,6 @@ export default function LogisticaList({sessionId, csrfToken}) {
                 await axios.post(`${API_URL}logisticas/`, selectedLogistica, {
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRFToken': csrfToken,
-                        'sessionId': sessionId
                     },
                     withCredentials: true,
                 });
@@ -117,8 +113,6 @@ export default function LogisticaList({sessionId, csrfToken}) {
             await axios.delete(`${API_URL}logisticas/${selectedLogistica.id_logistica}/`, {
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken,
-                    'sessionId': sessionId
                 },
                 withCredentials: true,
             });

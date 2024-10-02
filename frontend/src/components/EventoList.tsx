@@ -97,8 +97,6 @@ export default function EventoList({sessionId}) {
             await axios.delete(`${API_URL}eventos/${selectedEvento.id_evento}`, {
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken,
-                    'sessionId': sessionId
                 },
                 // @ts-ignore
                 credentials: 'include',

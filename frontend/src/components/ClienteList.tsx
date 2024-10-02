@@ -105,8 +105,6 @@ export default function CidadeList({sessionId, csrfToken}) {
             await axios.delete(`${API_URL}clientes/${selectedCliente.id_cliente}/`, {
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken,
-                    'sessionId': sessionId
                 },
                 withCredentials: true,
             });

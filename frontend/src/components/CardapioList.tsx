@@ -84,7 +84,6 @@ export default function CidadeList({sessionId}) {
                 await axios.put(`${API_URL}comidas/${selectedComida.comida_id}/`, selectedComida, {
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRFToken': csrfToken,
                     },
                     withCredentials: true,
                 });
@@ -93,7 +92,6 @@ export default function CidadeList({sessionId}) {
                 await axios.post(`${API_URL}comidas/`, selectedComida, {
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRFToken': csrfToken,
                     },
                     withCredentials: true,
                 });
