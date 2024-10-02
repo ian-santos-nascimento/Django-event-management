@@ -10,7 +10,6 @@ export const fetchData = async (data, page, search = '', csrfToken, sessionId) =
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRFToken': csrfToken,
-                'sessionId': sessionId
             },
             withCredentials: true,
         });
@@ -34,7 +33,6 @@ export const fetchDataWithoutPagination = async (data, csrfToken, sessionId) => 
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRFToken': csrfToken,
-                'sessionId': sessionId
             },
             withCredentials: true,
         });
@@ -68,7 +66,6 @@ export const excludeData = async (path, id, csrfToken, sessionId) => {
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRFToken': csrfToken,
-                'sessionId': sessionId,
             },
             withCredentials: true,
         });
@@ -86,7 +83,6 @@ export const eventoPost = async (evento, csrfToken, sessionId) => {
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRFToken': csrfToken,
-                    'sessionId': sessionId
                 },
                 withCredentials: true,
             });
@@ -96,7 +92,6 @@ export const eventoPost = async (evento, csrfToken, sessionId) => {
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRFToken': csrfToken,
-                    'sessionId': sessionId
                 },
                 withCredentials: true,
             });

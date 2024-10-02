@@ -85,7 +85,6 @@ export default function CidadeList({sessionId}) {
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRFToken': csrfToken,
-                        'sessionId': sessionId
                     },
                     withCredentials: true,
                 });
@@ -95,7 +94,6 @@ export default function CidadeList({sessionId}) {
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRFToken': csrfToken,
-                        'sessionId': sessionId
                     },
                     withCredentials: true,
                 });
@@ -120,7 +118,6 @@ export default function CidadeList({sessionId}) {
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRFToken': csrfToken,
-                    'sessionId': sessionId
                 },
                 withCredentials: true,
             });

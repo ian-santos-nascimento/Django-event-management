@@ -1,19 +1,19 @@
 import os
+from email.policy import default
+from os import environ
 from pathlib import Path
 import dj_database_url
 from dotenv import load_dotenv
 
 load_dotenv()
 
-
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.environ.get('SECRET_KEY')
+SECRET_KEY = os.environ.get('SECRET_KEY', default='django-insecure-#9_owqwd8a0#os0qqav)+hnlh^rltb1i0cd&#t@=i6$5@+p)g6')
 
-DEBUG = False
+DEBUG = os.environ.get('DEBUG', default='False')
 APP_NAME = os.environ.get("FLY_APP_NAME")
-ALLOWED_HOSTS = ['*', f"{APP_NAME}.fly.dev"] ##TODO CHANGE TO INSTANCE IP e DOMAIN.COM.BR
-
+ALLOWED_HOSTS = ['*']  ##TODO CHANGE TO INSTANCE IP e DOMAIN.COM.BR
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -40,15 +40,17 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware"
 ]
 
-CORS_ORIGIN_WHITELIST = [
-    'https://frontend-mu-rose.vercel.app/',  #TODO replace with the URL of your ReactJS application
-]
-CORS_ALLOWED_ORIGINS = [ #TODO replacte with actual URL
+CORS_ALLOWED_ORIGINS = [
     'https://frontend-mu-rose.vercel.app',
 ]
-CSRF_TRUSTED_ORIGINS = ['https://frontend-mu-rose.vercel.app', 'https://frontend-mu-rose.vercel.app']
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://frontend-mu-rose.vercel.app',
+    'https://*.fly.dev'
+]
 CORS_ALLOW_CREDENTIALS = True
 ROOT_URLCONF = 'BoutiqueGourmet.urls'
 
@@ -127,7 +129,7 @@ LOGIN_URL = 'login'
 
 DJANGO_LOG_LEVEL = DEBUG
 CORS_ORIGIN_ALLOW_ALL = True
-
-SESSION_COOKIE_HTTPONLY = False  # TODO change to TRUE to security
-SESSION_COOKIE_SECURE = False  # Defina como True em produção
-SESSION_COOKIE_SAMESITE = 'Lax'  # Pode ser 'Strict' ou 'None' conforme suas necessidades
+SESSION_COOKIE_SAMESITE = 'None'
+CSRF_COOKIE_SECURE=True
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SECURE = True
