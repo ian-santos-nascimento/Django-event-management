@@ -25,19 +25,14 @@ const Login = ({setAuthenticated, setSessionId}) => {
                 },
                 {
                     headers: {
-                        'X-CSRFToken': csrftoken,
                         'Content-Type': 'application/json'
                     }
                 }
             );
-
-            // Caso o login seja bem-sucedido
             setAuthenticated(true);
             setSessionId(responseData.headers.get('sessionid'));
-            console.log("RESPONSE:", responseData);
 
         } catch (error) {
-            // Verifica se há uma resposta e captura a mensagem de erro
             if (error.response && error.response.data) {
                 const errorMessage = Array.isArray(error.response.data) ? error.response.data[0] : 'Invalid credentials';
                 setErrorMessage(errorMessage);
