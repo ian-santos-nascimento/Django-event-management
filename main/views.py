@@ -7,9 +7,10 @@ from django.http import HttpResponseRedirect
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from rest_framework import permissions, status
 from rest_framework.authentication import SessionAuthentication
+from django.middleware.csrf import get_token
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.response import Response
@@ -18,21 +19,6 @@ from rest_framework.views import APIView
 from .forms import *
 from .models import Logistica, Orcamento, Evento, Cliente, Comida, ComidaOrcamento
 from .serializers import UserLoginSerializer
-
-
-@csrf_exempt
-@api_view(['POST'])
-@permission_classes([permissions.AllowAny])
-def login_view(request):
-    username = request.data.get('username')
-    password = request.data.get('password')
-    user = authenticate(request, username=username, password=password)
-    if user is not None:
-        login(request, user)
-        return JsonResponse({'message': 'Login successful'})
-    else:
-        return JsonResponse({'error': 'Invalid credentials'}, status=400)
-
 
 def verificarOrcamentosDuplicados(orcamento):
     # Verifica se já existe um orçamento com o mesmo evento, cliente e status
@@ -47,6 +33,11 @@ def verificarOrcamentosDuplicados(orcamento):
                             status=status.HTTP_409_CONFLICT)
 
     return None
+
+@ensure_csrf_cookie
+def get_csrf_token(request):
+    csrf_token = get_token(request)
+    return JsonResponse({'csrfToken': csrf_token})
 
 
 @api_view(['POST'])
@@ -108,11 +99,11 @@ def saveOrcamento(request):
 
 class UserLogin(APIView):
     permission_classes = (permissions.AllowAny,)
-    authentication_classes = (SessionAuthentication,)
 
     def post(self, request, failed=AuthenticationFailed('Invalid credentials')):
         data = request.data
         serializer = UserLoginSerializer(data=data)
+        print("LOGIN")
         if serializer.is_valid(raise_exception=True):
             user = serializer.check_user(data)
             if user is None:

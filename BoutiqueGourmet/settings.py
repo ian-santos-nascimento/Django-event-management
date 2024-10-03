@@ -44,10 +44,13 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    'https://frontend-mu-rose.vercel.app',
+    'https://frontend-mu-rose.vercel.app','http://localhost:3000','http://192.168.0.13:3000', 'http://127.0.0.1:3000'
 ]
 
 CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:3000',
+    'http://192.168.0.13:3000',
+    'http://127.0.0.1:3000',
     'https://frontend-mu-rose.vercel.app',
     'https://*.fly.dev'
 ]
@@ -128,8 +131,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = 'login'
 
 DJANGO_LOG_LEVEL = DEBUG
-CORS_ORIGIN_ALLOW_ALL = True
+# CSRF Cookie Settings
+CSRF_COOKIE_SAMESITE = 'None'
+CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_HTTPONLY = False  # Deve ser False para permitir acesso via JavaScript, se necessário
+# Session Cookie Settings
 SESSION_COOKIE_SAMESITE = 'None'
-CSRF_COOKIE_SECURE=True
+SESSION_COOKIE_SECURE = False
 SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SECURE = True
