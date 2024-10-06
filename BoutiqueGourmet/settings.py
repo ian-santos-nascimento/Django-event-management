@@ -1,4 +1,5 @@
 import os
+from datetime import timedelta
 from email.policy import default
 from os import environ
 from pathlib import Path
@@ -28,6 +29,7 @@ INSTALLED_APPS = [
     'bootstrapform',
     'main.apps.MainConfig',
     'rest_framework',
+    'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
 ]
 
@@ -107,10 +109,21 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,
+}
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),  # Tempo de vida do access token
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),    # Tempo de vida do refresh token
+    'ROTATE_REFRESH_TOKENS': True,                   # Rotacionar tokens de refresh após uso
+    'BLACKLIST_AFTER_ROTATION': True,                # Blacklist de tokens de refresh rotacionados
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': SECRET_KEY,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+    'TOKEN_BLACKLIST_ENABLED': True,
 }
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
@@ -131,11 +144,3 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = 'login'
 
 DJANGO_LOG_LEVEL = DEBUG
-# CSRF Cookie Settings
-CSRF_COOKIE_SAMESITE = 'None'
-CSRF_COOKIE_SECURE = True
-CSRF_COOKIE_HTTPONLY = False  # Deve ser False para permitir acesso via JavaScript, se necessário
-# Session Cookie Settings
-SESSION_COOKIE_SAMESITE = 'None'
-SESSION_COOKIE_SECURE = False
-SESSION_COOKIE_HTTPONLY = True

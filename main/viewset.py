@@ -1,7 +1,6 @@
 from rest_framework import filters
 from rest_framework import generics
 from rest_framework import status
-from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
@@ -32,7 +31,6 @@ class OrcamentoAnnotatedViewSet(ModelViewSet):
     queryset = Orcamento.objects.all().order_by('id_orcamento')
     permission_classes = [IsAuthenticated]
     serializer_class = OrcamentoUnicoSerializer
-    authentication_classes = [SessionAuthentication]
     filter_backends = [filters.SearchFilter]
     search_fields = ['nome', 'cliente__nome', 'evento__nome', 'evento__codigo_evento']
 
@@ -47,7 +45,6 @@ class CidadeAnnotatedViewSet(ModelViewSet):
     queryset = Cidade.objects.all().order_by('nome').filter(excluida=False)
     permission_classes = [IsAuthenticated]
     serializer_class = CidadeSerializer
-    authentication_classes = [SessionAuthentication]
     filter_backends = [filters.SearchFilter]
     search_fields = ['nome',]
 
@@ -62,9 +59,8 @@ class CidadeWithoutPaginationAnnotatedViewSet(ReadOnlyModelViewSet):
     queryset = Cidade.objects.all().order_by('nome').filter(excluida=False)
     permission_classes = [IsAuthenticated]
     serializer_class = CidadeSerializer
-    authentication_classes = [SessionAuthentication]
-    pagination_class = None
 
+    pagination_class = None
 
 
 class LogisticaCidadeByCidadeView(generics.GenericAPIView):
@@ -83,7 +79,7 @@ class LogisticaAnnotatedViewSet(ModelViewSet):
     queryset = Logistica.objects.all().filter(excluida=False)
     permission_classes = [IsAuthenticated]
     serializer_class = LogisticaSerializar
-    authentication_classes = [SessionAuthentication]
+    
     filter_backends = [filters.SearchFilter]
     search_fields = ['nome',]
 
@@ -97,7 +93,7 @@ class LogisticaAnnotatedViewSetWithoutPagination(ReadOnlyModelViewSet):
     queryset = Logistica.objects.all().filter(excluida=False)
     permission_classes = [IsAuthenticated]
     serializer_class = LogisticaSerializar
-    authentication_classes = [SessionAuthentication]
+    
     pagination_class = None
 
 
@@ -105,7 +101,7 @@ class LocalEventoWithoutPaginationAnnotatedViewSet(ReadOnlyModelViewSet):
     queryset = LocalEvento.objects.all().order_by('nome').filter(excluida=False)
     permission_classes = [IsAuthenticated]
     serializer_class = LocalEventoSerializer
-    authentication_classes = [SessionAuthentication]
+    
     pagination_class = None
 
 
@@ -113,7 +109,7 @@ class LocalEventoAnnotatedViewSet(ModelViewSet):
     queryset = LocalEvento.objects.all().order_by('nome').filter(excluida=False)
     permission_classes = [IsAuthenticated]
     serializer_class = LocalEventoSerializer
-    authentication_classes = [SessionAuthentication]
+    
     filter_backends = [filters.SearchFilter]
     search_fields = ['nome', 'cidade__nome']
 
@@ -128,7 +124,7 @@ class ClienteAnnotatedViewSet(ModelViewSet):
     queryset = Cliente.objects.all().order_by('nome')
     permission_classes = [IsAuthenticated]
     serializer_class = ClienteEnderecoSerializer
-    authentication_classes = [SessionAuthentication]
+    
     filter_backends = [filters.SearchFilter]
     search_fields = ['nome', 'cnpj']
 
@@ -137,7 +133,7 @@ class ClienteWithoutPaginationAnnotatedViewSet(ReadOnlyModelViewSet):
     queryset = Cliente.objects.all().order_by('nome')
     permission_classes = [IsAuthenticated]
     serializer_class = ClienteEnderecoSerializer
-    authentication_classes = [SessionAuthentication]
+    
     pagination_class = None
 
 
@@ -145,7 +141,6 @@ class ComidaViewSet(ModelViewSet):
     queryset = Comida.objects.all().order_by('nome')
     permission_classes = [IsAuthenticated]
     serializer_class = ComidaSerializer
-    authentication_classes = [SessionAuthentication]
     filter_backends = [filters.SearchFilter]
     search_fields = ['nome']
 
@@ -154,5 +149,4 @@ class ComidaWithoutPaginationViewSet(ReadOnlyModelViewSet):
     queryset = Comida.objects.all().order_by('nome')
     permission_classes = [IsAuthenticated]
     serializer_class = ComidaSerializer
-    authentication_classes = [SessionAuthentication]
     pagination_class = None
