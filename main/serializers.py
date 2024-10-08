@@ -103,8 +103,8 @@ class EnderecoSerializer(serializers.ModelSerializer):
 
 
 class ClienteEnderecoSerializer(serializers.ModelSerializer):
-    inicio_contrato = serializers.DateField(format='%d-%m-%Y', read_only=True)
-    fim_contrato = serializers.DateField(format='%d-%m-%Y', read_only=True)
+    inicio_contrato = serializers.DateField(format='%d-%m-%Y')
+    fim_contrato = serializers.DateField(format='%d-%m-%Y')
     endereco = EnderecoSerializer()
 
     class Meta:

@@ -1,3 +1,5 @@
+from getpass import fallback_getpass
+
 from django.db import models
 
 from .utils import listSelect
@@ -26,7 +28,7 @@ class Endereco(models.Model):
     cidade = models.CharField(max_length=100, unique=False)
     estado = models.CharField(max_length=100, unique=False)
     numero = models.CharField(max_length=20, unique=False)
-    complemento = models.CharField(max_length=200, unique=False)
+    complemento = models.CharField(max_length=200, unique=False, blank=True, null=True)
 
     def __str__(self):
         return "{} - nª{} - {} - {}".format(self.endereco, self.numero, self.bairro, self.cidade)
@@ -54,7 +56,7 @@ class Comida(models.Model):
 class LocalEvento(models.Model):
     id_local = models.AutoField(primary_key=True)
     nome = models.CharField(max_length=200)
-    cidade = models.OneToOneField(Cidade, on_delete=models.CASCADE)
+    cidade = models.ForeignKey(Cidade, on_delete=models.CASCADE)
     endereco = models.CharField(max_length=400, unique=False)
     telefone = models.CharField(max_length=20, unique=False)
     email = models.EmailField(unique=False)
@@ -81,14 +83,14 @@ class Cliente(models.Model):
     cnpj = models.CharField(max_length=200)
     inscricao_estadual = models.CharField(max_length=200)
     nome = models.CharField(max_length=200)
-    observacao = models.TextField()
+    observacao = models.TextField(blank=True, null=True)
     email = models.EmailField(max_length=200)
     telefone = models.CharField(max_length=100)
     endereco = models.OneToOneField(Endereco, on_delete=models.SET_NULL, blank=True, null=True)
     prazo_pagamento = models.CharField()
     taxa_financeira = models.DecimalField(decimal_places=2, max_digits=8, blank=True, null=True)
-    inicio_contrato = models.DateField(blank=True, null=True)
-    fim_contrato = models.DateField(blank=True, null=True)
+    inicio_contrato = models.DateField()
+    fim_contrato = models.DateField()
 
     @property
     def taxa_financeira_formatado(self) -> str:
@@ -119,8 +121,8 @@ class Evento(models.Model):
     codigo_evento = models.IntegerField(null=False, unique=True)
     nome = models.CharField(max_length=100)
     tipo = models.CharField(max_length=100)
-    descricao = models.TextField()
-    observacao = models.TextField()
+    descricao = models.TextField(null=True, blank=True)
+    observacao = models.TextField(null=True, blank=True)
     clientes = models.ManyToManyField(Cliente)
     qtd_dias_evento = models.IntegerField(null=True, blank=True)
     local = models.ForeignKey(LocalEvento, on_delete=models.DO_NOTHING)

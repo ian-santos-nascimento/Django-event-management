@@ -29,7 +29,7 @@ def verificarOrcamentosDuplicados(orcamento):
     )
 
     if orcamentos.exists():
-        return JsonResponse({'error': 'Já existe um orçamento com o mesmo status, evento e cliente.'},
+        return JsonResponse({'status': 'Já existe um orçamento com o mesmo status, evento e cliente.'},
                             status=status.HTTP_409_CONFLICT)
 
     return None
@@ -54,7 +54,6 @@ def saveOrcamento(request):
 
     # Extrai os campos necessários do request
     nome_evento = request.data.get('nome')
-    id_orcamento = request.data.get('id_orcamento')
     observacoes_evento = request.data.get('observacoes')
     valor_total_comidas = request.data.get('valor_total_comidas')
     desconto_total_comidas = request.data.get('valor_desconto_comidas')
@@ -67,7 +66,6 @@ def saveOrcamento(request):
 
     # Cria ou atualiza o orçamento
     orcamento = Orcamento(
-        id_orcamento=id_orcamento,
         evento=evento,
         cliente=cliente,
         nome=nome_evento,
