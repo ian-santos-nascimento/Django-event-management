@@ -18,13 +18,14 @@ from rest_framework.views import APIView
 
 from .forms import *
 from .models import Logistica, Orcamento, Evento, Cliente, Comida, ComidaOrcamento
-from .serializers import UserLoginSerializer
+from .serializers import UserLoginSerializer, OrcamentoSerializer
+
 
 def verificarOrcamentosDuplicados(orcamento):
     # Verifica se já existe um orçamento com o mesmo evento, cliente e status
     orcamentos = Orcamento.objects.filter(
-        evento=orcamento.evento,
-        cliente=orcamento.cliente,
+        evento_id=orcamento.evento,
+        cliente_id=orcamento.cliente,
         status=orcamento.status
     )
 
@@ -43,56 +44,26 @@ def get_csrf_token(request):
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
 def saveOrcamento(request):
-    evento = request.data.get('evento')
-    cliente = request.data.get('cliente')
-
-    try:
-        evento = Evento.objects.get(pk=evento['id_evento'])
-        cliente = Cliente.objects.get(pk=cliente['id_cliente'])
-    except (Evento.DoesNotExist, Cliente.DoesNotExist) as e:
-        return JsonResponse({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-    # Extrai os campos necessários do request
-    nome_evento = request.data.get('nome')
-    observacoes_evento = request.data.get('observacoes')
-    valor_total_comidas = request.data.get('valor_total_comidas')
-    desconto_total_comidas = request.data.get('valor_desconto_comidas')
-    valor_total_logisticas = request.data.get('valor_total_logisticas')
-    valor_total = request.data.get('valor_total')
-    desconto_total_logisticas = request.data.get('valor_desconto_logisticas')
-    valor_imposto = request.data.get('valor_imposto')
-    valor_decoracao = request.data.get('valor_decoracao')
-    status_orcamento = request.data.get('status')
-
-    # Cria ou atualiza o orçamento
-    orcamento = Orcamento(
-        evento=evento,
-        cliente=cliente,
-        nome=nome_evento,
-        status=status_orcamento,
-        observacoes=observacoes_evento,
-        valor_total_comidas=valor_total_comidas,
-        valor_total_logisticas=valor_total_logisticas,
-        valor_desconto_comidas=desconto_total_comidas,
-        valor_desconto_logisticas=desconto_total_logisticas,
-        valor_total=valor_total,
-        valor_decoracao=valor_decoracao,
-        valor_imposto=valor_imposto,
-    )
+    serializer = OrcamentoSerializer(data=request.data)
 
     # Verifica duplicidade antes de salvar
-    duplicidade_response = verificarOrcamentosDuplicados(orcamento)
+    orcamento_instance = Orcamento(
+        nome=request.data.get('nome'),
+        cliente_id=request.data.get('cliente'),
+        evento_id=request.data.get('evento'),
+        status=request.data.get('status'),
+    )
+    duplicidade_response = verificarOrcamentosDuplicados(orcamento_instance)
+    print(duplicidade_response)
     if duplicidade_response:
         return duplicidade_response  # Retorna erro se houver duplicidade
 
-    # Salva o orçamento
-    orcamento.save()
+    # Verifica e salva os dados usando o serializer
+    if serializer.is_valid():
+        serializer.save()
+        return Response({'message': 'Orçamento salvo com sucesso!'}, status=status.HTTP_200_OK)
 
-    # Funções para salvar comidas e logísticas
-    create_comida_for_orcamento(request, orcamento)
-    create_logistica_for_orcamento(request, orcamento)
-
-    return JsonResponse({'message': 'Orçamento salvo com sucesso!'}, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserLogin(APIView):

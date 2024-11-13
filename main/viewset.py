@@ -1,7 +1,7 @@
 from rest_framework import filters
 from rest_framework import generics
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
@@ -29,7 +29,7 @@ class EventoAnnotatedViewSet(ModelViewSet):
 
 class OrcamentoAnnotatedViewSet(ModelViewSet):
     queryset = Orcamento.objects.all().order_by('id_orcamento')
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
     serializer_class = OrcamentoUnicoSerializer
     filter_backends = [filters.SearchFilter]
     search_fields = ['nome', 'cliente__nome', 'evento__nome', 'evento__codigo_evento']

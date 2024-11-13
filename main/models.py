@@ -182,6 +182,13 @@ class Orcamento(models.Model):
     valor_desconto_comidas = models.DecimalField(decimal_places=2, max_digits=10,null=True, blank=True)
     valor_imposto = models.DecimalField(decimal_places=2, max_digits=10,null=True, blank=True)
     valor_decoracao = models.DecimalField(decimal_places=2, max_digits=10,null=True, blank=True)
+    descontos = models.ManyToManyField('Desconto', related_name='orcamentos', blank=True)
+
+
+class Desconto(models.Model):
+    orcamento = models.ForeignKey(Orcamento, related_name='descontos_orcamento', on_delete=models.CASCADE)
+    tipo_comida = models.CharField(max_length=200)
+    valor = models.DecimalField(decimal_places=2, max_digits=8)
 
 
 class ComidaOrcamento(models.Model):
