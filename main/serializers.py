@@ -30,10 +30,22 @@ class ComidaSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class LocalEventoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LocalEvento
+        fields = '__all__'
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data.pop('agravo', None)
+        return data
+
+
 class EventoSerializer(serializers.ModelSerializer):
     data_inicio = serializers.DateField(format='%d-%m-%Y', )
     data_fim = serializers.DateField(format='%d-%m-%Y', )
     qtd_dias_evento = serializers.SerializerMethodField()
+    local = LocalEventoSerializer()
 
     class Meta:
         model = Evento
@@ -115,17 +127,6 @@ class LogisticaCidadeSerializer(serializers.ModelSerializer):
     class Meta:
         model = LogisticaCidade
         fields = '__all__'
-
-
-class LocalEventoSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = LocalEvento
-        fields = '__all__'
-
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        data.pop('agravo', None)
-        return data
 
 
 class EnderecoSerializer(serializers.ModelSerializer):
