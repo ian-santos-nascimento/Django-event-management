@@ -88,7 +88,7 @@ class Cliente(models.Model):
     telefone = models.CharField(max_length=100)
     endereco = models.OneToOneField(Endereco, on_delete=models.SET_NULL, blank=True, null=True)
     prazo_pagamento = models.CharField()
-    taxa_financeira = models.DecimalField(decimal_places=2, max_digits=8, blank=True, null=True)
+    taxa_financeira = models.DecimalField(decimal_places=4, max_digits=8, blank=True, null=True)
     inicio_contrato = models.DateField()
     fim_contrato = models.DateField()
 
@@ -167,9 +167,9 @@ class Logistica(models.Model):
 
 class Orcamento(models.Model):
     id_orcamento = models.AutoField(primary_key=True)
-    nome = models.CharField(max_length=200)
+    nome = models.CharField(max_length=200, null=True, blank=True)
     status = models.CharField(max_length=200)
-    data_alteracao = models.DateField(blank=True, null=True, auto_now=True)
+    data_criacao = models.DateField(blank=True, null=True, auto_now_add=True)
     observacoes = models.TextField(max_length=2000)
     evento = models.ForeignKey(Evento, related_name='evento', on_delete=models.CASCADE)
     cliente = models.ForeignKey(Cliente, related_name='cliente', on_delete=models.CASCADE)

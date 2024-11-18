@@ -204,11 +204,11 @@ class OrcamentoUnicoSerializer(serializers.ModelSerializer):
     cliente = ClienteSerializer()
     evento = EventoSerializer()
     descontos = serializers.SerializerMethodField()  # Altere para SerializerMethodField
-    data_fim = serializers.DateField(format='%d-%m-%Y', read_only=True)
+    data_criacao = serializers.DateField(format='%d-%m-%Y', read_only=True)
 
     class Meta:
         model = Orcamento
-        exclude = ['data_alteracao']
+        fields = '__all__'
 
     def update(self, instance, validated_data):
         validated_data.pop('id_orcamento', None)
