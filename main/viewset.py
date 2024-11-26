@@ -148,5 +148,5 @@ class ComidaViewSet(ModelViewSet):
 class ComidaWithoutPaginationViewSet(ReadOnlyModelViewSet):
     queryset = Comida.objects.all().order_by('nome')
     permission_classes = [IsAuthenticated]
-    serializer_class = ComidaSerializer
+    serializer_class = ComidaWithoutPaginationSerializer
     pagination_class = None

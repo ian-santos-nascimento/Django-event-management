@@ -30,6 +30,17 @@ class ComidaSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class ComidaWithoutPaginationSerializer(serializers.ModelSerializer):
+    valor = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Comida
+        fields = '__all__'
+
+    def get_valor(self, obj):
+        return obj.valor * obj.fator_multiplicador
+
+
 class LocalEventoSerializer(serializers.ModelSerializer):
     class Meta:
         model = LocalEvento

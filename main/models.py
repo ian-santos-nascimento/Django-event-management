@@ -39,6 +39,7 @@ class Comida(models.Model):
     nome = models.CharField(max_length=400)
     descricao = models.TextField(blank=True, null=True)
     valor = models.DecimalField(decimal_places=2, max_digits=8, default=0)
+    fator_multiplicador = models.DecimalField(decimal_places=3, max_digits=6, default=1.0)
     quantidade_minima = models.IntegerField()
     tipo = models.CharField(max_length=200)
     subtipo = models.CharField(max_length=200, blank=True, null=True)
