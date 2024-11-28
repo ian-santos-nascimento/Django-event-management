@@ -208,3 +208,4 @@ class LogisticaOrcamento(models.Model):
     orcamento = models.ForeignKey(Orcamento, on_delete=models.CASCADE, )
     valor = models.DecimalField(decimal_places=2, max_digits=8)
     quantidade = models.IntegerField(default=1)
+    dias = models.IntegerField(default=1)

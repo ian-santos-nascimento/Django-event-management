@@ -72,7 +72,6 @@ class UserLogin(APIView):
     def post(self, request, failed=AuthenticationFailed('Invalid credentials')):
         data = request.data
         serializer = UserLoginSerializer(data=data)
-        print("LOGIN")
         if serializer.is_valid(raise_exception=True):
             user = serializer.check_user(data)
             if user is None:

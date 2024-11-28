@@ -98,7 +98,7 @@ class LogisticaOrcamentoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = LogisticaOrcamento
-        fields = ['quantidade', 'valor', 'id']
+        fields = ['quantidade', 'valor', 'id', 'dias']
 
     def create(self, validated_data):
         id = validated_data.pop('id')
@@ -122,7 +122,7 @@ class LogisticaOrcamentoListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = LogisticaOrcamento
-        fields = ['logistica', 'quantidade', 'valor', 'id']
+        fields = ['logistica', 'quantidade', 'valor', 'id', 'dias']
 
 
 class OrcamentoSerializer(serializers.ModelSerializer):
