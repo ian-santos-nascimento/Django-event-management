@@ -119,9 +119,10 @@ class Cliente(models.Model):
 
 class Evento(models.Model):
     id_evento = models.AutoField(primary_key=True)
-    codigo_evento = models.IntegerField(null=False, unique=True)
+    codigo_evento = models.CharField(null=False, unique=True)
     nome = models.CharField(max_length=100)
     tipo = models.CharField(max_length=100)
+    transporte = models.CharField(max_length=100, default="Terceirizado")
     descricao = models.TextField(null=True, blank=True)
     observacao = models.TextField(null=True, blank=True)
     clientes = models.ManyToManyField(Cliente)

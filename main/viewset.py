@@ -19,21 +19,17 @@ class EventoAnnotatedViewSet(ModelViewSet):
         serializer = EventoClienteSerializer(evento)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        evento = serializer.save()
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+    def get_serializer_class(self):
+        if self.action in ['list']:
+            return EventoListSerializer
+        return EventoSerializer
 
 
 class OrcamentoAnnotatedViewSet(ModelViewSet):
     queryset = Orcamento.objects.all().order_by('id_orcamento')
-    permission_classes = [AllowAny]
     serializer_class = OrcamentoUnicoSerializer
     filter_backends = [filters.SearchFilter]
     search_fields = ['nome', 'cliente__nome', 'evento__nome', 'evento__codigo_evento']
-
 
     def retrieve(self, request, pk=None):
         orcamento = Orcamento.objects.get(pk=pk)
@@ -46,7 +42,7 @@ class CidadeAnnotatedViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
     serializer_class = CidadeSerializer
     filter_backends = [filters.SearchFilter]
-    search_fields = ['nome',]
+    search_fields = ['nome', ]
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -79,9 +75,9 @@ class LogisticaAnnotatedViewSet(ModelViewSet):
     queryset = Logistica.objects.all().filter(excluida=False)
     permission_classes = [IsAuthenticated]
     serializer_class = LogisticaSerializar
-    
+
     filter_backends = [filters.SearchFilter]
-    search_fields = ['nome',]
+    search_fields = ['nome', ]
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -89,11 +85,12 @@ class LogisticaAnnotatedViewSet(ModelViewSet):
         instance.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+
 class LogisticaAnnotatedViewSetWithoutPagination(ReadOnlyModelViewSet):
     queryset = Logistica.objects.all().filter(excluida=False)
     permission_classes = [IsAuthenticated]
     serializer_class = LogisticaSerializar
-    
+
     pagination_class = None
 
 
@@ -101,7 +98,7 @@ class LocalEventoWithoutPaginationAnnotatedViewSet(ReadOnlyModelViewSet):
     queryset = LocalEvento.objects.all().order_by('nome').filter(excluida=False)
     permission_classes = [IsAuthenticated]
     serializer_class = LocalEventoSerializer
-    
+
     pagination_class = None
 
 
@@ -109,7 +106,7 @@ class LocalEventoAnnotatedViewSet(ModelViewSet):
     queryset = LocalEvento.objects.all().order_by('nome').filter(excluida=False)
     permission_classes = [IsAuthenticated]
     serializer_class = LocalEventoSerializer
-    
+
     filter_backends = [filters.SearchFilter]
     search_fields = ['nome', 'cidade__nome']
 
@@ -124,7 +121,7 @@ class ClienteAnnotatedViewSet(ModelViewSet):
     queryset = Cliente.objects.all().order_by('nome')
     permission_classes = [IsAuthenticated]
     serializer_class = ClienteEnderecoSerializer
-    
+
     filter_backends = [filters.SearchFilter]
     search_fields = ['nome', 'cnpj']
 
@@ -133,7 +130,7 @@ class ClienteWithoutPaginationAnnotatedViewSet(ReadOnlyModelViewSet):
     queryset = Cliente.objects.all().order_by('nome')
     permission_classes = [IsAuthenticated]
     serializer_class = ClienteEnderecoSerializer
-    
+
     pagination_class = None
 
 

@@ -52,11 +52,22 @@ class LocalEventoSerializer(serializers.ModelSerializer):
         return data
 
 
+class ClienteSerializer(serializers.ModelSerializer):
+    id_cliente = serializers.IntegerField()
+    inicio_contrato = serializers.DateField(format='%d-%m-%Y', read_only=True)
+    fim_contrato = serializers.DateField(format='%d-%m-%Y', read_only=True)
+
+    class Meta:
+        model = Cliente
+        exclude = ['endereco']  # Exclua o campo 'endereco'
+
+
 class EventoSerializer(serializers.ModelSerializer):
     data_inicio = serializers.DateField(format='%d-%m-%Y', )
     data_fim = serializers.DateField(format='%d-%m-%Y', )
-    qtd_dias_evento = serializers.SerializerMethodField()
-    local = LocalEventoSerializer()
+    qtd_dias_evento = serializers.SerializerMethodField(read_only=True)
+    local = serializers.PrimaryKeyRelatedField(queryset=LocalEvento.objects.all())
+    clientes = ClienteSerializer(many=True)
 
     class Meta:
         model = Evento
@@ -64,6 +75,21 @@ class EventoSerializer(serializers.ModelSerializer):
 
     def get_qtd_dias_evento(self, obj):
         return (obj.data_fim - obj.data_inicio).days + 1 if obj.data_inicio and obj.data_fim else 0
+
+    def update(self, instance, validated_data):
+        clientes = validated_data.pop('clientes', [])
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        instance.clientes.clear()
+        for cliente in clientes:
+            cliente_instance, created = Cliente.objects.get_or_create(
+                id_cliente=cliente['id_cliente'],
+                defaults=cliente
+            )
+            instance.clientes.add(cliente_instance)
+        return instance
+
 
 
 class LogisticaSerializar(serializers.ModelSerializer):
@@ -86,7 +112,6 @@ class ComidaOrcamentoSerializer(serializers.ModelSerializer):
         fields = ['quantidade', 'valor', 'comida_id']
 
     def create(self, validated_data):
-        # Remove `comida_id` de `validated_data` e obtenha a instância `Comida`
         comida_id = validated_data.pop('comida_id')
         validated_data['comida'] = Comida.objects.get(pk=comida_id)
 
@@ -183,15 +208,6 @@ class ClienteEnderecoSerializer(serializers.ModelSerializer):
         return instance
 
 
-class ClienteSerializer(serializers.ModelSerializer):
-    inicio_contrato = serializers.DateField(format='%d-%m-%Y', read_only=True)
-    fim_contrato = serializers.DateField(format='%d-%m-%Y', read_only=True)
-
-    class Meta:
-        model = Cliente
-        exclude = ['endereco']  # Exclua o campo 'endereco'
-
-
 class DescontoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Desconto
@@ -201,6 +217,15 @@ class DescontoSerializer(serializers.ModelSerializer):
 class EventoClienteSerializer(serializers.ModelSerializer):
     data_inicio = serializers.DateField(format='%d-%m-%Y', read_only=True)
     data_fim = serializers.DateField(format='%d-%m-%Y', read_only=True)
+    clientes = ClienteSerializer(many=True)
+    local = LocalEventoSerializer()
+
+    class Meta:
+        model = Evento
+        fields = '__all__'
+
+
+class EventoListSerializer(serializers.ModelSerializer):
     clientes = ClienteSerializer(many=True)
     local = LocalEventoSerializer()
 
