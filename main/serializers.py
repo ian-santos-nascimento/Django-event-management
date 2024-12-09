@@ -76,6 +76,21 @@ class EventoSerializer(serializers.ModelSerializer):
     def get_qtd_dias_evento(self, obj):
         return (obj.data_fim - obj.data_inicio).days + 1 if obj.data_inicio and obj.data_fim else 0
 
+    def create(self, validated_data):
+        clientes_data = validated_data.pop('clientes', [])
+
+        evento = Evento.objects.create(**validated_data)
+
+        for cliente_data in clientes_data:
+            cliente_instance, created = Cliente.objects.get_or_create(
+                id_cliente=cliente_data['id_cliente'],
+                defaults=cliente_data
+            )
+
+            evento.clientes.add(cliente_instance)
+
+        return evento
+
     def update(self, instance, validated_data):
         clientes = validated_data.pop('clientes', [])
         for attr, value in validated_data.items():
@@ -89,7 +104,6 @@ class EventoSerializer(serializers.ModelSerializer):
             )
             instance.clientes.add(cliente_instance)
         return instance
-
 
 
 class LogisticaSerializar(serializers.ModelSerializer):

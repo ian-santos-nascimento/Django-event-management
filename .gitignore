@@ -5,5 +5,4 @@ venv
 .idea/**
 db.sqlite3
 frontend/node_modules
-fly.toml
 .github

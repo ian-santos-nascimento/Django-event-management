@@ -1,11 +1,11 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import (
-    TokenObtainPairView,  # Para obter access e refresh tokens
-    TokenRefreshView,  # Para obter um novo access token usando o refresh token
-    TokenBlacklistView,  # Para invalidar refresh tokens
+    TokenObtainPairView,
+    TokenRefreshView,
+    TokenBlacklistView,
 )
-from .views import logout_view, UserLogin, saveOrcamento, get_csrf_token
+from .views import logout_view, UserLogin, saveOrcamento, generate_word_orcamento
 from . import viewset
 
 router = DefaultRouter()
@@ -28,6 +28,7 @@ urlpatterns = [
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('orcamentos-create/', saveOrcamento, name='save_orcamento'),
+    path('download-orcamento/<int:orcamento_id>', generate_word_orcamento, name='generate_word_orcamento'),
     path('logistica-cidade/<int:cidade_id>/', viewset.LogisticaCidadeByCidadeView.as_view(),
          name='logistica-cidade-by-cidade'),
 ]
