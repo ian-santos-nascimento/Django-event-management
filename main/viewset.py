@@ -26,7 +26,7 @@ class EventoAnnotatedViewSet(ModelViewSet):
 
 
 class OrcamentoAnnotatedViewSet(ModelViewSet):
-    queryset = Orcamento.objects.all().order_by('id_orcamento')
+    queryset = Orcamento.objects.all().order_by('-data_criacao')
     serializer_class = OrcamentoUnicoSerializer
     filter_backends = [filters.SearchFilter]
     search_fields = ['nome', 'cliente__nome', 'evento__nome', 'evento__codigo_evento']
