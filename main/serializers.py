@@ -292,7 +292,7 @@ class OrcamentoSerializer(serializers.ModelSerializer):
         model = Orcamento
         fields = [
             'id_orcamento', 'nome', 'status', 'observacoes', 'evento', 'cliente',
-            'valor_total_comidas', 'valor_total_logisticas', 'valor_total',
+            'valor_total_comidas', 'valor_total_logisticas', 'valor_total', 'valor_frete', 'valor_locomocao',
             'valor_desconto_comidas', 'valor_desconto_logisticas', 'valor_imposto',
             'valor_decoracao', 'comidas_orcamento', 'logisticas_orcamento', 'descontos'
         ]

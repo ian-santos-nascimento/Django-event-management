@@ -8,11 +8,14 @@ from docx.shared import RGBColor
 def generate_orcamento_doc(orcamento_id, data) -> Document:
     orcamento = data['orcamento']
     document = Document()
+    style = document.styles['Normal']
+    style.font.name = 'Century Gothic'
 
     heading = document.add_heading(
         f"{orcamento['evento']['nome']} - {formatar_data(orcamento['evento']['data_inicio'])}",
         level=1)
     heading.runs[0].bold = True
+    heading.runs[0].font.name = 'Century Gothic'
     heading.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
 
     document.add_paragraph(
@@ -51,7 +54,7 @@ def generate_table_values(orcamento, document: Document) -> Document:
     heading = document.add_heading("INVESTIMENTO TOTAL", level=2)
     heading.bold = True
     heading.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
-    table = document.add_table(rows=5, cols=2)
+    table = document.add_table(rows=7, cols=2)
     table.style = 'Table Grid'
 
     def set_cell_text_and_bold(cell, text):
@@ -91,11 +94,26 @@ def generate_table_values(orcamento, document: Document) -> Document:
         f"R$ {valor_imposto:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
     )
 
-    #Linha 5: Total
-    set_cell_text_and_bold(table.cell(4, 0), "Total")
-    valor_total = float(orcamento['valor_total'])
+    # Linha 5: Frete
+    set_cell_text_and_bold(table.cell(4, 0), "Frete")
+    valor_imposto = float(orcamento['valor_frete'])
     set_cell_text_and_bold(
         table.cell(4, 1),
+        f"R$ {valor_imposto:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
+    )
+    # Linha 6: Frete
+    set_cell_text_and_bold(table.cell(5, 0), "Locomoção")
+    valor_imposto = float(orcamento['valor_locomocao'])
+    set_cell_text_and_bold(
+        table.cell(5, 1),
+        f"R$ {valor_imposto:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
+    )
+
+    #Linha 7: Total
+    set_cell_text_and_bold(table.cell(6, 0), "Total")
+    valor_total = float(orcamento['valor_total'])
+    set_cell_text_and_bold(
+        table.cell(6, 1),
         f"R$ {valor_total:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
     )
     return document

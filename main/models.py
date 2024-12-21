@@ -1,5 +1,3 @@
-from getpass import fallback_getpass
-
 from django.db import models
 
 from .utils import listSelect
@@ -184,6 +182,8 @@ class Orcamento(models.Model):
     valor_desconto_comidas = models.DecimalField(decimal_places=2, max_digits=10,null=True, blank=True)
     valor_imposto = models.DecimalField(decimal_places=2, max_digits=10,null=True, blank=True)
     valor_decoracao = models.DecimalField(decimal_places=2, max_digits=10,null=True, blank=True)
+    valor_locomocao = models.DecimalField(decimal_places=2, max_digits=10, default=0.0)
+    valor_frete = models.DecimalField(decimal_places=2, max_digits=10, default=0.0)
     descontos = models.ManyToManyField('Desconto', related_name='orcamentos', blank=True)
 
 
