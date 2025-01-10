@@ -31,12 +31,8 @@ def generate_orcamento_doc(orcamento_id, data) -> Document:
             if intervalo['comidas']:
                 document.add_heading(nome_intervalo, level=4)
             for comida in intervalo['comidas']:
-                quantidade = next(
-                    (item['quantidade'] for item in orcamento['comidas']
-                     if item['comida_id'] == comida['comida_id']),
-                    0
-                )
-                nome = comida['nome'].split('-')[1]
+                quantidade = comida['quantidade']
+                nome = comida['comida'].split('-')[1]
                 document.add_paragraph(
                     f"- {nome} com {quantidade} unidades"
                 )
